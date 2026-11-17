@@ -1,36 +1,142 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../audio.dart';
 import '../data.dart';
 import '../i18n.dart';
+import '../juz_data.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
-/// Quran tab: surah list with name/number filter, bookmarks,
-/// and the full-Quran search entry point.
+/// Quran tab, redesigned to the reference layout: title + bookmark /
+/// search / settings icons, a Continue card of last-read surahs, a
+/// SURAH / JUZ toggle, surah rows with a green play button + bookmark,
+/// and juz rows with names and ranges.
+///
+/// No search bars on this screen — full-text search lives behind the
+/// magnifier icon (SearchScreen). Layout copies the reference; colors
+/// are QUBA's own palette so both themes look right.
 class QuranScreen extends StatefulWidget {
   const QuranScreen({
     super.key,
     required this.onOpenSurah,
     required this.onOpenSearch,
     required this.onOpenReader,
+    required this.onOpenSettings,
   });
   final void Function(int surah) onOpenSurah;
   final VoidCallback onOpenSearch;
   final void Function(int surah, int ayah) onOpenReader;
+  final VoidCallback onOpenSettings;
 
   @override
   State<QuranScreen> createState() => _QuranScreenState();
 }
 
 class _QuranScreenState extends State<QuranScreen> {
-  final _queryController = TextEditingController();
-  String _query = '';
+  bool _showJuz = false;
 
-  @override
-  void dispose() {
-    _queryController.dispose();
-    super.dispose();
+  /// Last-read place first, then one chip per bookmarked surah (its
+  /// first bookmarked verse). Always at least Al-Faatiha Ayat 1: the
+  /// last-read place defaults to 1:1.
+  List<(int surah, int ayah)> _continueItems() {
+    final items = <(int, int)>[];
+    final seen = <int>{};
+    void add(int s, int a) {
+      if (s < 1 || s > 114 || a < 1) return;
+      if (seen.add(s)) items.add((s, a));
+    }
+
+    add(appState.lastReadSurah, appState.lastReadAyah);
+    final marks = appState.bookmarks.map((key) {
+      final parts = key.split(':');
+      return (int.parse(parts[0]), int.parse(parts[1]));
+    }).toList()
+      ..sort((a, b) =>
+          a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2));
+    for (final m in marks) {
+      add(m.$1, m.$2);
+    }
+    return items;
+  }
+
+  void _playSurah(Surah s) {
+    final audio = AudioService.instance;
+    if (appState.downloadedSurahs.contains(s.number)) {
+      // Offline file when the surah was downloaded once.
+      unawaited(audio.playSurah(s.number));
+    } else {
+      // Stream verse by verse from the start; auto-advances.
+      unawaited(audio.playAyah(s.number, 1));
+    }
+    widget.onOpenSurah(s.number);
+  }
+
+  void _showBookmarks() {
+    final repo = QuranRepository.instance;
+    final marks = appState.bookmarks.map((key) {
+      final parts = key.split(':');
+      return (int.parse(parts[0]), int.parse(parts[1]));
+    }).toList()
+      ..sort((a, b) =>
+          a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2));
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(ctx).size.height * 0.6,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Bookmarks',
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 12),
+                if (marks.isEmpty)
+                  const Text(
+                    'No bookmarks yet. Tap the bookmark on any verse in '
+                    'the reader to save your place here.',
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: marks.length,
+                      itemBuilder: (ctx, i) {
+                        final m = marks[i];
+                        final surah = repo.surah(m.$1);
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: RosetteNumber(number: m.$1, size: 40),
+                          title: Text(
+                            '${surah.nameEnglish} ${m.$1}:${m.$2}',
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          subtitle: Text(
+                            surah.nameArabic,
+                            style: const TextStyle(fontFamily: 'AmiriQuran'),
+                          ),
+                          trailing: const Icon(
+                              Icons.chevron_right_rounded),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            widget.onOpenReader(m.$1, m.$2);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -42,179 +148,346 @@ class _QuranScreenState extends State<QuranScreen> {
         child: Text(tr('loading'), style: TextStyle(color: p.muted)),
       );
     }
-    final all = repo.surahs;
-    final filtered = _query.isEmpty
-        ? all
-        : all
-            .where((s) =>
-                s.nameEnglish.toLowerCase().contains(_query.toLowerCase()) ||
-                s.meaning.toLowerCase().contains(_query.toLowerCase()) ||
-                s.number.toString() == _query.trim())
-            .toList();
-    final bookmarks = appState.bookmarks.toList()..sort();
-
     return AnimatedBuilder(
       animation: appState,
       builder: (context, _) => Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-            child: QubaSearchField(
-              controller: _queryController,
-              hint: tr('search_surah'),
-              onChanged: (v) => setState(() => _query = v),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 2, 16, 10),
-            child: GlassCard(
-              radius: 16,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-              onTap: widget.onOpenSearch,
-              child: Row(
-                children: [
-                  Icon(Icons.search_rounded, size: 20, color: p.emerald),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      tr('search_quran'),
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: p.ink,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    'Arabic + English',
-                    style: TextStyle(fontSize: 12.5, color: p.muted),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(Icons.chevron_right_rounded,
-                      size: 20, color: p.muted),
-                ],
-              ),
-            ),
-          ),
+          _header(context),
+          _continueCard(context),
+          _toggle(context),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 2, 16, 120),
-              children: [
-                if (bookmarks.isNotEmpty && _query.isEmpty) ...[
-                  SectionLabel('Bookmarks'),
-                  const SizedBox(height: 10),
-                  ...bookmarks.map((key) {
-                    final parts = key.split(':');
-                    final s = int.parse(parts[0]);
-                    final a = int.parse(parts[1]);
-                    final surah = repo.surah(s);
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: GlassCard(
-                        radius: 18,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 13),
-                        onTap: () => widget.onOpenReader(s, a),
-                        child: Row(
-                          children: [
-                            Icon(Icons.bookmark_rounded,
-                                size: 19, color: p.gold),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                '${surah.nameEnglish} $s:$a',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  color: p.ink,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              surah.nameArabic,
-                              style: const TextStyle(
-                                fontFamily: 'AmiriQuran',
-                                fontSize: 19,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 12),
-                ],
-                for (final s in filtered)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _surahRow(context, s),
-                  ),
-              ],
-            ),
+            child: _showJuz ? _juzList(context) : _surahList(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _surahRow(BuildContext context, Surah s) {
+  Widget _header(BuildContext context) {
     final p = QubaPalette.of(context);
-    final downloaded = appState.downloadedSurahs.contains(s.number);
-    return GlassCard(
-      radius: 18,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      onTap: () => widget.onOpenSurah(s.number),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 8, 6),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: p.emerald.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(13),
-              border: Border.all(color: p.gold.withValues(alpha: 0.5)),
+          Expanded(
+            child: Text(
+              tr('quran'),
+              style: TextStyle(
+                fontSize: 27,
+                fontWeight: FontWeight.w800,
+                color: p.ink,
+              ),
             ),
-            child: Center(
-              child: Text(
-                '${s.number}',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: p.emerald,
+          ),
+          IconButton(
+            icon: const Icon(Icons.bookmark_border_rounded),
+            iconSize: 27,
+            color: p.ink,
+            tooltip: 'Bookmarks',
+            onPressed: _showBookmarks,
+          ),
+          IconButton(
+            icon: const Icon(Icons.search_rounded),
+            iconSize: 27,
+            color: p.ink,
+            tooltip: tr('search_quran'),
+            onPressed: widget.onOpenSearch,
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            iconSize: 27,
+            color: p.ink,
+            tooltip: tr('settings'),
+            onPressed: widget.onOpenSettings,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _continueCard(BuildContext context) {
+    final p = QubaPalette.of(context);
+    final repo = QuranRepository.instance;
+    final items = _continueItems();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
+      child: GlassCard(
+        radius: 24,
+        padding: const EdgeInsets.fromLTRB(18, 15, 18, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Continue',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: p.ink,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 78,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: items.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                itemBuilder: (context, i) {
+                  final item = items[i];
+                  final surah = repo.surah(item.$1);
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () =>
+                          widget.onOpenReader(item.$1, item.$2),
+                      child: Container(
+                        width: 148,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 13),
+                        decoration: BoxDecoration(
+                          color: p.bgSecondary,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: p.cardBorder),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              surah.nameEnglish,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w800,
+                                color: p.ink,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              'Ayat ${item.$2}',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                color: p.muted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _toggle(BuildContext context) {
+    final p = QubaPalette.of(context);
+    Widget side(String label, bool active, VoidCallback onTap) {
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(13),
+              onTap: onTap,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: active ? p.bgSecondary : Colors.transparent,
+                  borderRadius: BorderRadius.circular(13),
+                  boxShadow: active
+                      ? [
+                          BoxShadow(
+                            color: p.shadow,
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 15.5,
+                    fontWeight:
+                        active ? FontWeight.w800 : FontWeight.w600,
+                    letterSpacing: 0.8,
+                    color: active ? p.ink : p.muted,
+                  ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  s.nameEnglish,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                    color: p.ink,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: p.cardFill,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: p.cardBorder),
+        ),
+        child: Row(
+          children: [
+            side('SURAH', !_showJuz,
+                () => setState(() => _showJuz = false)),
+            side('JUZ', _showJuz, () => setState(() => _showJuz = true)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _surahList(BuildContext context) {
+    final p = QubaPalette.of(context);
+    final repo = QuranRepository.instance;
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 120),
+      itemCount: repo.surahs.length,
+      separatorBuilder: (_, _) => Divider(
+        height: 1,
+        thickness: 1,
+        color: p.gold.withValues(alpha: 0.22),
+      ),
+      itemBuilder: (context, i) {
+        final s = repo.surahs[i];
+        final bookmarked = appState.isBookmarked(s.number, 1);
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => widget.onOpenSurah(s.number),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              child: Row(
+                children: [
+                  RosetteNumber(number: s.number),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.nameEnglish,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: p.emerald,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${s.meaning} (${s.ayahCount})',
+                          style: TextStyle(fontSize: 14, color: p.ink),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${s.meaning} • ${s.revelation} • ${s.ayahCount} ${tr('verses')}',
-                  style: TextStyle(fontSize: 12.5, color: p.muted),
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    iconSize: 32,
+                    color: p.emerald,
+                    tooltip: 'Play ${s.nameEnglish}',
+                    onPressed: () => _playSurah(s),
+                  ),
+                  IconButton(
+                    icon: Icon(bookmarked
+                        ? Icons.bookmark_rounded
+                        : Icons.bookmark_border_rounded),
+                    iconSize: 26,
+                    color: p.emerald,
+                    tooltip:
+                        bookmarked ? 'Remove bookmark' : 'Bookmark',
+                    onPressed: () =>
+                        appState.toggleBookmark(s.number, 1),
+                  ),
+                ],
+              ),
             ),
           ),
-          if (downloaded) ...[
-            Icon(Icons.offline_pin_rounded, color: p.emerald, size: 20),
-            const SizedBox(width: 6),
-          ],
-          Text(
-            s.nameArabic,
-            style: TextStyle(fontFamily: 'AmiriQuran', fontSize: 21, color: p.ink),
-          ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _juzList(BuildContext context) {
+    final p = QubaPalette.of(context);
+    final repo = QuranRepository.instance;
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 120),
+      itemCount: juzList.length,
+      separatorBuilder: (_, _) => Divider(
+        height: 1,
+        thickness: 1,
+        color: p.gold.withValues(alpha: 0.22),
       ),
+      itemBuilder: (context, i) {
+        final j = juzList[i];
+        final bookmarked =
+            appState.isBookmarked(j.startSurah, j.startAyah);
+        final range =
+            '${repo.surah(j.startSurah).nameEnglish} ${j.startSurah}:${j.startAyah} - '
+            '${repo.surah(j.endSurah).nameEnglish} ${j.endSurah}:${j.endAyah}';
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () =>
+                widget.onOpenReader(j.startSurah, j.startAyah),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              child: Row(
+                children: [
+                  RosetteNumber(number: j.number),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          j.name,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: p.emerald,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          range,
+                          style:
+                              TextStyle(fontSize: 13.5, color: p.ink),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(bookmarked
+                        ? Icons.bookmark_rounded
+                        : Icons.bookmark_border_rounded),
+                    iconSize: 26,
+                    color: p.emerald,
+                    tooltip:
+                        bookmarked ? 'Remove bookmark' : 'Bookmark',
+                    onPressed: () => appState.toggleBookmark(
+                        j.startSurah, j.startAyah),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

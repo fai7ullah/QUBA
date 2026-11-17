@@ -63,15 +63,23 @@ class SettingsScreen extends StatelessWidget {
           GlassCard(
             child: Column(
               children: [
-                Row(
+                // Label on its own line: the three-segment control is
+                // too wide to share the row — it used to starve the
+                // label to one character wide ("Theme" rendered as
+                // T/h/e/m/e, one letter per line).
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.brightness_6_rounded, color: p.emerald),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text('Theme',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, color: p.ink)),
+                    Row(
+                      children: [
+                        Icon(Icons.brightness_6_rounded, color: p.emerald),
+                        const SizedBox(width: 12),
+                        Text('Theme',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, color: p.ink)),
+                      ],
                     ),
+                    const SizedBox(height: 10),
                     SegmentedButton<ThemeMode>(
                       segments: const [
                         ButtonSegment(value: ThemeMode.system, label: Text('Auto')),

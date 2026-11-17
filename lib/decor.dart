@@ -29,8 +29,11 @@ class QubaHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
     final mq = MediaQuery.of(context);
-    // The reference is drawn edge-to-edge with a ~24dp status bar.
-    final inset = mq.padding.top > 0 ? mq.padding.top : 24.0;
+    // The tab body sits inside a top SafeArea (main.dart), so the
+    // status-bar space is already accounted for above this header and
+    // padding.top reads 0 here: the header keeps its exact height and
+    // the logo/wordmark land in the same place as before.
+    final inset = mq.padding.top;
     final w = mq.size.width;
     final skyW = w * 0.52;
     final skyH = skyW * 205 / 433;

@@ -126,15 +126,21 @@ class _ShellState extends State<Shell> {
         onOpenSurah: (s) => _openReader(s, 1),
         onOpenSearch: () => _openFeatureKey('search'),
         onOpenReader: _openReader,
+        onOpenSettings: () => setState(() => _tab = 3),
       ),
       SettingsScreen(onOpenFeature: _openFeatureKey),
     ];
     return Scaffold(
-      // No AppBar anywhere: screens start directly with content
-      // (the QUBA header was removed by the owner's order).
+      // No AppBar anywhere. The tab content sits in a top SafeArea so
+      // no page touches the phone's notification bar; the background
+      // itself stays edge-to-edge behind the bar.
       extendBody: true,
       body: QubaBackground(
-        child: IndexedStack(index: _tab, children: pages),
+        child: SafeArea(
+          top: true,
+          bottom: false,
+          child: IndexedStack(index: _tab, children: pages),
+        ),
       ),
       bottomNavigationBar: _GlassNavBar(
         tab: _tab,

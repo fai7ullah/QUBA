@@ -318,6 +318,53 @@ class NotifyIcon extends StatelessWidget {
   }
 }
 
+/// Thin gold double-line rosette (8-point star) with a number in the
+/// middle — the surah/juz medallion of the redesigned Quran tab, and the
+/// mini-player badge in the reader.
+class RosetteNumber extends StatelessWidget {
+  const RosetteNumber({super.key, required this.number, this.size = 46});
+  final int number;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = QubaPalette.of(context);
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: Size(size, size),
+            painter: Star8Painter(
+              fill: Colors.transparent,
+              stroke: p.gold,
+              strokeWidth: 1.2,
+            ),
+          ),
+          CustomPaint(
+            size: Size(size * 0.72, size * 0.72),
+            painter: Star8Painter(
+              fill: Colors.transparent,
+              stroke: p.gold.withValues(alpha: 0.6),
+              strokeWidth: 1.0,
+            ),
+          ),
+          Text(
+            '$number',
+            style: TextStyle(
+              fontSize: size * 0.36,
+              fontWeight: FontWeight.w700,
+              color: p.ink,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Small-caps letterspaced section label ("NEXT PRAYER",
 /// "CONTINUE READING").
 class SectionLabel extends StatelessWidget {

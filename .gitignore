@@ -46,3 +46,8 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Muse working files (local only, not part of the app)
+/NEXT-UPDATE.md
+/poll_build.py
+build-outputs/

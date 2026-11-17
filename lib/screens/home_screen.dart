@@ -13,8 +13,8 @@ import '../theme.dart';
 import '../widgets.dart';
 
 /// Home — matches the reference mockup: QUBA header with mosque skyline,
-/// Next Prayer glass card, gold divider, prayer schedule, Continue Reading,
-/// quick buttons. Feature chips and the daily card follow below the fold.
+/// Next Prayer glass card, gold divider, prayer schedule, Continue Reading.
+/// Feature chips and the daily card follow below the fold.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
@@ -96,28 +96,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 18),
                       _continueReadingCard(context),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          GlassButton(
-                            icon: Icons.menu_book_rounded,
-                            label: tr('quran'),
-                            onTap: () => widget.onGoTab(2),
-                          ),
-                          const SizedBox(width: 11),
-                          GlassButton(
-                            icon: Icons.self_improvement_rounded,
-                            label: tr('prayer'),
-                            onTap: () => widget.onGoTab(1),
-                          ),
-                          const SizedBox(width: 11),
-                          GlassButton(
-                            icon: Icons.settings_rounded,
-                            label: tr('settings'),
-                            onTap: () => widget.onGoTab(3),
-                          ),
-                        ],
-                      ),
                       // Below the fold: shortcuts and the daily card.
                       const SizedBox(height: 120),
                       Align(
