@@ -10,6 +10,12 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  errors:
+    # Flutter 3.50 deprecates package:flutter/material.dart (split into
+    # material_ui/cupertino_ui packages). The app still uses it and it still
+    # works, so silence that notice for the analyzer instead of rewriting
+    # every import for a test build.
+    deprecated_member_use: ignore
   exclude:
     - build/**
     - android/**
