@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 
 import 'app_state.dart';
 import 'data.dart';
@@ -40,22 +39,6 @@ Future<void> main() async {
         .timeout(const Duration(seconds: 10));
   } catch (_) {
     // Translation assets unavailable on this run; the app opens anyway.
-  }
-  // Lock-screen / notification player controls (just_audio_background):
-  // must be initialised before the first AudioPlayer is created.
-  // NEVER awaited without a timeout: on some phones (OPPO/ColorOS —
-  // build-9 froze on the splash screen on 2026-11-17) the platform
-  // call never returns. If init fails or times out, audio still plays
-  // inside the app — only the lock-screen controls are missing.
-  try {
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.quba.app.audio',
-      androidNotificationChannelName: 'QUBA audio',
-      androidNotificationOngoing: true,
-    ).timeout(const Duration(seconds: 5));
-  } catch (_) {
-    // Lock-screen controls unavailable on this phone; in-app audio
-    // is unaffected.
   }
   runApp(const QubaApp());
   // Register prayer alerts after the first frame so startup stays instant.

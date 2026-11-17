@@ -200,18 +200,28 @@ class SettingsScreen extends StatelessWidget {
                   onChanged: (v) =>
                       appState.update(() => appState.arabicFontSize = v),
                 ),
-                Row(
+                // Reciter: label-above-control, like Theme — the
+                // dropdown holds long names ("Abdul Basit Abdul Samad")
+                // and would squeeze the label to one letter wide if it
+                // shared the row (seen 2026-11-17: "Reciter" wrapped
+                // mid-word, "Translation" went vertical).
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.record_voice_over_rounded,
-                        color: p.emerald),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(tr('reciter'),
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, color: p.ink)),
+                    Row(
+                      children: [
+                        Icon(Icons.record_voice_over_rounded,
+                            color: p.emerald),
+                        const SizedBox(width: 12),
+                        Text(tr('reciter'),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, color: p.ink)),
+                      ],
                     ),
+                    const SizedBox(height: 6),
                     DropdownButton<String>(
                       value: appState.reciterId,
+                      isExpanded: true,
                       underline: const SizedBox.shrink(),
                       items: [
                         for (final r in reciters)
@@ -227,17 +237,23 @@ class SettingsScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Row(
+                // Translation: same label-above-control layout.
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.translate_rounded, color: p.emerald),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(tr('translation'),
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, color: p.ink)),
+                    Row(
+                      children: [
+                        Icon(Icons.translate_rounded, color: p.emerald),
+                        const SizedBox(width: 12),
+                        Text(tr('translation'),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, color: p.ink)),
+                      ],
                     ),
+                    const SizedBox(height: 6),
                     DropdownButton<String>(
                       value: appState.translationId,
+                      isExpanded: true,
                       underline: const SizedBox.shrink(),
                       items: [
                         for (final id in TranslationRepository.ids)

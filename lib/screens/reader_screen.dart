@@ -246,17 +246,25 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     setState(() {});
                   },
                 ),
-                Row(
+                // Translation: label-above-control — the dropdown holds
+                // long names and would squeeze the label to one letter
+                // wide if it shared the row (same bug as Settings).
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.translate_rounded, color: p.emerald),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(tr('translation'),
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, color: p.ink)),
+                    Row(
+                      children: [
+                        Icon(Icons.translate_rounded, color: p.emerald),
+                        const SizedBox(width: 12),
+                        Text(tr('translation'),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, color: p.ink)),
+                      ],
                     ),
+                    const SizedBox(height: 6),
                     DropdownButton<String>(
                       value: appState.translationId,
+                      isExpanded: true,
                       underline: const SizedBox.shrink(),
                       items: [
                         for (final id in TranslationRepository.ids)

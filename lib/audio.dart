@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app_state.dart';
@@ -46,10 +45,13 @@ enum VerseRepeatMode {
 ///
 /// Streams need the internet; a downloaded surah plays fully offline.
 ///
-/// Lock-screen / notification controls come from just_audio_background:
-/// every source carries a MediaItem tag (surah, verse, reciter), and
-/// main() calls JustAudioBackground.init() before runApp. The notification
-/// shows play/pause/next/previous handled by the platform.
+/// Plain in-app playback (just_audio), exactly as before round 3.
+/// Lock-screen / notification controls were tried in round 3 via
+/// just_audio_background but REMOVED at the owner's word on 2026-11-17:
+/// its init call hangs on his OPPO (build-9 froze on the splash, and
+/// build-10's timeout left the player routed into a dead service so no
+/// verse played at all). Do NOT re-add just_audio_background without
+/// his explicit word.
 class AudioService {
   AudioService._() {
     // Auto-advance: when a verse finishes, honour the repeat settings
@@ -207,17 +209,6 @@ class AudioService {
   // Playback.
   // ------------------------------------------------------------------
 
-  MediaItem _mediaItem(int surah, int? ayah) {
-    final repo = QuranRepository.instance;
-    final name = repo.surah(surah).nameEnglish;
-    return MediaItem(
-      id: ayah == null ? 'surah:$surah' : 'surah:$surah:$ayah',
-      title: ayah == null ? name : '$name: $ayah',
-      artist: _reciter.name,
-      album: 'QUBA',
-    );
-  }
-
   Future<void> playSurah(int surah) async {
     // Only Alafasy has whole-surah files; other reciters play the surah
     // verse by verse from ayah 1.
@@ -230,15 +221,10 @@ class AudioService {
       currentAyah.value = null;
       final f = await _localFile(surah);
       if (await f.exists()) {
-        await player.setAudioSource(
-          AudioSource.file(f.path, tag: _mediaItem(surah, null)),
-        );
+        await player.setAudioSource(AudioSource.file(f.path));
       } else {
         await player.setAudioSource(
-          AudioSource.uri(
-            Uri.parse(_reciter.surahUrl(surah)),
-            tag: _mediaItem(surah, null),
-          ),
+          AudioSource.uri(Uri.parse(_reciter.surahUrl(surah))),
         );
       }
       await player.play();
@@ -260,15 +246,10 @@ class AudioService {
       final global = repo.globalIndexOf(surah, ayah);
       final f = await _localAyahFile(_reciter.id, global);
       if (await f.exists()) {
-        await player.setAudioSource(
-          AudioSource.file(f.path, tag: _mediaItem(surah, ayah)),
-        );
+        await player.setAudioSource(AudioSource.file(f.path));
       } else {
         await player.setAudioSource(
-          AudioSource.uri(
-            Uri.parse(_reciter.ayahUrl(global)),
-            tag: _mediaItem(surah, ayah),
-          ),
+          AudioSource.uri(Uri.parse(_reciter.ayahUrl(global))),
         );
       }
       await player.play();
