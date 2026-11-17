@@ -1,7 +1,7 @@
 name: quba
 description: "QUBA — Quran, prayer times and Athan. Offline-first Islamic companion."
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.0+3
 
 environment:
   sdk: ^3.13.7
@@ -34,12 +34,19 @@ flutter:
   uses-material-design: true
   assets:
     - assets/quran/quran_bundle.json
+    - assets/quran/quran_meta.json
+    - assets/quran/quran_indopak.json
+    - assets/quran/quran_indopak_pages.json
+    - assets/fonts/OFL-ScheherazadeNew.txt
     - assets/images/mosque_arch.webp
     - assets/images/quran_rehal.webp
   fonts:
     - family: AmiriQuran
       fonts:
         - asset: assets/fonts/AmiriQuran-Regular.ttf
+    - family: IndoPakQuran
+      fonts:
+        - asset: assets/fonts/IndoPakQuran-Regular.ttf
 
 # Launcher icon: Umar's official QUBA logo (assets/images/quba_logo.png).
 # Regenerate with: dart run flutter_launcher_icons

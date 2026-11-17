@@ -223,13 +223,16 @@ String duaArabic(Dua dua) {
     if (!repo.loaded) return dua.arabic;
     if (ref.contains(':')) {
       final parts = ref.split(':');
-      final surah = repo.surah(int.parse(parts[0]));
-      return surah.ayahs[int.parse(parts[1]) - 1].arabic;
+      final s = int.parse(parts[0]);
+      return repo.arabicText(s, int.parse(parts[1]));
     }
     final surahTexts = <String>[];
     for (final n in ref.split(',')) {
-      final surah = repo.surah(int.parse(n.trim()));
-      surahTexts.add(surah.ayahs.map((a) => a.arabic).join(' '));
+      final s = int.parse(n.trim());
+      final surah = repo.surah(s);
+      surahTexts.add([
+        for (final a in surah.ayahs) repo.arabicText(s, a.number),
+      ].join(' '));
     }
     return surahTexts.join(' ');
   } catch (_) {

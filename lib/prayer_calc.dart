@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'i18n.dart';
+
 /// On-device prayer-time calculation — a faithful Dart port of the native
 /// QUBA `PrayerCalc` (standard PrayTimes-family solar-position formulas).
 /// Angles per method: MWL Fajr 18 / Isha 17; Karachi Fajr 18 / Isha 18.
@@ -209,6 +211,14 @@ class HijriDate {
 
   @override
   String toString() => '$day $monthName $year AH';
+
+  /// Display form in the current UI language (translated month name and
+  /// era suffix). [toString] stays English — tests pin it.
+  String localizedString() => trf('hijri_date', {
+        'day': day,
+        'month': tr('hijri_month_$month'),
+        'year': year,
+      });
 }
 
 /// Great-circle initial bearing from a point to the Kaaba in Makkah.

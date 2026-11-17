@@ -6,11 +6,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app_state.dart';
 import 'data.dart';
 import 'i18n.dart';
+import 'mushaf_data.dart';
 import 'notifications.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/duas_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/khatma_screen.dart';
+import 'screens/mushaf_screen.dart';
 import 'screens/names_screen.dart';
 import 'screens/prayer_screen.dart';
 import 'screens/qibla_screen.dart';
@@ -26,6 +28,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await appState.load();
   await QuranRepository.instance.load();
+  await MushafData.instance.load();
   runApp(const QubaApp());
   // Register prayer alerts after the first frame so startup stays instant.
   WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -84,6 +87,18 @@ class _ShellState extends State<Shell> {
     );
   }
 
+  /// Juz reading opens the mushaf-page reader at the juz's first page
+  /// (Madani 604 or IndoPak 610, per the Mushaf style setting).
+  void _openMushaf(int juz) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => MushafScreen(
+          initialPage: MushafData.instance.pageOfJuz(juz),
+        ),
+      ),
+    );
+  }
+
   void _openFeature(Widget screen) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => screen),
@@ -126,6 +141,7 @@ class _ShellState extends State<Shell> {
         onOpenSurah: (s) => _openReader(s, 1),
         onOpenSearch: () => _openFeatureKey('search'),
         onOpenReader: _openReader,
+        onOpenJuz: _openMushaf,
         onOpenSettings: () => setState(() => _tab = 3),
       ),
       SettingsScreen(onOpenFeature: _openFeatureKey),

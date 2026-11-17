@@ -1,4 +1,5 @@
 import 'app_state.dart';
+import 'i18n.dart';
 import 'prayer_calc.dart';
 
 class PrayerEntry {
@@ -55,10 +56,11 @@ class PrayerService {
       ? 'Univ. of Islamic Sciences, Karachi'
       : 'Muslim World League';
 
-  static String madhabLabel(AppState s) => s.asrHanafi ? 'Hanafi' : "Shafi'i";
+  static String madhabLabel(AppState s) =>
+      s.asrHanafi ? tr('madhab_hanafi') : tr('madhab_shafii');
 
   static String hijriString(DateTime date) =>
-      HijriDate.fromDate(date).toString();
+      HijriDate.fromDate(date).localizedString();
 
   static String formatTime(DateTime t) {
     final h12 = t.hour % 12 == 0 ? 12 : t.hour % 12;

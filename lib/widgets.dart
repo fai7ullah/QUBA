@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'app_state.dart';
 import 'decor.dart';
+import 'i18n.dart';
 import 'prayer_service.dart';
 import 'theme.dart';
 
@@ -670,7 +671,7 @@ class PrayerScheduleCard extends StatelessWidget {
         const SizedBox(width: 14),
         Expanded(
           child: Text(
-            e.name,
+            trPrayer(e.name),
             style: TextStyle(
               fontSize: 17.5,
               fontWeight: isNext ? FontWeight.w800 : FontWeight.w500,
@@ -685,7 +686,7 @@ class PrayerScheduleCard extends StatelessWidget {
           child: IconButton(
             padding: EdgeInsets.zero,
             icon: NotifyIcon(on: notify, size: 28),
-            tooltip: notify ? 'Reminder on' : 'Reminder off',
+            tooltip: notify ? tr('reminder_on') : tr('reminder_off'),
             onPressed: () => onToggle(e.name, !notify),
           ),
         ),

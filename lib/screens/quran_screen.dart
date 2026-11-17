@@ -24,11 +24,13 @@ class QuranScreen extends StatefulWidget {
     required this.onOpenSurah,
     required this.onOpenSearch,
     required this.onOpenReader,
+    required this.onOpenJuz,
     required this.onOpenSettings,
   });
   final void Function(int surah) onOpenSurah;
   final VoidCallback onOpenSearch;
   final void Function(int surah, int ayah) onOpenReader;
+  final void Function(int juz) onOpenJuz;
   final VoidCallback onOpenSettings;
 
   @override
@@ -93,15 +95,15 @@ class _QuranScreenState extends State<QuranScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Bookmarks',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                Text(
+                  tr('bookmarks'),
+                  style: const TextStyle(
+                      fontSize: 19, fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 12),
                 if (marks.isEmpty)
-                  const Text(
-                    'No bookmarks yet. Tap the bookmark on any verse in '
-                    'the reader to save your place here.',
+                  Text(
+                    tr('no_bookmarks'),
                   )
                 else
                   Expanded(
@@ -118,8 +120,10 @@ class _QuranScreenState extends State<QuranScreen> {
                             style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
                           subtitle: Text(
-                            surah.nameArabic,
-                            style: const TextStyle(fontFamily: 'AmiriQuran'),
+                            repo.surahNameArabic(m.$1),
+                            style: TextStyle(
+                                fontFamily:
+                                    repo.arabicFontFamily),
                           ),
                           trailing: const Icon(
                               Icons.chevron_right_rounded),
@@ -183,7 +187,7 @@ class _QuranScreenState extends State<QuranScreen> {
             icon: const Icon(Icons.bookmark_border_rounded),
             iconSize: 27,
             color: p.ink,
-            tooltip: 'Bookmarks',
+            tooltip: tr('bookmarks'),
             onPressed: _showBookmarks,
           ),
           IconButton(
@@ -218,7 +222,7 @@ class _QuranScreenState extends State<QuranScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Continue',
+              tr('continue'),
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
@@ -266,7 +270,7 @@ class _QuranScreenState extends State<QuranScreen> {
                             ),
                             const SizedBox(height: 5),
                             Text(
-                              'Ayat ${item.$2}',
+                              '${tr('ayat')} ${item.$2}',
                               style: TextStyle(
                                 fontSize: 13.5,
                                 color: p.muted,
@@ -341,9 +345,10 @@ class _QuranScreenState extends State<QuranScreen> {
         ),
         child: Row(
           children: [
-            side('SURAH', !_showJuz,
+            side(tr('surah').toUpperCase(), !_showJuz,
                 () => setState(() => _showJuz = false)),
-            side('JUZ', _showJuz, () => setState(() => _showJuz = true)),
+            side(tr('juz').toUpperCase(), _showJuz,
+                () => setState(() => _showJuz = true)),
           ],
         ),
       ),
@@ -388,7 +393,7 @@ class _QuranScreenState extends State<QuranScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${s.meaning} (${s.ayahCount})',
+                          "${tr('surah_meaning_${s.number}')} (${s.ayahCount})",
                           style: TextStyle(fontSize: 14, color: p.ink),
                         ),
                       ],
@@ -398,7 +403,7 @@ class _QuranScreenState extends State<QuranScreen> {
                     icon: const Icon(Icons.play_arrow_rounded),
                     iconSize: 32,
                     color: p.emerald,
-                    tooltip: 'Play ${s.nameEnglish}',
+                    tooltip: trf('play_surah', {'name': s.nameEnglish}),
                     onPressed: () => _playSurah(s),
                   ),
                   IconButton(
@@ -407,8 +412,9 @@ class _QuranScreenState extends State<QuranScreen> {
                         : Icons.bookmark_border_rounded),
                     iconSize: 26,
                     color: p.emerald,
-                    tooltip:
-                        bookmarked ? 'Remove bookmark' : 'Bookmark',
+                    tooltip: bookmarked
+                        ? tr('remove_bookmark')
+                        : tr('bookmark'),
                     onPressed: () =>
                         appState.toggleBookmark(s.number, 1),
                   ),
@@ -442,8 +448,7 @@ class _QuranScreenState extends State<QuranScreen> {
         return Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () =>
-                widget.onOpenReader(j.startSurah, j.startAyah),
+            onTap: () => widget.onOpenJuz(j.number),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 11),
               child: Row(
@@ -455,7 +460,7 @@ class _QuranScreenState extends State<QuranScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          j.name,
+                          tr('juz_name_${j.number}'),
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
@@ -477,8 +482,9 @@ class _QuranScreenState extends State<QuranScreen> {
                         : Icons.bookmark_border_rounded),
                     iconSize: 26,
                     color: p.emerald,
-                    tooltip:
-                        bookmarked ? 'Remove bookmark' : 'Bookmark',
+                    tooltip: bookmarked
+                        ? tr('remove_bookmark')
+                        : tr('bookmark'),
                     onPressed: () => appState.toggleBookmark(
                         j.startSurah, j.startAyah),
                   ),

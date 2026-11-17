@@ -33,7 +33,8 @@ class _NamesScreenState extends State<NamesScreen> {
     return entries
         .where((e) =>
             e.$2.transliteration.toLowerCase().contains(q) ||
-            e.$2.meaning.toLowerCase().contains(q))
+            e.$2.meaning.toLowerCase().contains(q) ||
+            tr('name_meaning_${e.$1}').toLowerCase().contains(q))
         .toList();
   }
 
@@ -50,7 +51,7 @@ class _NamesScreenState extends State<NamesScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Name $number of 99',
+              trf('name_of_99', {'n': number}),
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
@@ -80,7 +81,7 @@ class _NamesScreenState extends State<NamesScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              name.meaning,
+              tr('name_meaning_$number'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
@@ -93,7 +94,7 @@ class _NamesScreenState extends State<NamesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text(tr('close')),
           ),
         ],
       ),
@@ -115,19 +116,19 @@ class _NamesScreenState extends State<NamesScreen> {
               children: [
                 TitleRow(
                   title: tr('names99'),
-                  subtitle: 'Asma ul-Husna',
+                  subtitle: tr('asma_ul_husna'),
                 ),
                 const SizedBox(height: 16),
                 QubaSearchField(
                   controller: _controller,
-                  hint: 'Search by name or meaning…',
+                  hint: tr('search_names_hint'),
                   onChanged: (v) => setState(() => _query = v),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   _query.trim().isEmpty
-                      ? '${names99.length} names'
-                      : '${filtered.length} names found',
+                      ? trf('names_count', {'n': names99.length})
+                      : trf('names_found', {'n': filtered.length}),
                   style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
@@ -145,7 +146,7 @@ class _NamesScreenState extends State<NamesScreen> {
                                   size: 44, color: p.muted),
                               const SizedBox(height: 12),
                               Text(
-                                'No names found',
+                                tr('no_names_found'),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -154,7 +155,7 @@ class _NamesScreenState extends State<NamesScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Try a different spelling',
+                                tr('try_different_spelling'),
                                 style: TextStyle(
                                     fontSize: 14, color: p.muted),
                               ),

@@ -104,7 +104,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                 children: [
                   TitleRow(
                     title: tr('qibla'),
-                    subtitle: appState.locationName,
+                    subtitle: trLocation(appState.locationName),
                   ),
                   const SizedBox(height: 24),
                   // Compass dial: rotates with the heading so the gold
@@ -155,7 +155,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'You are facing Qibla',
+                              tr('facing_qibla'),
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w800,
@@ -177,7 +177,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Turn until the gold marker reaches the top',
+                              tr('turn_to_qibla'),
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
@@ -199,8 +199,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Compass not available — move your phone in a '
-                              'figure-8 to calibrate, or use the bearing below.',
+                              tr('compass_unavailable'),
                               style: TextStyle(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w600,
@@ -219,7 +218,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                         _infoRow(
                           p,
                           Icons.navigation_rounded,
-                          'Qibla direction',
+                          tr('qibla_direction'),
                           '${bearing.toStringAsFixed(1)}° '
                           '${QiblaMath.compassPoint(bearing)}',
                         ),
@@ -227,22 +226,22 @@ class _QiblaScreenState extends State<QiblaScreen> {
                         _infoRow(
                           p,
                           Icons.straighten_rounded,
-                          'Distance to Makkah',
+                          tr('distance_makkah'),
                           '${_distanceKm.round()} km',
                         ),
                         const SizedBox(height: 12),
                         _infoRow(
                           p,
                           Icons.location_on_rounded,
-                          'From',
-                          appState.locationName,
+                          tr('from'),
+                          trLocation(appState.locationName),
                         ),
                         if (live) ...[
                           const SizedBox(height: 12),
                           _infoRow(
                             p,
                             Icons.explore_rounded,
-                            'Your heading',
+                            tr('your_heading'),
                             '${heading.toStringAsFixed(0)}° '
                             '${QiblaMath.compassPoint(heading)}',
                           ),
@@ -252,9 +251,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Hold the phone flat and turn slowly. The bearing is '
-                    'calculated on this device from your location — no '
-                    'internet needed.',
+                    tr('qibla_hint'),
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 13, color: p.muted, height: 1.5),
                   ),

@@ -148,7 +148,7 @@ class QubaHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    appLangIsEnglish ? 'Your Islamic Companion' : tr('tagline'),
+                    tr('tagline'),
                     style: TextStyle(
                       fontFamily: 'serif',
                       fontSize: 14.5,

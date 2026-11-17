@@ -16,28 +16,22 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  static const List<String> _gregMonths = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
+  /// Week starts on Saturday (Afghan week): Dart weekday numbers
+  /// Mon=1..Sun=7, in Sat-first display order.
+  static const List<int> _weekdays = [6, 7, 1, 2, 3, 4, 5];
 
-  /// Week starts on Saturday (Afghan week).
-  static const List<String> _weekdays = [
-    'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri',
-  ];
-
-  /// Notable days, keyed "month-day".
+  /// Notable days, keyed "month-day"; values are i18n keys.
   static const Map<String, String> _notableDays = {
-    '1-1': 'Islamic New Year',
-    '1-10': 'Ashura',
-    '3-12': "Prophet's Birthday (Mawlid)",
-    '7-27': "Laylat al-Mi'raj",
-    '8-15': "Laylat al-Bara'ah",
-    '9-1': 'Ramadan begins',
-    '9-27': 'Laylat al-Qadr',
-    '10-1': 'Eid al-Fitr',
-    '12-9': 'Day of Arafah',
-    '12-10': 'Eid al-Adha',
+    '1-1': 'notable_new_year',
+    '1-10': 'notable_ashura',
+    '3-12': 'notable_mawlid',
+    '7-27': 'notable_miraj',
+    '8-15': 'notable_baraah',
+    '9-1': 'notable_ramadan_begins',
+    '9-27': 'notable_qadr',
+    '10-1': 'notable_eid_fitr',
+    '12-9': 'notable_arafah',
+    '12-10': 'notable_eid_adha',
   };
 
   late HijriDate _todayHijri;
@@ -130,7 +124,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   String _gregString(DateTime d) =>
-      '${d.day} ${_gregMonths[d.month - 1]} ${d.year}';
+      '${d.day} ${tr('greg_month_${d.month}')} ${d.year}';
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +154,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               children: [
                 TitleRow(
                   title: tr('calendar'),
-                  subtitle: _todayHijri.toString(),
+                  subtitle: _todayHijri.localizedString(),
                 ),
                 const SizedBox(height: 20),
                 // Month navigation.
@@ -175,7 +169,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                     Expanded(
                       child: Text(
-                        '${HijriDate.months[_month - 1]} $_year AH',
+                        trf('hijri_month_year', {
+                          'month': tr('hijri_month_$_month'),
+                          'year': _year,
+                        }),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 19,
@@ -229,7 +226,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           for (final d in _weekdays)
                             Expanded(
                               child: Text(
-                                d,
+                                tr('weekday_abbr_$d'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12,
@@ -319,7 +316,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              selectedHijri.toString(),
+                              selectedHijri.localizedString(),
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w800,
@@ -343,7 +340,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                selectedNotable,
+                                tr(selectedNotable),
                                 style: TextStyle(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w700,
@@ -360,7 +357,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 // Notable days of this month.
                 if (monthNotables.isNotEmpty) ...[
                   const SizedBox(height: 20),
-                  SectionLabel('Notable days'),
+                  SectionLabel(tr('notable_days')),
                   const SizedBox(height: 10),
                   GlassCard(
                     padding: const EdgeInsets.symmetric(vertical: 6),
@@ -393,7 +390,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               ),
                             ),
                             title: Text(
-                              monthNotables[i].$2,
+                              tr(monthNotables[i].$2),
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 color: p.ink,
@@ -414,8 +411,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ],
                 const SizedBox(height: 16),
                 Text(
-                  'This is the civil (Kuwaiti algorithm) Hijri calendar. '
-                  'Dates may differ by a day from moon-sighting calendars.',
+                  tr('calendar_note'),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 13, color: p.muted, height: 1.5),
                 ),

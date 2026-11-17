@@ -32,10 +32,27 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        // ONE stable debug key for every build: the keystore is committed
+        // in this repo (android/app/debug.keystore, standard debug
+        // credentials android/androiddebugkey). Without it, each CI runner
+        // generates its own debug key and every update needs an uninstall
+        // first (build-4 vs build-6 had different signatures).
+        // DEBUG KEY ONLY — the Play Store release later needs a proper
+        // release keystore, kept secret and never committed.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Signing with the (stable, committed) debug key for now, so
+            // `flutter run --release` works and test updates install
+            // over each other. A real release key comes at Play time.
             signingConfig = signingConfigs.getByName("debug")
         }
     }

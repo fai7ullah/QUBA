@@ -71,14 +71,14 @@ class _TasbihScreenState extends State<TasbihScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
         ),
-        title: const Text('Custom target'),
+        title: Text(tr('custom_target')),
         content: TextField(
           controller: controller,
           autofocus: true,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            hintText: 'e.g. 500',
-            labelText: 'Count',
+          decoration: InputDecoration(
+            hintText: tr('target_hint'),
+            labelText: tr('count_label'),
           ),
           onSubmitted: (v) =>
               Navigator.of(context).pop(int.tryParse(v.trim())),
@@ -86,12 +86,12 @@ class _TasbihScreenState extends State<TasbihScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(tr('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context)
                 .pop(int.tryParse(controller.text.trim())),
-            child: const Text('Set'),
+            child: Text(tr('set')),
           ),
         ],
       ),
@@ -101,7 +101,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
       _setTarget(value);
     } else if (value != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a target between 1 and 10,000')),
+        SnackBar(content: Text(tr('target_range_error'))),
       );
     }
   }
@@ -130,7 +130,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
                   children: [
                     TitleRow(
                       title: tr('tasbih'),
-                      subtitle: 'Dhikr counter',
+                      subtitle: tr('dhikr_counter'),
                     ),
                     const SizedBox(height: 16),
                     Wrap(
@@ -212,8 +212,9 @@ class _TasbihScreenState extends State<TasbihScreen> {
                                       ),
                                       Text(
                                         reached
-                                            ? 'Target reached'
-                                            : 'of $target — tap to count',
+                                            ? tr('target_reached')
+                                            : trf('of_target_tap',
+                                                {'n': target}),
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -240,8 +241,8 @@ class _TasbihScreenState extends State<TasbihScreen> {
                         _chip(
                           p,
                           target != 33 && target != 100
-                              ? 'Custom: $target'
-                              : 'Custom',
+                              ? trf('custom_n', {'n': target})
+                              : tr('custom'),
                           target != 33 && target != 100,
                           _customTargetDialog,
                         ),
@@ -251,14 +252,14 @@ class _TasbihScreenState extends State<TasbihScreen> {
                     Center(
                       child: TextButton.icon(
                         icon: const Icon(Icons.refresh_rounded, size: 20),
-                        label: const Text('Reset session'),
+                        label: Text(tr('reset_session')),
                         onPressed: _sessionCount == 0
                             ? null
                             : () => setState(() => _sessionCount = 0),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    SectionLabel('Lifetime totals'),
+                    SectionLabel(tr('lifetime_totals')),
                     const SizedBox(height: 10),
                     GlassCard(
                       padding: const EdgeInsets.symmetric(vertical: 6),

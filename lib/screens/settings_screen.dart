@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../app_state.dart';
+import '../data.dart';
 import '../i18n.dart';
 import '../notifications.dart';
 import '../theme.dart';
@@ -22,9 +23,8 @@ class SettingsScreen extends StatelessWidget {
       if (perm == LocationPermission.denied ||
           perm == LocationPermission.deniedForever) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text(
-                  'Location permission not granted — keeping current location')));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(tr('loc_permission_denied'))));
         }
         return;
       }
@@ -41,12 +41,13 @@ class SettingsScreen extends StatelessWidget {
       await NotificationService.instance.scheduleAll(appState);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location updated from GPS')));
+            SnackBar(content: Text(tr('loc_updated_gps'))));
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not get location: $e')));
+            SnackBar(
+                content: Text(trf('loc_error', {'error': '$e'}))));
       }
     }
   }
@@ -74,22 +75,75 @@ class SettingsScreen extends StatelessWidget {
                       children: [
                         Icon(Icons.brightness_6_rounded, color: p.emerald),
                         const SizedBox(width: 12),
-                        Text('Theme',
+                        Text(tr('theme'),
                             style: TextStyle(
                                 fontWeight: FontWeight.w600, color: p.ink)),
                       ],
                     ),
                     const SizedBox(height: 10),
                     SegmentedButton<ThemeMode>(
-                      segments: const [
-                        ButtonSegment(value: ThemeMode.system, label: Text('Auto')),
-                        ButtonSegment(value: ThemeMode.light, label: Text('Light')),
-                        ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
+                      segments: [
+                        ButtonSegment(
+                            value: ThemeMode.system,
+                            label: Text(tr('theme_auto'))),
+                        ButtonSegment(
+                            value: ThemeMode.light,
+                            label: Text(tr('theme_light'))),
+                        ButtonSegment(
+                            value: ThemeMode.dark,
+                            label: Text(tr('theme_dark'))),
                       ],
                       selected: {appState.themeMode},
                       onSelectionChanged: (s) =>
                           appState.update(() => appState.themeMode = s.first),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                // Mushaf style: same label-above-control layout as Theme —
+                // the two-segment control is too wide to share the row.
+                // The IndoPak choice is only offered when the IndoPak text
+                // actually loaded (QuranRepository.indopakAvailable); if
+                // the asset is missing the whole control is disabled and a
+                // note says so, so the style can never point at text that
+                // isn't there.
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.menu_book_rounded, color: p.emerald),
+                        const SizedBox(width: 12),
+                        Text(tr('mushaf_style'),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, color: p.ink)),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    SegmentedButton<String>(
+                      segments: [
+                        ButtonSegment(
+                            value: 'madani',
+                            label: Text(tr('madani'))),
+                        ButtonSegment(
+                            value: 'indopak',
+                            label: Text(tr('indopak'))),
+                      ],
+                      selected: {appState.mushafStyle},
+                      onSelectionChanged:
+                          QuranRepository.instance.indopakAvailable
+                              ? (s) => appState.update(
+                                  () => appState.mushafStyle = s.first)
+                              : null,
+                    ),
+                    if (!QuranRepository.instance.indopakAvailable)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6, left: 4),
+                        child: Text(
+                          tr('indopak_unavailable'),
+                          style: TextStyle(fontSize: 12, color: p.muted),
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -120,20 +174,13 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 36),
-                  child: Text(
-                    'Pashto, Dari and Urdu translations are drafts awaiting correction.',
-                    style: TextStyle(fontSize: 12, color: p.muted),
-                  ),
-                ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Icon(Icons.text_fields_rounded, color: p.emerald),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text('Arabic text size',
+                      child: Text(tr('arabic_text_size'),
                           style: TextStyle(
                               fontWeight: FontWeight.w600, color: p.ink)),
                     ),
@@ -155,9 +202,8 @@ class SettingsScreen extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   secondary:
                       Icon(Icons.translate_rounded, color: p.emerald),
-                  title: const Text('Show translation'),
-                  subtitle:
-                      const Text('English — Pickthall (test build)'),
+                  title: Text(tr('show_translation')),
+                  subtitle: Text(tr('translation_pickthall')),
                   value: appState.showTranslation,
                   onChanged: (v) =>
                       appState.update(() => appState.showTranslation = v),
@@ -176,18 +222,21 @@ class SettingsScreen extends StatelessWidget {
                     appState.update(() => appState.calcMethod = v);
                     await NotificationService.instance.scheduleAll(appState);
                   },
-                  child: const Column(
+                  child: Column(
                     children: [
                       RadioListTile<String>(
                         contentPadding: EdgeInsets.zero,
-                        title: Text('Muslim World League'),
-                        subtitle: Text('Fajr 18° • Isha 17°'),
+                        title: const Text('Muslim World League'),
+                        subtitle: Text(
+                            '${trPrayer('Fajr')} 18° • ${trPrayer('Isha')} 17°'),
                         value: 'mwl',
                       ),
                       RadioListTile<String>(
                         contentPadding: EdgeInsets.zero,
-                        title: Text('Univ. of Islamic Sciences, Karachi'),
-                        subtitle: Text('Fajr 18° • Isha 18°'),
+                        title: const Text(
+                            'Univ. of Islamic Sciences, Karachi'),
+                        subtitle: Text(
+                            '${trPrayer('Fajr')} 18° • ${trPrayer('Isha')} 18°'),
                         value: 'karachi',
                       ),
                     ],
@@ -201,18 +250,20 @@ class SettingsScreen extends StatelessWidget {
                     appState.update(() => appState.asrHanafi = v);
                     await NotificationService.instance.scheduleAll(appState);
                   },
-                  child: const Column(
+                  child: Column(
                     children: [
                       RadioListTile<bool>(
                         contentPadding: EdgeInsets.zero,
-                        title: Text('Asr — Hanafi'),
-                        subtitle: Text('Shadow = twice the object (default)'),
+                        title: Text(
+                            "${trPrayer('Asr')} — ${tr('madhab_hanafi')}"),
+                        subtitle: Text(tr('asr_hanafi_sub')),
                         value: true,
                       ),
                       RadioListTile<bool>(
                         contentPadding: EdgeInsets.zero,
-                        title: Text("Asr — Shafi'i"),
-                        subtitle: Text('Shadow = the object itself'),
+                        title: Text(
+                            "${trPrayer('Asr')} — ${tr('madhab_shafii')}"),
+                        subtitle: Text(tr('asr_shafii_sub')),
                         value: false,
                       ),
                     ],
@@ -234,7 +285,7 @@ class SettingsScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(appState.locationName,
+                          Text(trLocation(appState.locationName),
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: p.ink)),
@@ -254,7 +305,7 @@ class SettingsScreen extends StatelessWidget {
                     Expanded(
                       child: FilledButton.icon(
                         icon: const Icon(Icons.my_location_rounded),
-                        label: const Text('Use my location'),
+                        label: Text(tr('use_my_location')),
                         onPressed: () => _useGps(context),
                       ),
                     ),
@@ -262,7 +313,7 @@ class SettingsScreen extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.location_city_rounded),
-                        label: const Text('Kabul default'),
+                        label: Text(tr('kabul_default')),
                         onPressed: () async {
                           appState.update(() {
                             appState.lat = AppState.kabulLat;
@@ -298,7 +349,7 @@ class SettingsScreen extends StatelessWidget {
                       icon: prayerIcon(name),
                       size: 34,
                     ),
-                    title: Text(name),
+                    title: Text(trPrayer(name)),
                     value: appState.prayerNotify[name] ?? false,
                     onChanged: (v) async {
                       appState.update(
@@ -309,9 +360,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 const SizedBox(height: 6),
                 Text(
-                  'Athan alerts need the exact-alarm permission. On OPPO, '
-                  'Samsung and Xiaomi phones also allow QUBA to run in the '
-                  'background (battery settings) so alerts are not delayed.',
+                  tr('exact_alarm_note'),
                   style: TextStyle(fontSize: 12.5, color: p.muted),
                 ),
                 const SizedBox(height: 10),
@@ -319,7 +368,7 @@ class SettingsScreen extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.alarm_rounded),
-                    label: const Text('Allow exact alarms'),
+                    label: Text(tr('allow_exact_alarms')),
                     onPressed: () async {
                       final ok = await NotificationService.instance
                           .requestExactAlarmPermission();
@@ -327,8 +376,8 @@ class SettingsScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(ok
-                                ? 'Exact alarms allowed'
-                                : 'Exact-alarm permission was not granted'),
+                                ? tr('exact_alarms_allowed')
+                                : tr('exact_alarm_denied')),
                           ),
                         );
                       }
@@ -338,7 +387,7 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
           ),
-          _section(context, 'Features'),
+          _section(context, tr('features')),
           GlassCard(
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             child: Column(
@@ -376,13 +425,7 @@ class SettingsScreen extends StatelessWidget {
                         fontWeight: FontWeight.w800, color: p.ink)),
                 const SizedBox(height: 8),
                 Text(
-                  'Quran text: Uthmani script, Tanzil edition via AlQuran Cloud '
-                  '(quran-uthmani) — 114 surahs, 6,236 verses, verified.\n'
-                  'Translation: Mohammed Marmaduke Pickthall (public domain) — '
-                  'test build only; the release translation set is being licensed.\n'
-                  'Audio: Mishary Alafasy, Islamic Network / EveryAyah CDN.\n'
-                  'Prayer times: calculated on this device (ported PrayTimes algorithm).\n\n'
-                  'Bundled Quran data SHA-256:\n'
+                  "${tr('about_text')}\n"
                   '9665930bd9eb8ccc2535d80b68ddd53c7c3ff55a86d19e9b50cbcf7da46a0a1f',
                   style:
                       TextStyle(height: 1.5, fontSize: 13, color: p.muted),

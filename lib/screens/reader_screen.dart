@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../app_state.dart';
 import '../audio.dart';
 import '../data.dart';
+import '../i18n.dart';
 import '../juz_data.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -49,6 +50,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   Surah get _surah => QuranRepository.instance.surah(_surahNumber);
 
+  /// List offset of the first verse: 1 when the surah shows a Basmala
+  /// header as list item 0, 0 for surahs 1 and 9. The Basmala is never
+  /// an ayah — verse numbering stays 1-based from the first real verse.
+  int get _basmalaOffset => hasBasmalaHeader(_surahNumber) ? 1 : 0;
+
   @override
   void initState() {
     super.initState();
@@ -57,7 +63,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
     _positionsListener.itemPositions.addListener(_trackVisible);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.isAttached && widget.initialAyah > 1) {
-        _scrollController.jumpTo(index: widget.initialAyah - 1);
+        _scrollController.jumpTo(
+            index: widget.initialAyah - 1 + _basmalaOffset);
       }
       appState.setLastRead(widget.surahNumber, widget.initialAyah);
     });
@@ -75,7 +82,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
     if (positions.isEmpty) return;
     final first = positions.reduce(
         (a, b) => a.itemLeadingEdge < b.itemLeadingEdge ? a : b);
-    final ayah = first.index + 1;
+    // List index 0 is the Basmala header when one is shown; the first
+    // real verse sits at index _basmalaOffset. Clamp to verse 1 so the
+    // Basmala itself still counts as "start of the surah".
+    var ayah = first.index + 1 - _basmalaOffset;
+    if (ayah < 1) ayah = 1;
     appState.setLastRead(_surahNumber, ayah);
     final j = juzOf(_surahNumber, ayah);
     if (j != _visibleJuz) setState(() => _visibleJuz = j);
@@ -92,7 +103,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.isAttached) {
-        _scrollController.jumpTo(index: ayah - 1);
+        _scrollController.jumpTo(index: ayah - 1 + _basmalaOffset);
       }
       appState.setLastRead(surah, ayah);
     });
@@ -124,12 +135,12 @@ class _ReaderScreenState extends State<ReaderScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                   child: Text(
-                    'Choose surah',
-                    style:
-                        TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                    tr('choose_surah'),
+                    style: const TextStyle(
+                        fontSize: 19, fontWeight: FontWeight.w800),
                   ),
                 ),
                 Expanded(
@@ -147,7 +158,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               fontWeight: FontWeight.w700),
                         ),
                         subtitle: Text(
-                            '${s.meaning} • ${s.ayahCount} verses'),
+                            "${tr('surah_meaning_${s.number}')} • ${s.ayahCount} ${tr('verses')}"),
                         trailing: current
                             ? Icon(Icons.check_rounded, color: p.emerald)
                             : null,
@@ -194,8 +205,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
       final ok = await audio.downloadSurah(_surahNumber);
       if (!ok && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Download failed — check connection')),
+          SnackBar(content: Text(tr('download_failed'))),
         );
       }
     }
@@ -215,7 +225,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Arabic text size: ${appState.arabicFontSize.round()}',
+                  trf('arabic_text_size_n',
+                      {'n': appState.arabicFontSize.round()}),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 Slider(
@@ -231,7 +242,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Show English translation (Pickthall)'),
+                  title: Text(tr('show_english_translation')),
                   value: appState.showTranslation,
                   onChanged: (v) {
                     appState.update(() => appState.showTranslation = v);
@@ -250,7 +261,6 @@ class _ReaderScreenState extends State<ReaderScreen> {
   @override
   Widget build(BuildContext context) {
     final surah = _surah;
-    final p = QubaPalette.of(context);
     final audio = AudioService.instance;
     return Scaffold(
       body: QubaBackground(
@@ -267,37 +277,35 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     children: [
                       _topBar(context),
                       _selectorRow(context),
-                      if (surah.number != 1 && surah.number != 9)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2, bottom: 6),
-                          child: Text(
-                            bismillahUthmani,
-                            style: TextStyle(
-                              fontFamily: 'AmiriQuran',
-                              fontSize: appState.arabicFontSize * 0.9,
-                              color: p.ink,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
                       Expanded(
                         child: StreamBuilder<bool>(
                           stream: audio.player.playingStream,
                           initialData: audio.player.playing,
                           builder: (context, snap) {
                             final playing = snap.data ?? false;
+                            // The Basmala is list item 0 (when shown) so
+                            // it scrolls away with the verses instead of
+                            // staying pinned at the top. It is not a verse:
+                            // verse cards start at index _basmalaOffset and
+                            // keep their 1-based numbers.
                             return ScrollablePositionedList.builder(
                               itemScrollController: _scrollController,
                               itemPositionsListener: _positionsListener,
                               padding: EdgeInsets.fromLTRB(
                                   16, 4, 16, audioActive ? 120 : 24),
-                              itemCount: surah.ayahCount,
-                              itemBuilder: (context, i) => _verseCard(
-                                context,
-                                surah.ayahs[i],
-                                playingAyah,
-                                playing,
-                              ),
+                              itemCount:
+                                  surah.ayahCount + _basmalaOffset,
+                              itemBuilder: (context, i) {
+                                if (_basmalaOffset == 1 && i == 0) {
+                                  return _basmalaHeader(context);
+                                }
+                                return _verseCard(
+                                  context,
+                                  surah.ayahs[i - _basmalaOffset],
+                                  playingAyah,
+                                  playing,
+                                );
+                              },
                             );
                           },
                         ),
@@ -311,6 +319,26 @@ class _ReaderScreenState extends State<ReaderScreen> {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  /// The Basmala as the list's first item: same centered styling as
+  /// before, but now it scrolls away with the verses. Text and font
+  /// follow the active Mushaf style.
+  Widget _basmalaHeader(BuildContext context) {
+    final p = QubaPalette.of(context);
+    final repo = QuranRepository.instance;
+    return Padding(
+      padding: const EdgeInsets.only(top: 2, bottom: 6),
+      child: Text(
+        repo.bismillah,
+        style: TextStyle(
+          fontFamily: repo.arabicFontFamily,
+          fontSize: appState.arabicFontSize * 0.9,
+          color: p.ink,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -421,7 +449,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
               border: Border.all(color: p.cardBorder),
             ),
             child: Text(
-              'Juz: $_visibleJuz',
+              trf('juz_n', {'n': _visibleJuz}),
               style: TextStyle(
                 fontSize: 15.5,
                 fontWeight: FontWeight.w600,
@@ -469,11 +497,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     children: [
                       Flexible(
                         child: Text(
-                          ayah.arabic,
+                          QuranRepository.instance.arabicText(
+                              _surahNumber, ayah.number),
                           textAlign: TextAlign.right,
                           textDirection: TextDirection.rtl,
                           style: TextStyle(
-                            fontFamily: 'AmiriQuran',
+                            fontFamily: QuranRepository
+                                .instance.arabicFontFamily,
                             fontSize: appState.arabicFontSize,
                             height: 1.9,
                             color: p.ink,
@@ -507,7 +537,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                         icon: const Icon(Icons.share_outlined),
                         iconSize: 24,
                         color: p.emerald,
-                        tooltip: 'Share this verse',
+                        tooltip: tr('share_verse'),
                         onPressed: () => _shareAyah(ayah),
                       ),
                       IconButton(
@@ -517,8 +547,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
                         iconSize: 24,
                         color: p.emerald,
                         tooltip: bookmarked
-                            ? 'Remove bookmark'
-                            : 'Bookmark this verse',
+                            ? tr('remove_bookmark')
+                            : tr('bookmark_verse'),
                         onPressed: () {
                           appState.toggleBookmark(
                               _surahNumber, ayah.number);
@@ -636,7 +666,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       icon: const Icon(Icons.skip_previous_rounded),
                       iconSize: 28,
                       color: p.ink,
-                      tooltip: 'Previous verse',
+                      tooltip: tr('prev_verse'),
                       onPressed: audio.playPrevAyah,
                     ),
                   StreamBuilder<bool>(
@@ -652,7 +682,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                           size: 30,
                         ),
                         color: p.ink,
-                        tooltip: playing ? 'Pause' : 'Play',
+                        tooltip: playing ? tr('pause') : tr('play'),
                         onPressed: audio.togglePause,
                       );
                     },
@@ -662,14 +692,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       icon: const Icon(Icons.skip_next_rounded),
                       iconSize: 28,
                       color: p.ink,
-                      tooltip: 'Next verse',
+                      tooltip: tr('next_verse'),
                       onPressed: audio.playNextAyah,
                     ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
                     iconSize: 24,
                     color: p.muted,
-                    tooltip: 'Stop',
+                    tooltip: tr('stop'),
                     onPressed: audio.stop,
                   ),
                 ],

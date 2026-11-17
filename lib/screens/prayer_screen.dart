@@ -36,12 +36,6 @@ class _PrayerScreenState extends State<PrayerScreen> {
         final next = _dayOffset == 0
             ? PrayerService.nextPrayer(now, appState)
             : null;
-        const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const months = [
-          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-        ];
-
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
           children: [
@@ -63,7 +57,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                       Text(
                         _dayOffset == 0
                             ? tr('today')
-                            : '${weekDays[date.weekday - 1]}, ${date.day} ${months[date.month - 1]} ${date.year}',
+                            : "${tr('weekday_${date.weekday}')}, ${date.day} ${tr('greg_month_short_${date.month}')} ${date.year}",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 19,
@@ -130,10 +124,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'On this device — no internet needed.\n'
-                    'Method: ${PrayerService.methodLabel(appState)} • Asr: ${PrayerService.madhabLabel(appState)}\n'
-                    'Location: ${appState.locationName} '
-                    '(${appState.lat.toStringAsFixed(3)}, ${appState.lng.toStringAsFixed(3)})',
+                    trf('prayer_info', {
+                      'method': PrayerService.methodLabel(appState),
+                      'madhab': PrayerService.madhabLabel(appState),
+                      'location': trLocation(appState.locationName),
+                      'coords':
+                          '${appState.lat.toStringAsFixed(3)}, ${appState.lng.toStringAsFixed(3)}',
+                    }),
                     style: TextStyle(
                       fontSize: 14,
                       color: p.muted,
@@ -145,8 +142,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
             ),
             const SizedBox(height: 14),
             Text(
-              'Use the bell switches to choose which prayers alert you. '
-              'Alerts use exact alarms and are re-scheduled automatically.',
+              tr('prayer_bell_hint'),
               style: TextStyle(fontSize: 12.5, color: p.muted),
               textAlign: TextAlign.center,
             ),

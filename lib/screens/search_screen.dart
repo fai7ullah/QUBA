@@ -52,12 +52,12 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 TitleRow(
                   title: tr('search_quran'),
-                  subtitle: '6,236 verses',
+                  subtitle: trf('verses_count', {'n': '6,236'}),
                 ),
                 const SizedBox(height: 16),
                 QubaSearchField(
                   controller: _controller,
-                  hint: 'Search in Arabic or English…',
+                  hint: tr('search_hint'),
                   autofocus: true,
                   onChanged: _onChanged,
                 ),
@@ -65,9 +65,12 @@ class _SearchScreenState extends State<SearchScreen> {
                 if (searching)
                   Text(
                     _results.length >= 200
-                        ? 'Showing the first 200 results'
-                        : '${_results.length} '
-                            '${_results.length == 1 ? 'verse' : 'verses'} found',
+                        ? trf('showing_first_n', {'n': 200})
+                        : _results.length == 1
+                            ? trf('verses_found_one',
+                                {'n': _results.length})
+                            : trf('verses_found_other',
+                                {'n': _results.length}),
                     style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
@@ -107,7 +110,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                               children: [
                                                 Expanded(
                                                   child: Text(
-                                                    '${surah.nameEnglish} • Ayah ${hit.ayah}',
+                                                    '${surah.nameEnglish} • ${tr('ayah')} ${hit.ayah}',
                                                     style: TextStyle(
                                                       fontSize: 14.5,
                                                       fontWeight:
@@ -133,7 +136,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
-                                                fontFamily: 'AmiriQuran',
+                                                fontFamily: QuranRepository
+                                                    .instance
+                                                    .arabicFontFamily,
                                                 fontSize: 21,
                                                 height: 1.8,
                                                 color: p.ink,
@@ -175,7 +180,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Icon(Icons.search_rounded, size: 48, color: p.gold),
             const SizedBox(height: 16),
             Text(
-              'Search the Quran',
+              tr('search_quran'),
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
@@ -184,9 +189,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Type Arabic or English words above — for example '
-              '“mercy” or “الرحمن”. Arabic search ignores diacritics, '
-              'so you can type without tashkeel.',
+              tr('search_empty_body'),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: p.muted, height: 1.6),
             ),
@@ -206,7 +209,7 @@ class _SearchScreenState extends State<SearchScreen> {
             Icon(Icons.search_off_rounded, size: 48, color: p.muted),
             const SizedBox(height: 16),
             Text(
-              'No verses found',
+              tr('no_verses_found'),
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
@@ -215,7 +218,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Try different words, or check the spelling.',
+              tr('try_different_words'),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: p.muted, height: 1.6),
             ),

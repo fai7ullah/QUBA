@@ -14,9 +14,14 @@ class AppState extends ChangeNotifier {
   bool showTranslation = true;
 
   /// UI language: 'en' (default), 'ps' Pashto, 'fa' Dari/Farsi, 'ur' Urdu.
-  /// PS/FA/UR strings are drafts awaiting the owner's correction.
   String lang = 'en';
   bool get isRtl => lang != 'en';
+
+  /// Mushaf style for the Arabic Quran text shown everywhere in the app:
+  /// 'madani' (Uthmani script, default) or 'indopak' (IndoPak script).
+  /// The text itself comes from QuranRepository; this only picks it.
+  String mushafStyle = 'madani';
+  bool get isIndoPak => mushafStyle == 'indopak';
 
   /// Khatma plan: goal days (0 = no plan), global ayah index (0-based)
   /// where the plan started, start day as epoch day.
@@ -63,6 +68,7 @@ class AppState extends ChangeNotifier {
     arabicFontSize = p.getDouble('arabicFontSize') ?? 30;
     showTranslation = p.getBool('showTranslation') ?? true;
     lang = p.getString('ui_lang') ?? 'en';
+    mushafStyle = p.getString('mushaf_style') ?? 'madani';
     khatmaDays = p.getInt('khatma_days') ?? 0;
     khatmaStartGlobal = p.getInt('khatma_start_global') ?? 0;
     khatmaStartDay = p.getInt('khatma_start_day') ?? 0;
@@ -95,6 +101,7 @@ class AppState extends ChangeNotifier {
     await p.setDouble('arabicFontSize', arabicFontSize);
     await p.setBool('showTranslation', showTranslation);
     await p.setString('ui_lang', lang);
+    await p.setString('mushaf_style', mushafStyle);
     await p.setInt('khatma_days', khatmaDays);
     await p.setInt('khatma_start_global', khatmaStartGlobal);
     await p.setInt('khatma_start_day', khatmaStartDay);

@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fit: BoxFit.scaleDown,
                   alignment: AlignmentDirectional.centerStart,
                   child: Text(
-                    next.name,
+                    trPrayer(next.name),
                     maxLines: 1,
                     style: TextStyle(
                       fontSize: 35,
@@ -261,11 +261,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final progress = (globalPos / 6236.0).clamp(0.0, 1.0);
     final title = surah == null
         ? tr('start_fatihah')
-        : '${surah.nameEnglish} — verse ${appState.lastReadAyah} of ${surah.ayahCount}';
+        : "${surah.nameEnglish} — ${trf('verse_of', {
+              'n': appState.lastReadAyah,
+              'total': surah.ayahCount,
+            })}";
     final pct = (progress * 100).round();
-    final pctText = appState.lang == 'en'
-        ? '$pct% of the Quran'
-        : '$pct ${tr('of_quran')}';
+    final pctText = trf('pct_of_quran', {'pct': pct});
     return GlassCard(
       radius: 28,
       padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
@@ -386,7 +387,7 @@ class _HomeScreenState extends State<HomeScreen> {
             label: tr('verse_of_day'),
             body: verse == null
                 ? ''
-                : '${verse.arabic}  (${repo.surah(verseRef[0]).nameEnglish} ${verseRef[0]}:${verseRef[1]})',
+                : '${repo.arabicText(verseRef[0], verseRef[1])}  (${repo.surah(verseRef[0]).nameEnglish} ${verseRef[0]}:${verseRef[1]})',
             isArabic: true,
             onTap: verse == null
                 ? null
@@ -397,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
             context,
             icon: Icons.volunteer_activism_rounded,
             label: tr('dua_of_day'),
-            body: dua.title,
+            body: tr(dua.title),
             onTap: () => widget.onOpenFeature('duas'),
           ),
           const SizedBox(height: 14),
@@ -448,7 +449,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 textDirection: isArabic ? TextDirection.rtl : null,
                 textAlign: isArabic ? TextAlign.right : TextAlign.start,
                 style: TextStyle(
-                  fontFamily: isArabic ? 'AmiriQuran' : null,
+                  fontFamily: isArabic
+                      ? QuranRepository.instance.arabicFontFamily
+                      : null,
                   fontSize: isArabic ? 19 : 14.5,
                   height: isArabic ? 1.8 : 1.45,
                   color: p.ink,

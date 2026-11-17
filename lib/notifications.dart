@@ -5,6 +5,7 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'app_state.dart';
+import 'i18n.dart';
 import 'prayer_service.dart';
 
 /// Prayer alert scheduling with exact alarms.
@@ -22,7 +23,6 @@ class NotificationService {
   bool _initialized = false;
 
   static const _channelId = 'prayer_athan';
-  static const _channelName = 'Prayer Athan alerts';
 
   Future<void> init() async {
     if (_initialized) return;
@@ -62,14 +62,14 @@ class NotificationService {
   }
 
   NotificationDetails _details() {
-    return const NotificationDetails(
+    return NotificationDetails(
       android: AndroidNotificationDetails(
         _channelId,
-        _channelName,
-        channelDescription: 'Athan alert at each prayer time',
+        tr('notif_channel'),
+        channelDescription: tr('notif_channel_desc'),
         importance: Importance.max,
         priority: Priority.high,
-        sound: RawResourceAndroidNotificationSound('athan_chime'),
+        sound: const RawResourceAndroidNotificationSound('athan_chime'),
         playSound: true,
         enableVibration: true,
       ),
@@ -91,8 +91,8 @@ class NotificationService {
         if (!e.time.isAfter(now)) continue;
         await _plugin.zonedSchedule(
           1000 + day * 10 + i,
-          'QUBA — ${e.name}',
-          'It is time for ${e.name} prayer',
+          trf('notif_title', {'prayer': trPrayer(e.name)}),
+          trf('notif_body', {'prayer': trPrayer(e.name)}),
           tz.TZDateTime.from(e.time, tz.local),
           _details(),
           androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

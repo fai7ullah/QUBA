@@ -38,7 +38,7 @@ class _DuasScreenState extends State<DuasScreen> {
               children: [
                 TitleRow(
                   title: tr('duas'),
-                  subtitle: '${duas.length} duas with sources',
+                  subtitle: trf('duas_with_sources', {'n': duas.length}),
                 ),
                 const SizedBox(height: 16),
                 Wrap(
@@ -52,8 +52,11 @@ class _DuasScreenState extends State<DuasScreen> {
                 const SizedBox(height: 12),
                 Text(
                   _category == 'All'
-                      ? '${filtered.length} duas'
-                      : '${filtered.length} duas in $_category',
+                      ? trf('duas_count', {'n': filtered.length})
+                      : trf('duas_in_category', {
+                          'n': filtered.length,
+                          'category': tr(_category),
+                        }),
                   style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
@@ -80,7 +83,7 @@ class _DuasScreenState extends State<DuasScreen> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      dua.title,
+                                      tr(dua.title),
                                       style: TextStyle(
                                         fontSize: 16.5,
                                         fontWeight: FontWeight.w800,
@@ -99,7 +102,7 @@ class _DuasScreenState extends State<DuasScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                dua.category,
+                                tr(dua.category),
                                 style: TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w700,
@@ -200,7 +203,7 @@ class _DuasScreenState extends State<DuasScreen> {
           ),
         ),
         child: Text(
-          label,
+          tr(label),
           style: TextStyle(
             fontSize: 13.5,
             fontWeight: FontWeight.w700,
