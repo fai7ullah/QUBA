@@ -10,7 +10,10 @@ import '../data.dart';
 import '../i18n.dart';
 import '../juz_data.dart';
 import '../theme.dart';
+import '../translation_data.dart';
 import '../widgets.dart';
+import '../widgets/note_editor.dart';
+import '../widgets/player_options.dart';
 import 'search_screen.dart';
 
 /// Quran reader, redesigned to the reference layout: back / download /
@@ -20,8 +23,9 @@ import 'search_screen.dart';
 /// card. The playing verse is highlighted yellow and a mini-player bar
 /// sits at the bottom while audio plays.
 ///
-/// Audio is per-verse Alafasy streaming with auto-advance through the
-/// surah; a surah downloaded once plays its whole-surah file offline.
+/// Audio is per-verse streaming with auto-advance through the surah, in
+/// any of four reciters; a surah downloaded once plays offline (whole
+/// file for Alafasy, verse by verse for the others).
 /// No teacher-feedback banner (QUBA has no teacher service).
 class ReaderScreen extends StatefulWidget {
   const ReaderScreen({
@@ -43,6 +47,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   final Listenable _audioListenable = Listenable.merge([
     AudioService.instance.currentSurah,
     AudioService.instance.currentAyah,
+    AudioService.instance.currentReciter,
   ]);
 
   late int _surahNumber;
@@ -213,6 +218,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   void _showTextSettings() {
+    final p = QubaPalette.of(context);
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -240,16 +246,45 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     setState(() {});
                   },
                 ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(tr('show_english_translation')),
-                  value: appState.showTranslation,
-                  onChanged: (v) {
-                    appState.update(() => appState.showTranslation = v);
-                    setSheet(() {});
-                    setState(() {});
-                  },
+                Row(
+                  children: [
+                    Icon(Icons.translate_rounded, color: p.emerald),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(tr('translation'),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, color: p.ink)),
+                    ),
+                    DropdownButton<String>(
+                      value: appState.translationId,
+                      underline: const SizedBox.shrink(),
+                      items: [
+                        for (final id in TranslationRepository.ids)
+                          DropdownMenuItem(
+                            value: id,
+                            child: Text(tr(TranslationRepository
+                                .labelKeyFor(id))),
+                          ),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) {
+                          appState.setTranslation(v);
+                          setSheet(() {});
+                          setState(() {});
+                        }
+                      },
+                    ),
+                  ],
                 ),
+                if (!TranslationRepository.instance
+                    .isAvailable(appState.translationId))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, left: 4),
+                    child: Text(
+                      tr('translation_unavailable'),
+                      style: TextStyle(fontSize: 12, color: p.muted),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -378,7 +413,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 );
               }
               final downloaded =
-                  appState.downloadedSurahs.contains(_surahNumber);
+                  audio.isDownloadedSync(_surahNumber);
               return circleButton(
                 downloaded
                     ? Icons.offline_pin_rounded
@@ -555,6 +590,23 @@ class _ReaderScreenState extends State<ReaderScreen> {
                           setState(() {});
                         },
                       ),
+                      IconButton(
+                        icon: Icon(
+                          appState
+                                  .noteFor(_surahNumber, ayah.number)
+                                  .isNotEmpty
+                              ? Icons.note_alt_rounded
+                              : Icons.note_alt_outlined,
+                        ),
+                        iconSize: 24,
+                        color: p.emerald,
+                        tooltip: tr('note'),
+                        onPressed: () async {
+                          await showNoteEditor(
+                              context, _surahNumber, ayah.number);
+                          if (mounted) setState(() {});
+                        },
+                      ),
                       const Spacer(),
                       Material(
                         color: p.emerald,
@@ -580,12 +632,47 @@ class _ReaderScreenState extends State<ReaderScreen> {
                 ],
               ),
             ),
-            if (appState.showTranslation)
+            // The reader's own note on this verse, when one exists.
+            if (appState.noteFor(_surahNumber, ayah.number).isNotEmpty)
+              Container(
+                color: p.bgSecondary,
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.note_alt_rounded,
+                        size: 16, color: p.emerald),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        appState.noteFor(_surahNumber, ayah.number),
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.4,
+                          fontStyle: FontStyle.italic,
+                          color: p.muted,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            // Translation under the verse, per the translation setting
+            // ('none' hides it). Urdu/Dari translations read right to left.
+            if (TranslationRepository.instance.textFor(
+                    appState.translationId, _surahNumber, ayah.number) !=
+                null)
               Container(
                 color: p.bgSecondary,
                 padding: const EdgeInsets.fromLTRB(16, 13, 16, 14),
                 child: Text(
-                  ayah.english,
+                  TranslationRepository.instance.textFor(
+                      appState.translationId, _surahNumber, ayah.number)!,
+                  textDirection:
+                      TranslationRepository.instance.isRtl(
+                              appState.translationId)
+                          ? TextDirection.rtl
+                          : TextDirection.ltr,
                   style: TextStyle(
                     fontSize: 15,
                     height: 1.5,
@@ -651,11 +738,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          'Mishari Rashid al-Afasy',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            color: p.muted,
+                        ValueListenableBuilder(
+                          valueListenable: audio.currentReciter,
+                          builder: (context, reciter, _) => Text(
+                            reciter.name,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: p.muted,
+                            ),
                           ),
                         ),
                       ],
@@ -695,6 +785,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       tooltip: tr('next_verse'),
                       onPressed: audio.playNextAyah,
                     ),
+                  IconButton(
+                    icon: const Icon(Icons.tune_rounded),
+                    iconSize: 24,
+                    color: p.muted,
+                    tooltip: tr('player_options'),
+                    onPressed: () => showPlayerOptionsSheet(context),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
                     iconSize: 24,

@@ -1,7 +1,7 @@
 name: quba
 description: "QUBA — Quran, prayer times and Athan. Offline-first Islamic companion."
 publish_to: 'none'
-version: 1.0.0+3
+version: 1.0.0+4
 
 environment:
   sdk: ^3.13.7
@@ -18,6 +18,7 @@ dependencies:
   flutter_timezone: ^5.0.1
   shared_preferences: ^2.5.3
   just_audio: ^0.10.5
+  just_audio_background: ^0.0.1-beta.17
   share_plus: ^11.0.0
   http: ^1.5.0
   path_provider: ^2.1.5
@@ -37,6 +38,8 @@ flutter:
     - assets/quran/quran_meta.json
     - assets/quran/quran_indopak.json
     - assets/quran/quran_indopak_pages.json
+    - assets/quran/trans_ur_jalandhry.json
+    - assets/quran/trans_fa_ghomshei.json
     - assets/fonts/OFL-ScheherazadeNew.txt
     - assets/images/mosque_arch.webp
     - assets/images/quran_rehal.webp

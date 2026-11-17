@@ -24,6 +24,167 @@ class _PrayerScreenState extends State<PrayerScreen> {
     await NotificationService.instance.scheduleAll(appState);
   }
 
+  /// Today's 5 prayers with tap-to-toggle checks, a prayed count, and
+  /// a 7-day strip (oldest first) of daily prayed counts.
+  Widget _prayerLogCard(
+      BuildContext context, QubaPalette p, List<PrayerEntry> entries) {
+    final today = DateTime.now();
+    const five = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+    final last7 = appState.prayedLast7Days();
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.checklist_rounded, color: p.gold, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                tr('prayer_log'),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: p.ink,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                trf('prayers_prayed_count',
+                    {'count': appState.prayedCountOn(today)}),
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: p.emerald,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          for (final name in five)
+            _logRow(context, p, name, today, entries),
+          const SizedBox(height: 12),
+          Text(
+            tr('this_week'),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: p.muted,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              for (var i = 0; i < 7; i++)
+                _weekColumn(p, last7[i],
+                    today.subtract(Duration(days: 6 - i)), i == 6),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _logRow(BuildContext context, QubaPalette p, String name,
+      DateTime today, List<PrayerEntry> entries) {
+    final prayed = appState.isPrayed(today, name);
+    PrayerEntry? entry;
+    for (final e in entries) {
+      if (e.name == name) entry = e;
+    }
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => appState.togglePrayed(today, name),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Icon(
+                prayed
+                    ? Icons.check_circle_rounded
+                    : Icons.circle_outlined,
+                size: 26,
+                color: prayed ? p.emerald : p.muted,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  trPrayer(name),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight:
+                        prayed ? FontWeight.w800 : FontWeight.w600,
+                    color: p.ink,
+                  ),
+                ),
+              ),
+              if (entry != null)
+                Text(
+                  PrayerService.formatTime(entry.time),
+                  style: TextStyle(fontSize: 14, color: p.muted),
+                ),
+              if (prayed) ...[
+                const SizedBox(width: 8),
+                Text(
+                  tr('prayed'),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: p.emerald,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// One day of the week strip: count number, a bar sized by the
+  /// count (0–5), and a one-letter weekday label.
+  Widget _weekColumn(
+      QubaPalette p, int count, DateTime day, bool isToday) {
+    final label = tr('weekday_abbr_${day.weekday}');
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: count > 0 ? p.emerald : p.muted,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: 14,
+            height: 8 + count * 5,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: count == 0
+                  ? p.cardBorder
+                  : p.emerald
+                      .withValues(alpha: 0.35 + 0.13 * count),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label.isEmpty ? '' : label[0],
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight:
+                  isToday ? FontWeight.w800 : FontWeight.w600,
+              color: isToday ? p.emerald : p.muted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
@@ -102,6 +263,12 @@ class _PrayerScreenState extends State<PrayerScreen> {
               nextName: next?.name,
               onToggle: _toggleNotify,
             ),
+            // Today's prayer log: shown only on today's view, since the
+            // log (and the week strip) is always about today.
+            if (_dayOffset == 0) ...[
+              const SizedBox(height: 16),
+              _prayerLogCard(context, p, entries),
+            ],
             const SizedBox(height: 16),
             GlassCard(
               child: Column(

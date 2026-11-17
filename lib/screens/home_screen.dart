@@ -96,6 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 18),
                       _continueReadingCard(context),
+                      if (appState.readingStreak > 0) ...[
+                        const SizedBox(height: 12),
+                        _streakChip(context),
+                      ],
                       // Below the fold: shortcuts and the daily card.
                       const SizedBox(height: 120),
                       Align(
@@ -360,6 +364,57 @@ class _HomeScreenState extends State<HomeScreen> {
               color: p.dark ? p.activeText : p.emeraldDeep,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  /// Reading streak chip: filled flame when today is already read,
+  /// outline flame otherwise. Only shown once a streak exists.
+  Widget _streakChip(BuildContext context) {
+    final p = QubaPalette.of(context);
+    final readToday = appState.readToday;
+    return GlassCard(
+      radius: 22,
+      padding:
+          const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
+      child: Row(
+        children: [
+          Icon(
+            readToday
+                ? Icons.local_fire_department_rounded
+                : Icons.local_fire_department_outlined,
+            size: 24,
+            color: p.gold,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              trf('streak_days', {'count': appState.readingStreak}),
+              style: TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w800,
+                color: p.ink,
+              ),
+            ),
+          ),
+          if (readToday)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle_rounded,
+                    size: 18, color: p.emerald),
+                const SizedBox(width: 5),
+                Text(
+                  tr('read_today'),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: p.emerald,
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

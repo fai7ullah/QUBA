@@ -119,6 +119,10 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
           subtitle: tr('khatma_subtitle'),
         ),
         const SizedBox(height: 24),
+        if (appState.readingStreak > 0) ...[
+          _streakCard(p),
+          const SizedBox(height: 20),
+        ],
         GlassCard(
           child: Column(
             children: [
@@ -232,6 +236,10 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
           subtitle: trf('day_plan', {'n': days}),
         ),
         const SizedBox(height: 24),
+        if (appState.readingStreak > 0) ...[
+          _streakCard(p),
+          const SizedBox(height: 16),
+        ],
         GlassCard(
           child: Column(
             children: [
@@ -352,6 +360,53 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  /// Reading streak card (shown only once a streak exists): flame
+  /// filled when today is already read, outline otherwise.
+  Widget _streakCard(QubaPalette p) {
+    return GlassCard(
+      child: Row(
+        children: [
+          Icon(
+            appState.readToday
+                ? Icons.local_fire_department_rounded
+                : Icons.local_fire_department_outlined,
+            size: 26,
+            color: p.gold,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr('day_streak'),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: p.muted,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  trf('streak_days',
+                      {'count': appState.readingStreak}),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: p.ink,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (appState.readToday)
+            Icon(Icons.check_circle_rounded,
+                size: 22, color: p.emerald),
+        ],
+      ),
     );
   }
 

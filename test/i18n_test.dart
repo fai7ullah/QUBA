@@ -6,7 +6,7 @@ import 'package:quba/i18n.dart';
 
 void main() {
   group('i18n dictionary completeness', () {
-    test('every key has all 4 languages present and non-empty', () {
+    test('every key has all 5 languages present and non-empty', () {
       for (final e in QubaStrings.all.entries) {
         for (final lang in QubaStrings.langs) {
           expect(e.value[lang], isNotNull,
@@ -60,7 +60,7 @@ void main() {
       final ph = RegExp(r'\{(\w+)\}');
       for (final e in QubaStrings.all.entries) {
         final en = ph.allMatches(e.value['en']!).map((m) => m[1]).toSet();
-        for (final lang in ['ps', 'fa', 'ur']) {
+        for (final lang in ['ps', 'fa', 'ur', 'ar']) {
           final other =
               ph.allMatches(e.value[lang]!).map((m) => m[1]).toSet();
           expect(other, en, reason: 'key ${e.key} in $lang');
@@ -128,6 +128,18 @@ void main() {
       expect(tr('juz_name_2'), 'سیقول');
       expect(tr('name_meaning_2'), 'نہایت رحم کرنے والا');
       expect(tr('Before eating'), 'کھانے سے پہلے');
+      appState.lang = 'en';
+    });
+
+    test('spot-checks in Arabic', () {
+      appState.lang = 'ar';
+      expect(tr('settings'), 'الإعدادات');
+      expect(tr('prayer_fajr'), 'الفجر');
+      expect(tr('hijri_month_9'), 'رمضان');
+      expect(tr('surah_meaning_1'), 'الفاتحة');
+      expect(tr('juz_name_2'), 'سيقول');
+      expect(tr('name_meaning_2'), 'شديد الرحمة');
+      expect(tr('Before eating'), 'قبل الأكل');
       appState.lang = 'en';
     });
 

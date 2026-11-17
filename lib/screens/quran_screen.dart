@@ -9,6 +9,7 @@ import '../i18n.dart';
 import '../juz_data.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import 'notes_screen.dart';
 
 /// Quran tab, redesigned to the reference layout: title + bookmark /
 /// search / settings icons, a Continue card of last-read surahs, a
@@ -189,6 +190,20 @@ class _QuranScreenState extends State<QuranScreen> {
             color: p.ink,
             tooltip: tr('bookmarks'),
             onPressed: _showBookmarks,
+          ),
+          IconButton(
+            icon: const Icon(Icons.note_alt_outlined),
+            iconSize: 27,
+            color: p.ink,
+            tooltip: tr('notes'),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      NotesScreen(onOpenReader: widget.onOpenReader),
+                ),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.search_rounded),

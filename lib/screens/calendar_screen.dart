@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../app_state.dart';
 import '../i18n.dart';
 import '../prayer_calc.dart';
+import '../prayer_service.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -125,6 +127,148 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   String _gregString(DateTime d) =>
       '${d.day} ${tr('greg_month_${d.month}')} ${d.year}';
+
+  /// Gregorian date of any Hijri [year]/[month]/[day]: anchor on the
+  /// 1st of the current Hijri month, then step whole Hijri months.
+  DateTime _gregOfHijri(int year, int month, int day) {
+    var first = _firstOfCurrentMonth();
+    var y = _todayHijri.year;
+    var m = _todayHijri.month;
+    while (y != year || m != month) {
+      if (y < year || (y == year && m < month)) {
+        first = first.add(Duration(days: HijriDate.daysInMonth(y, m)));
+        m++;
+        if (m > 12) {
+          m = 1;
+          y++;
+        }
+      } else {
+        m--;
+        if (m < 1) {
+          m = 12;
+          y--;
+        }
+        first = first.subtract(Duration(days: HijriDate.daysInMonth(y, m)));
+      }
+    }
+    return first.add(Duration(days: day - 1));
+  }
+
+  /// Ramadan timetable: one row per day of Ramadan (this year's, or
+  /// next year's once this year's has fully passed), with Suhoor (Fajr)
+  /// and Iftar (Maghrib) from the prayer engine at the user's location
+  /// and calculation settings, plus the fasting length. Today's row is
+  /// highlighted when it falls in Ramadan.
+  Widget _ramadanSection(BuildContext context, QubaPalette p) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final todayHijri = HijriDate.fromDate(today);
+    final isNext = todayHijri.month > 9;
+    final ramadanYear = isNext ? todayHijri.year + 1 : todayHijri.year;
+    final start = _gregOfHijri(ramadanYear, 9, 1);
+    final days = HijriDate.daysInMonth(ramadanYear, 9);
+    final end = start.add(Duration(days: days - 1));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionLabel(tr('ramadan_timetable')),
+        const SizedBox(height: 6),
+        Text(
+          isNext
+              ? '${tr('ramadan_next')} · ${_gregString(start)}'
+              : '${_gregString(start)} — ${_gregString(end)}',
+          style: TextStyle(fontSize: 13.5, color: p.muted),
+        ),
+        const SizedBox(height: 10),
+        GlassCard(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            children: [
+              for (var n = 1; n <= days; n++) ...[
+                if (n > 1)
+                  Divider(
+                    height: 1,
+                    indent: 16,
+                    endIndent: 16,
+                    color: p.gold.withValues(alpha: 0.25),
+                  ),
+                _ramadanRow(
+                    p, n, start.add(Duration(days: n - 1)), today),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _ramadanRow(
+      QubaPalette p, int day, DateTime greg, DateTime today) {
+    final entries = PrayerService.dayList(greg, appState);
+    final fajr = entries[0].time;
+    final maghrib = entries[4].time;
+    final fast = maghrib.difference(fajr);
+    final fastText = '${fast.inHours}h ${fast.inMinutes % 60}m';
+    final isToday = greg.year == today.year &&
+        greg.month == today.month &&
+        greg.day == today.day;
+    return Container(
+      decoration: BoxDecoration(
+        color: isToday ? p.activeFill : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isToday ? p.emerald : p.activeFill,
+          ),
+          child: Text(
+            '$day',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: isToday ? p.onEmerald : p.emerald,
+            ),
+          ),
+        ),
+        title: Text(
+          trf('ramadan_day', {'day': day}),
+          style: TextStyle(fontWeight: FontWeight.w700, color: p.ink),
+        ),
+        subtitle: Text(
+          _gregString(greg),
+          style: TextStyle(color: p.muted),
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${tr('suhoor')} ${PrayerService.formatTime(fajr)}',
+              style: TextStyle(fontSize: 13, color: p.ink),
+            ),
+            Text(
+              '${tr('iftar')} ${PrayerService.formatTime(maghrib)}',
+              style: TextStyle(fontSize: 13, color: p.ink),
+            ),
+            Text(
+              trf('fasting_hours', {'hours': fastText}),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: p.gold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -409,6 +553,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 20),
+                _ramadanSection(context, p),
                 const SizedBox(height: 16),
                 Text(
                   tr('calendar_note'),

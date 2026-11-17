@@ -5,7 +5,9 @@ import '../app_state.dart';
 import '../data.dart';
 import '../i18n.dart';
 import '../notifications.dart';
+import '../reciters.dart';
 import '../theme.dart';
+import '../translation_data.dart';
 import '../widgets.dart';
 
 /// Settings tab: theme, language, text, prayer calculation, location,
@@ -198,16 +200,68 @@ class SettingsScreen extends StatelessWidget {
                   onChanged: (v) =>
                       appState.update(() => appState.arabicFontSize = v),
                 ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  secondary:
-                      Icon(Icons.translate_rounded, color: p.emerald),
-                  title: Text(tr('show_translation')),
-                  subtitle: Text(tr('translation_pickthall')),
-                  value: appState.showTranslation,
-                  onChanged: (v) =>
-                      appState.update(() => appState.showTranslation = v),
+                Row(
+                  children: [
+                    Icon(Icons.record_voice_over_rounded,
+                        color: p.emerald),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(tr('reciter'),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, color: p.ink)),
+                    ),
+                    DropdownButton<String>(
+                      value: appState.reciterId,
+                      underline: const SizedBox.shrink(),
+                      items: [
+                        for (final r in reciters)
+                          DropdownMenuItem(
+                            value: r.id,
+                            child: Text(tr(r.nameKey)),
+                          ),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) appState.setReciter(v);
+                      },
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.translate_rounded, color: p.emerald),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(tr('translation'),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, color: p.ink)),
+                    ),
+                    DropdownButton<String>(
+                      value: appState.translationId,
+                      underline: const SizedBox.shrink(),
+                      items: [
+                        for (final id in TranslationRepository.ids)
+                          DropdownMenuItem(
+                            value: id,
+                            child: Text(tr(TranslationRepository
+                                .labelKeyFor(id))),
+                          ),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) appState.setTranslation(v);
+                      },
+                    ),
+                  ],
+                ),
+                if (!TranslationRepository.instance
+                    .isAvailable(appState.translationId))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, left: 4),
+                    child: Text(
+                      tr('translation_unavailable'),
+                      style: TextStyle(fontSize: 12, color: p.muted),
+                    ),
+                  ),
               ],
             ),
           ),

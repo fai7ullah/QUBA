@@ -2,18 +2,21 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 import 'app_state.dart';
 import 'data.dart';
 import 'i18n.dart';
 import 'mushaf_data.dart';
 import 'notifications.dart';
+import 'translation_data.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/duas_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/khatma_screen.dart';
 import 'screens/mushaf_screen.dart';
 import 'screens/names_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/prayer_screen.dart';
 import 'screens/qibla_screen.dart';
 import 'screens/quran_screen.dart';
@@ -29,6 +32,14 @@ Future<void> main() async {
   await appState.load();
   await QuranRepository.instance.load();
   await MushafData.instance.load();
+  await TranslationRepository.instance.load();
+  // Lock-screen / notification player controls (just_audio_background):
+  // must be initialised before the first AudioPlayer is created.
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.quba.app.audio',
+    androidNotificationChannelName: 'QUBA audio',
+    androidNotificationOngoing: true,
+  );
   runApp(const QubaApp());
   // Register prayer alerts after the first frame so startup stays instant.
   WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -63,7 +74,12 @@ class QubaApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        home: const Shell(),
+        home: appState.onboardingDone
+            ? const Shell()
+            // First run: language → location → calculation → Athan.
+            // completeOnboarding() notifies appState, so this rebuilds
+            // into the Shell when the flow finishes (or is skipped).
+            : OnboardingScreen(onDone: () {}),
       ),
     );
   }

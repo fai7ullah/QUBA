@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,7 +13,40 @@ class AppState extends ChangeNotifier {
   String calcMethod = 'mwl'; // 'mwl' | 'karachi'
   bool asrHanafi = true;
   double arabicFontSize = 30;
-  bool showTranslation = true;
+
+  /// Quran translation shown under each verse: 'en.pickthall' (default),
+  /// 'ur.jalandhry', 'fa.ghomshei', or 'none' (Arabic only).
+  /// Replaces the old showTranslation toggle (round 3): 'none' means
+  /// hidden. The old 'showTranslation' preference is still read once for
+  /// users upgrading from a build that had the toggle.
+  String translationId = 'en.pickthall';
+
+  /// True when a translation is shown (translationId != 'none').
+  bool get showTranslation => translationId != 'none';
+
+  /// Active reciter (audio edition id): 'ar.alafasy' (default),
+  /// 'ar.abdulsamad', 'ar.mahermuaiqly', 'ar.saoodshuraym'.
+  String reciterId = 'ar.alafasy';
+
+  /// First-run onboarding completed (shown once, skippable).
+  bool onboardingDone = false;
+
+  /// Prayer log: "yyyy-MM-dd" -> set of prayer names marked prayed
+  /// (Fajr, Dhuhr, Asr, Maghrib, Isha). Sunrise is not a prayer and is
+  /// never logged.
+  Map<String, Set<String>> prayerLog = {};
+
+  /// Verse notes: "surah:ayah" -> free text. Empty text = no note.
+  Map<String, String> notes = {};
+
+  /// Epoch days (UTC days since 1970-01-01) with reading activity:
+  /// opening the reader or advancing the last-read position.
+  Set<int> readingDays = {};
+
+  /// Surahs downloaded verse-by-verse per reciter: "edition:surah"
+  /// (e.g. "ar.mahermuaiqly:2"). Alafasy whole-surah files use the
+  /// separate [downloadedSurahs] set below.
+  Set<String> downloadedAyahSets = {};
 
   /// UI language: 'en' (default), 'ps' Pashto, 'fa' Dari/Farsi, 'ur' Urdu.
   String lang = 'en';
@@ -66,7 +101,32 @@ class AppState extends ChangeNotifier {
     calcMethod = p.getString('calcMethod') ?? 'mwl';
     asrHanafi = p.getBool('asrHanafi') ?? true;
     arabicFontSize = p.getDouble('arabicFontSize') ?? 30;
-    showTranslation = p.getBool('showTranslation') ?? true;
+    translationId = p.getString('translation_id') ??
+        ((p.getBool('showTranslation') ?? true) ? 'en.pickthall' : 'none');
+    reciterId = p.getString('reciter_id') ?? 'ar.alafasy';
+    onboardingDone = p.getBool('onboarding_done') ?? false;
+    final logEntries = p.getStringList('prayer_log') ?? const [];
+    final log = <String, Set<String>>{};
+    for (final e in logEntries) {
+      final i = e.indexOf(':');
+      if (i > 0) log.putIfAbsent(e.substring(0, i), () => {}).add(e.substring(i + 1));
+    }
+    prayerLog = log;
+    try {
+      final rawNotes = p.getString('verse_notes_json');
+      if (rawNotes != null && rawNotes.isNotEmpty) {
+        final decoded = jsonDecode(rawNotes) as Map<String, dynamic>;
+        notes = decoded.map((k, v) => MapEntry(k, v as String));
+      }
+    } catch (_) {
+      notes = {};
+    }
+    readingDays = (p.getStringList('reading_days') ?? const [])
+        .map((e) => int.tryParse(e) ?? -1)
+        .where((d) => d >= 0)
+        .toSet();
+    downloadedAyahSets =
+        (p.getStringList('downloaded_ayah_sets') ?? const []).toSet();
     lang = p.getString('ui_lang') ?? 'en';
     mushafStyle = p.getString('mushaf_style') ?? 'madani';
     khatmaDays = p.getInt('khatma_days') ?? 0;
@@ -99,7 +159,17 @@ class AppState extends ChangeNotifier {
     await p.setString('calcMethod', calcMethod);
     await p.setBool('asrHanafi', asrHanafi);
     await p.setDouble('arabicFontSize', arabicFontSize);
-    await p.setBool('showTranslation', showTranslation);
+    await p.setString('translation_id', translationId);
+    await p.setString('reciter_id', reciterId);
+    await p.setBool('onboarding_done', onboardingDone);
+    await p.setStringList('prayer_log', [
+      for (final date in prayerLog.keys)
+        for (final prayer in prayerLog[date]!) '$date:$prayer',
+    ]);
+    await p.setString('verse_notes_json', jsonEncode(notes));
+    await p.setStringList(
+        'reading_days', readingDays.map((d) => d.toString()).toList());
+    await p.setStringList('downloaded_ayah_sets', downloadedAyahSets.toList());
     await p.setString('ui_lang', lang);
     await p.setString('mushaf_style', mushafStyle);
     await p.setInt('khatma_days', khatmaDays);
@@ -134,6 +204,7 @@ class AppState extends ChangeNotifier {
     if (surah == lastReadSurah && ayah == lastReadAyah) return;
     lastReadSurah = surah;
     lastReadAyah = ayah;
+    readingDays.add(_epochDayNow());
     _save();
     notifyListeners();
   }
@@ -164,6 +235,117 @@ class AppState extends ChangeNotifier {
   void markDownloaded(int surah) => update(() => downloadedSurahs.add(surah));
   void unmarkDownloaded(int surah) =>
       update(() => downloadedSurahs.remove(surah));
+
+  // ------------------------------------------------------------------
+  // Round 3: reciter, translation, onboarding, prayer log, notes,
+  // reading streak, per-reciter downloads.
+  // ------------------------------------------------------------------
+
+  void setReciter(String id) => update(() => reciterId = id);
+
+  void setTranslation(String id) => update(() => translationId = id);
+
+  void completeOnboarding() => update(() => onboardingDone = true);
+
+  static int _epochDayNow() =>
+      DateTime.now().difference(DateTime.utc(1970)).inDays;
+
+  static String _dateKey(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+
+  /// Toggle one prayer as prayed on [date] (prayer names: Fajr, Dhuhr,
+  /// Asr, Maghrib, Isha).
+  void togglePrayed(DateTime date, String prayer) {
+    update(() {
+      final key = _dateKey(date);
+      final set = prayerLog.putIfAbsent(key, () => {});
+      if (!set.remove(prayer)) set.add(prayer);
+      if (set.isEmpty) prayerLog.remove(key);
+    });
+  }
+
+  bool isPrayed(DateTime date, String prayer) =>
+      prayerLog[_dateKey(date)]?.contains(prayer) ?? false;
+
+  /// How many of the 5 prayers were marked prayed on [date].
+  int prayedCountOn(DateTime date) =>
+      prayerLog[_dateKey(date)]?.length ?? 0;
+
+  /// Prayed counts for the last 7 days, oldest first.
+  List<int> prayedLast7Days() {
+    final now = DateTime.now();
+    return List.generate(
+        7, (i) => prayedCountOn(now.subtract(Duration(days: 6 - i))));
+  }
+
+  /// Free-text note on one verse (empty string = no note).
+  String noteFor(int surah, int ayah) => notes['$surah:$ayah'] ?? '';
+
+  void setNote(int surah, int ayah, String text) {
+    update(() {
+      final key = '$surah:$ayah';
+      if (text.trim().isEmpty) {
+        notes.remove(key);
+      } else {
+        notes[key] = text.trim();
+      }
+    });
+  }
+
+  void deleteNote(int surah, int ayah) =>
+      update(() => notes.remove('$surah:$ayah'));
+
+  /// Notes sorted by surah then ayah: (surah, ayah, text).
+  List<(int, int, String)> get notesSorted {
+    final out = <(int, int, String)>[];
+    for (final entry in notes.entries) {
+      final parts = entry.key.split(':');
+      if (parts.length != 2) continue;
+      final s = int.tryParse(parts[0]);
+      final a = int.tryParse(parts[1]);
+      if (s == null || a == null) continue;
+      out.add((s, a, entry.value));
+    }
+    out.sort((x, y) => x.$1 != y.$1
+        ? x.$1.compareTo(y.$1)
+        : x.$2.compareTo(y.$2));
+    return out;
+  }
+
+  /// Mark today as a reading day (called when the reader opens).
+  void recordReadingDay() {
+    if (readingDays.add(_epochDayNow())) {
+      _save();
+      notifyListeners();
+    }
+  }
+
+  /// Consecutive days with reading activity, ending today (or yesterday
+  /// if today has no activity yet).
+  int get readingStreak {
+    var day = _epochDayNow();
+    if (!readingDays.contains(day)) day -= 1;
+    var streak = 0;
+    while (readingDays.contains(day)) {
+      streak++;
+      day -= 1;
+    }
+    return streak;
+  }
+
+  bool get readToday => readingDays.contains(_epochDayNow());
+
+  /// Per-reciter verse-by-verse downloads ("edition:surah").
+  bool isSurahDownloadedFor(String reciter, int surah) =>
+      downloadedAyahSets.contains('$reciter:$surah');
+
+  void markSurahDownloadedFor(String reciter, int surah) =>
+      update(() => downloadedAyahSets.add('$reciter:$surah'));
+
+  void unmarkSurahDownloadedFor(String reciter, int surah) =>
+      update(() => downloadedAyahSets.remove('$reciter:$surah'));
 }
 
 /// Global app state singleton.

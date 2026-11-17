@@ -12,6 +12,7 @@ import '../juz_data.dart';
 import '../mushaf_data.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import '../widgets/player_options.dart';
 
 /// Mushaf-page reader: the true Madani 604-page layout (or the IndoPak
 /// 15-line 610-page layout when the user's Mushaf style is IndoPak),
@@ -1112,6 +1113,9 @@ class _MushafScreenState extends State<MushafScreen> {
               ),
               const SizedBox(width: 8),
               _circleButton(Icons.stop_rounded, audio.stop),
+              const SizedBox(width: 8),
+              _circleButton(Icons.tune_rounded,
+                  () => showPlayerOptionsSheet(context)),
               const SizedBox(width: 8),
             ],
             _circleButton(
