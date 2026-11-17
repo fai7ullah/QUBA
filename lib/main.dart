@@ -32,14 +32,31 @@ Future<void> main() async {
   await appState.load();
   await QuranRepository.instance.load();
   await MushafData.instance.load();
-  await TranslationRepository.instance.load();
+  // Translations are best-effort: if the asset load ever stalls, the
+  // app must still open (translations just become unavailable).
+  try {
+    await TranslationRepository.instance
+        .load()
+        .timeout(const Duration(seconds: 10));
+  } catch (_) {
+    // Translation assets unavailable on this run; the app opens anyway.
+  }
   // Lock-screen / notification player controls (just_audio_background):
   // must be initialised before the first AudioPlayer is created.
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.quba.app.audio',
-    androidNotificationChannelName: 'QUBA audio',
-    androidNotificationOngoing: true,
-  );
+  // NEVER awaited without a timeout: on some phones (OPPO/ColorOS —
+  // build-9 froze on the splash screen on 2026-11-17) the platform
+  // call never returns. If init fails or times out, audio still plays
+  // inside the app — only the lock-screen controls are missing.
+  try {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.quba.app.audio',
+      androidNotificationChannelName: 'QUBA audio',
+      androidNotificationOngoing: true,
+    ).timeout(const Duration(seconds: 5));
+  } catch (_) {
+    // Lock-screen controls unavailable on this phone; in-app audio
+    // is unaffected.
+  }
   runApp(const QubaApp());
   // Register prayer alerts after the first frame so startup stays instant.
   WidgetsBinding.instance.addPostFrameCallback((_) async {
