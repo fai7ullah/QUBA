@@ -1,4 +1,4 @@
-# Builds a debug APK of QUBA on every push to main (and on manual runs),
+# Builds a release APK of QUBA on every push to main (and on manual runs),
 # then publishes it as a GitHub Release so it can be downloaded directly.
 name: Build QUBA APK
 
@@ -37,14 +37,14 @@ jobs:
       - name: Analyse code
         run: flutter analyze
 
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build release APK
+        run: flutter build apk --release
 
       - name: Upload APK as workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QUBA-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: QUBA-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Publish APK as a release
         env:
@@ -52,5 +52,5 @@ jobs:
         run: |
           gh release create "build-${{ github.run_number }}" \
             --title "QUBA test build ${{ github.run_number }}" \
-            --notes "Debug APK built automatically from the main branch." \
-            build/app/outputs/flutter-apk/app-debug.apk
+            --notes "release APK built automatically from the main branch." \
+            build/app/outputs/flutter-apk/app-release.apk
