@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:quba/app_state.dart';
+import 'package:quba/i18n.dart';
 import 'package:quba/reciters.dart';
 
 void main() {
@@ -54,6 +56,21 @@ void main() {
     test('unknown ids fall back to Alafasy', () {
       expect(reciterById('ar.nosuchreciter').id, 'ar.alafasy');
       expect(reciterById('').id, 'ar.alafasy');
+    });
+
+    test('every reciter has a short name for the mini-player', () {
+      // Regression: the mini-player showed the full name with no
+      // maxLines, and it rendered vertically (2026-11-18). The short
+      // name must exist, be non-empty, and be shorter than the full
+      // name in every UI language.
+      for (final r in reciters) {
+        for (final lang in QubaStrings.langs) {
+          appState.lang = lang;
+          expect(r.shortName, isNotEmpty);
+          expect(r.shortName.length, lessThan(r.name.length));
+        }
+      }
+      appState.lang = 'en';
     });
   });
 }

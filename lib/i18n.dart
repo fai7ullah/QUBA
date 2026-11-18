@@ -593,6 +593,14 @@ class QubaStrings {
     "reciter_name_abdulbasit": {'en': "Abdul Basit Abdul Samad", 'ps': "عبدالباسط عبدالصمد", 'fa': "عبدالباسط عبدالصمد", 'ur': "عبدالباسط عبدالصمد", 'ar': "عبد الباسط عبد الصمد"},
     "reciter_name_mahermuaiqly": {'en': "Maher Al Muaiqly", 'ps': "ماهر المعيقلي", 'fa': "ماهر المعیقلی", 'ur': "ماہر المعقلی", 'ar': "ماهر المعيقلي"},
     "reciter_name_shuraym": {'en': "Saud Al-Shuraim", 'ps': "سعود الشريم", 'fa': "سعود الشریم", 'ur': "سعود الشریم", 'ar': "سعود الشريم"},
+    // Short reciter names for the mini-player: the full names are too
+    // long for the narrow text column next to the five player buttons
+    // (2026-11-18: "Mishary Rashid al-Afasy" rendered vertically).
+    // Each is the surname/family name from the full translation above.
+    "reciter_short_alafasy": {'en': "al-Afasy", 'ps': "العفاسي", 'fa': "العفاسی", 'ur': "العفاسی", 'ar': "العفاسي"},
+    "reciter_short_abdulbasit": {'en': "Abdul Basit", 'ps': "عبدالباسط", 'fa': "عبدالباسط", 'ur': "عبدالباسط", 'ar': "عبد الباسط"},
+    "reciter_short_mahermuaiqly": {'en': "Al Muaiqly", 'ps': "المعيقلي", 'fa': "المعیقلی", 'ur': "المعقلی", 'ar': "المعيقلي"},
+    "reciter_short_shuraym": {'en': "Al-Shuraim", 'ps': "الشريم", 'fa': "الشریم", 'ur': "الشریم", 'ar': "الشريم"},
     // --- Round 3: translations ---
     "translation": {'en': "Translation", 'ps': "ژباړه", 'fa': "ترجمه", 'ur': "ترجمہ", 'ar': "الترجمة"},
     "translation_none": {'en': "Arabic only", 'ps': "یوازې عربي", 'fa': "فقط عربی", 'ur': "صرف عربی", 'ar': "العربية فقط"},

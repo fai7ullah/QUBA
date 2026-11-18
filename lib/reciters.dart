@@ -23,6 +23,7 @@ class Reciter {
   const Reciter({
     required this.id,
     required this.nameKey,
+    required this.shortNameKey,
     required this.bitrate,
     required this.hasWholeSurahFiles,
   });
@@ -33,6 +34,10 @@ class Reciter {
   /// i18n key for the display name (e.g. 'reciter_name_alafasy').
   final String nameKey;
 
+  /// i18n key for the short name (surname, e.g. 'reciter_short_alafasy')
+  /// used where the full name cannot fit — the mini-player.
+  final String shortNameKey;
+
   /// The bitrate the CDN serves for this edition (128 or 64).
   final int bitrate;
 
@@ -40,6 +45,9 @@ class Reciter {
   final bool hasWholeSurahFiles;
 
   String get name => tr(nameKey);
+
+  /// Short display name (surname) for tight spaces like the mini-player.
+  String get shortName => tr(shortNameKey);
 
   String ayahUrl(int globalAyahIndex) =>
       'https://cdn.islamic.network/quran/audio/$bitrate/$id/$globalAyahIndex.mp3';
@@ -53,24 +61,28 @@ const List<Reciter> reciters = [
   Reciter(
     id: 'ar.alafasy',
     nameKey: 'reciter_name_alafasy',
+    shortNameKey: 'reciter_short_alafasy',
     bitrate: 128,
     hasWholeSurahFiles: true,
   ),
   Reciter(
     id: 'ar.abdulsamad',
     nameKey: 'reciter_name_abdulbasit',
+    shortNameKey: 'reciter_short_abdulbasit',
     bitrate: 64,
     hasWholeSurahFiles: false,
   ),
   Reciter(
     id: 'ar.mahermuaiqly',
     nameKey: 'reciter_name_mahermuaiqly',
+    shortNameKey: 'reciter_short_mahermuaiqly',
     bitrate: 128,
     hasWholeSurahFiles: false,
   ),
   Reciter(
     id: 'ar.saoodshuraym',
     nameKey: 'reciter_name_shuraym',
+    shortNameKey: 'reciter_short_shuraym',
     bitrate: 64,
     hasWholeSurahFiles: false,
   ),

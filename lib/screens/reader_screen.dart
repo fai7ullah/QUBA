@@ -748,8 +748,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
                         const SizedBox(height: 2),
                         ValueListenableBuilder(
                           valueListenable: audio.currentReciter,
+                          // Short name + one line + ellipsis: the full
+                          // name ("Mishary Rashid al-Afasy") rendered
+                          // VERTICALLY here on 2026-11-18 — this Text
+                          // had no maxLines while the five buttons
+                          // squeezed its column to ~50px wide.
                           builder: (context, reciter, _) => Text(
-                            reciter.name,
+                            reciter.shortName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 12.5,
                               color: p.muted,
@@ -759,10 +766,17 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       ],
                     ),
                   ),
+                  // Player buttons are tightened (40px instead of the
+                  // 48px default) so the text column gets room: with
+                  // five full-size buttons the reciter name was
+                  // squeezed to ~50px and wrapped vertically.
                   if (ayahMode)
                     IconButton(
                       icon: const Icon(Icons.skip_previous_rounded),
                       iconSize: 28,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                          minWidth: 40, minHeight: 40),
                       color: p.ink,
                       tooltip: tr('prev_verse'),
                       onPressed: audio.playPrevAyah,
@@ -779,6 +793,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
                               : Icons.play_arrow_rounded,
                           size: 30,
                         ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                            minWidth: 40, minHeight: 40),
                         color: p.ink,
                         tooltip: playing ? tr('pause') : tr('play'),
                         onPressed: audio.togglePause,
@@ -789,6 +806,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     IconButton(
                       icon: const Icon(Icons.skip_next_rounded),
                       iconSize: 28,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                          minWidth: 40, minHeight: 40),
                       color: p.ink,
                       tooltip: tr('next_verse'),
                       onPressed: audio.playNextAyah,
@@ -796,6 +816,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
                   IconButton(
                     icon: const Icon(Icons.tune_rounded),
                     iconSize: 24,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                        minWidth: 40, minHeight: 40),
                     color: p.muted,
                     tooltip: tr('player_options'),
                     onPressed: () => showPlayerOptionsSheet(context),
@@ -803,6 +826,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
                     iconSize: 24,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                        minWidth: 40, minHeight: 40),
                     color: p.muted,
                     tooltip: tr('stop'),
                     onPressed: audio.stop,
