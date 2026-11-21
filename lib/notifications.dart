@@ -8,12 +8,57 @@ import 'app_state.dart';
 import 'i18n.dart';
 import 'prayer_service.dart';
 
+/// Result of a [NotificationService.scheduleAll] run. Scheduling never
+/// fails silently: the caller (and the Settings screen) can see exactly
+/// what happened.
+/// - [scheduled]: alerts actually registered.
+/// - [failed]: prayers that could not be scheduled at all.
+/// - [exactAlarms]: whether exact alarms were used (false = fell back
+///   to inexact scheduling because the exact-alarm permission is off).
+class ScheduleResult {
+  const ScheduleResult({
+    required this.scheduled,
+    required this.failed,
+    required this.exactAlarms,
+  });
+  final int scheduled;
+  final int failed;
+  final bool exactAlarms;
+
+  bool get ok => failed == 0 && scheduled > 0;
+}
+
+/// Permission state for the Settings screen. Both flags come from live
+/// platform queries, never from cached guesses.
+class NotificationPermissionState {
+  const NotificationPermissionState({
+    required this.notificationsEnabled,
+    required this.exactAlarmsEnabled,
+  });
+  final bool notificationsEnabled;
+  final bool exactAlarmsEnabled;
+
+  bool get allGranted => notificationsEnabled && exactAlarmsEnabled;
+}
+
 /// Prayer alert scheduling with exact alarms.
 /// - Times are computed on-device; notifications are scheduled 7 days ahead.
 /// - Rescheduling happens on every app start and on any relevant settings
 ///   change; after a device reboot, Android restores the plugin's stored
 ///   alarms via the boot receiver declared in AndroidManifest, and the app
 ///   re-registers the rolling 7-day window on next open.
+/// - Round 4 (2026-11-21): the 7-day Athan soak test FAILED at day 3 —
+//    no notifications at all on the owner's OPPO. Prime suspects: a
+///   denied notification / exact-alarm permission (init used to ignore
+///   the results, so a denial failed SILENTLY) or ColorOS battery
+///   optimisation killing the alarms. This version surfaces the
+///   permission state in Settings, never fails silently, falls back to
+///   inexact scheduling when exact alarms are denied, and offers a
+///   1-minute test notification.
+/// - The notification sound is the Adhan (channel prayer_athan_v2).
+///   Android locks a channel's sound at first creation, so the new
+///   sound needed a NEW channel id — changing the file alone would not
+///   have changed the sound on existing installs.
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
@@ -22,7 +67,18 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
-  static const _channelId = 'prayer_athan';
+  static const _channelId = 'prayer_athan_v2';
+
+  /// The round-1..3 channel (short chime sound). Deleted on init so the
+  /// old channel — and its locked-in chime — cannot linger.
+  static const _legacyChannelId = 'prayer_athan';
+
+  /// Notification id for the 1-minute test alert. Prayer alerts use
+  /// 1000 + day * 10 + prayerIndex, so 7 can never collide.
+  static const testNotificationId = 7;
+
+  /// Last scheduleAll outcome, for the Settings screen to display.
+  ScheduleResult? lastResult;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -45,20 +101,87 @@ class NotificationService {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (android != null) {
-      await android.requestNotificationsPermission();
-      await android.requestExactAlarmsPermission();
+      // Drop the legacy chime channel (best-effort).
+      try {
+        await android.deleteNotificationChannel(_legacyChannelId);
+      } catch (_) {}
+      // Ask for the notification permission once (a normal runtime
+      // dialog on Android 13+; on older Android, and when the user has
+      // already decided, it just returns the stored decision).
+      // The result is NOT trusted here — Settings re-queries the live
+      // state with [permissionState] instead.
+      try {
+        await android.requestNotificationsPermission();
+      } catch (_) {}
+      // NOTE: exact alarms are NOT requested here — on Android 12+
+      // that call opens the system settings page, which must only
+      // happen when the user taps the button in Settings.
     }
     _initialized = true;
   }
 
+  /// Live permission state, queried from the platform each time.
+  Future<NotificationPermissionState> permissionState() async {
+    if (!_initialized) await init();
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    if (android == null) {
+      // Non-Android: no runtime permission model for notifications.
+      return const NotificationPermissionState(
+          notificationsEnabled: true, exactAlarmsEnabled: true);
+    }
+    var notif = true;
+    var exact = false;
+    try {
+      notif = await android.areNotificationsEnabled() ?? true;
+    } catch (_) {}
+    try {
+      exact = await android.canScheduleExactNotifications() ?? false;
+    } catch (_) {}
+    return NotificationPermissionState(
+        notificationsEnabled: notif, exactAlarmsEnabled: exact);
+  }
+
+  /// Ask Android for the notification permission. Returns true when
+  /// granted. On Android 13+, if the user previously denied, the system
+  /// shows no dialog and this returns false — the user must then enable
+  /// it in the system settings (Settings offers that button).
+  Future<bool> requestNotificationPermission() async {
+    if (!_initialized) await init();
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    if (android == null) return true;
+    try {
+      return await android.requestNotificationsPermission() ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Ask Android for the exact-alarm permission (needed for on-time Athan).
   /// Returns true when granted, or when the platform does not need it.
+  /// On Android 12+ this opens the system "Alarms & reminders" page.
   Future<bool> requestExactAlarmPermission() async {
     if (!_initialized) await init();
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (android == null) return true;
-    return await android.requestExactAlarmsPermission() ?? true;
+    try {
+      return await android.requestExactAlarmsPermission() ?? true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _canScheduleExact() async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    if (android == null) return true;
+    try {
+      return await android.canScheduleExactNotifications() ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 
   NotificationDetails _details() {
@@ -69,19 +192,37 @@ class NotificationService {
         channelDescription: tr('notif_channel_desc'),
         importance: Importance.max,
         priority: Priority.high,
-        sound: const RawResourceAndroidNotificationSound('athan_chime'),
+        sound: const RawResourceAndroidNotificationSound('athan_adhan'),
         playSound: true,
         enableVibration: true,
       ),
     );
   }
 
+  /// Cancel the prayer alerts (ids 1000..1065) without touching the
+  /// 1-minute test alert, so a reschedule never eats a pending test.
+  Future<void> _cancelPrayerAlerts() async {
+    for (var day = 0; day < 7; day++) {
+      for (var i = 0; i < 6; i++) {
+        try {
+          await _plugin.cancel(1000 + day * 10 + i);
+        } catch (_) {}
+      }
+    }
+  }
+
   /// Cancel everything and re-schedule the next 7 days from current settings.
-  Future<void> scheduleAll(AppState state) async {
+  /// Never throws and never fails silently: every prayer is tried
+  /// exact-first (when allowed) with an inexact retry, and the outcome
+  /// is returned + stored in [lastResult].
+  Future<ScheduleResult> scheduleAll(AppState state) async {
     if (!_initialized) await init();
-    await _plugin.cancelAll();
+    await _cancelPrayerAlerts();
+    final canExact = await _canScheduleExact();
     final now = DateTime.now();
     var scheduled = 0;
+    var failed = 0;
+    var exactUsed = false;
     for (var day = 0; day < 7; day++) {
       final date = now.add(Duration(days: day));
       final entries = PrayerService.dayList(date, state);
@@ -89,18 +230,78 @@ class NotificationService {
         final e = entries[i];
         if (state.prayerNotify[e.name] != true) continue;
         if (!e.time.isAfter(now)) continue;
-        await _plugin.zonedSchedule(
-          1000 + day * 10 + i,
-          trf('notif_title', {'prayer': trPrayer(e.name)}),
-          trf('notif_body', {'prayer': trPrayer(e.name)}),
-          tz.TZDateTime.from(e.time, tz.local),
-          _details(),
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          payload: e.name,
-        );
-        scheduled++;
+        final id = 1000 + day * 10 + i;
+        final when = tz.TZDateTime.from(e.time, tz.local);
+        final title = trf('notif_title', {'prayer': trPrayer(e.name)});
+        final body = trf('notif_body', {'prayer': trPrayer(e.name)});
+        var done = false;
+        if (canExact) {
+          try {
+            await _plugin.zonedSchedule(
+              id,
+              title,
+              body,
+              when,
+              _details(),
+              androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+              payload: e.name,
+            );
+            done = true;
+            exactUsed = true;
+          } catch (_) {
+            // Exact scheduling can still fail on some devices even
+            // when the check passed — fall through to the inexact
+            // retry below instead of dropping this prayer.
+          }
+        }
+        if (!done) {
+          try {
+            await _plugin.zonedSchedule(
+              id,
+              title,
+              body,
+              when,
+              _details(),
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+              payload: e.name,
+            );
+            done = true;
+          } catch (_) {
+            failed++;
+          }
+        }
+        if (done) scheduled++;
       }
     }
-    debugPrint('QUBA: scheduled $scheduled prayer notifications');
+    final result = ScheduleResult(
+        scheduled: scheduled, failed: failed, exactAlarms: exactUsed);
+    lastResult = result;
+    debugPrint('QUBA: scheduled ${result.scheduled} prayer notifications '
+        '(${result.failed} failed, exact=${result.exactAlarms})');
+    return result;
+  }
+
+  /// Schedules a one-off test notification 1 minute from now so the
+  /// user can verify alerts work without waiting for prayer time.
+  /// Returns false when it could not be scheduled.
+  Future<bool> sendTestNotification() async {
+    if (!_initialized) await init();
+    try {
+      final canExact = await _canScheduleExact();
+      await _plugin.zonedSchedule(
+        testNotificationId,
+        tr('notif_test_title'),
+        tr('notif_test_body'),
+        tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1)),
+        _details(),
+        androidScheduleMode: canExact
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: 'test',
+      );
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 }

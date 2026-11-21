@@ -24,6 +24,7 @@ void main() {
       jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
 
   const files = {
+    'en.yusufali': 'assets/quran/trans_en_yusufali.json',
     'ur.jalandhry': 'assets/quran/trans_ur_jalandhry.json',
     'fa.ghomshei': 'assets/quran/trans_fa_ghomshei.json',
   };
@@ -109,11 +110,16 @@ void main() {
     final repo = TranslationRepository.instance;
     await repo.load();
     expect(repo.loaded, true);
+    expect(repo.isAvailable('en.yusufali'), true);
     expect(repo.isAvailable('en.pickthall'), true);
     expect(repo.isAvailable('ur.jalandhry'), true);
     expect(repo.isAvailable('fa.ghomshei'), true);
     expect(repo.isAvailable('none'), true);
 
+    expect(
+      repo.textFor('en.yusufali', 1, 1),
+      'In the name of Allah, Most Gracious, Most Merciful.',
+    );
     expect(
       repo.textFor('en.pickthall', 1, 1),
       'In the name of Allah, the Beneficent, the Merciful.',
@@ -178,7 +184,53 @@ void main() {
     expect(repo.isRtl('none'), false);
     expect(repo.isRtl('xx.unknown'), false);
 
-    expect(TranslationRepository.ids,
-        ['en.pickthall', 'ur.jalandhry', 'fa.ghomshei', 'none']);
+    expect(TranslationRepository.ids, [
+      'en.yusufali',
+      'en.pickthall',
+      'ur.jalandhry',
+      'fa.ghomshei',
+      'none'
+    ]);
+  });
+
+  test('Yusuf Ali is the default English translation (round 4)', () {
+    final repo = TranslationRepository.instance;
+    repo.loadForTest(
+      {
+        'surahs': [
+          {
+            'number': 1,
+            'ayahs': ['ur one'],
+          },
+        ],
+      },
+      {
+        'surahs': [
+          {
+            'number': 1,
+            'ayahs': ['fa one'],
+          },
+        ],
+      },
+      {
+        'surahs': [
+          {
+            'number': 1,
+            'ayahs': ['In the name of Allah, Most Gracious, Most Merciful.'],
+          },
+        ],
+      },
+    );
+
+    expect(repo.isAvailable('en.yusufali'), true);
+    expect(repo.textFor('en.yusufali', 1, 1),
+        'In the name of Allah, Most Gracious, Most Merciful.');
+    expect(repo.textFor('en.yusufali', 1, 2), null,
+        reason: 'fixture has only one ayah for surah 1');
+    expect(repo.isRtl('en.yusufali'), false);
+    expect(TranslationRepository.labelKeyFor('en.yusufali'),
+        'translation_yusufali');
+    // Yusuf Ali is first in the list, so it is the default shown.
+    expect(TranslationRepository.ids.first, 'en.yusufali');
   });
 }

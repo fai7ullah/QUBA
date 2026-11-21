@@ -5,12 +5,17 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'app_state.dart';
 import 'data.dart';
+import 'hadith/hadith_screen.dart';
+import 'homewidget/home_widget_service.dart';
 import 'i18n.dart';
 import 'mushaf_data.dart';
 import 'notifications.dart';
+import 'tafsir/tafsir_screen.dart';
 import 'translation_data.dart';
+import 'wordbyword/wordbyword_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/duas_screen.dart';
+import 'screens/extras_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/khatma_screen.dart';
 import 'screens/mushaf_screen.dart';
@@ -19,10 +24,15 @@ import 'screens/onboarding_screen.dart';
 import 'screens/prayer_screen.dart';
 import 'screens/qibla_screen.dart';
 import 'screens/quran_screen.dart';
+import 'screens/ramadan_screen.dart';
 import 'screens/reader_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/sync_screen.dart';
 import 'screens/tasbih_screen.dart';
+import 'screens/test_mode_screen.dart';
+import 'screens/widget_screen.dart';
+import 'sync/sync_service.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -45,6 +55,12 @@ Future<void> main() async {
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     await NotificationService.instance.init();
     await NotificationService.instance.scheduleAll(appState);
+    // Cloud sync initialises here; it no-ops until the Supabase
+    // project exists and its URL + key are in SyncConfig.
+    await SyncService.instance.init();
+    // Push fresh data to the home-screen widget (best-effort; the
+    // widget also refreshes at most every 30 minutes on its own).
+    await HomeWidgetService.update(appState);
   });
 }
 
@@ -137,6 +153,21 @@ class _ShellState extends State<Shell> {
         return const TasbihScreen();
       case 'search':
         return SearchScreen(onOpenReader: _openReader);
+      // Phase 2 (round 4): all new features live in the Extras tab.
+      case 'hadith':
+        return const HadithScreen();
+      case 'tafsir':
+        return const TafsirScreen();
+      case 'wbw':
+        return const WordByWordScreen();
+      case 'testmode':
+        return const TestModeScreen();
+      case 'ramadan':
+        return const RamadanScreen();
+      case 'sync':
+        return const SyncScreen();
+      case 'widget':
+        return const WidgetScreen();
       default:
         return const QiblaScreen();
     }
@@ -158,8 +189,9 @@ class _ShellState extends State<Shell> {
         onOpenSearch: () => _openFeatureKey('search'),
         onOpenReader: _openReader,
         onOpenJuz: _openMushaf,
-        onOpenSettings: () => setState(() => _tab = 3),
+        onOpenSettings: () => setState(() => _tab = 4),
       ),
+      ExtrasScreen(onOpenFeature: _openFeatureKey),
       SettingsScreen(onOpenFeature: _openFeatureKey),
     ];
     return Scaffold(
@@ -194,6 +226,7 @@ class _GlassNavBar extends StatelessWidget {
     (Icons.home_rounded, 'home'),
     (Icons.menu_book_rounded, 'prayer'),
     (Icons.mosque_rounded, 'quran'),
+    (Icons.apps_rounded, 'extras'),
     (Icons.settings_rounded, 'settings'),
   ];
 

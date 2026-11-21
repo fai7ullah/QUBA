@@ -400,6 +400,8 @@ class _QuranScreenState extends State<QuranScreen> {
                       children: [
                         Text(
                           s.nameEnglish,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
@@ -409,6 +411,8 @@ class _QuranScreenState extends State<QuranScreen> {
                         const SizedBox(height: 2),
                         Text(
                           "${tr('surah_meaning_${s.number}')} (${s.ayahCount})",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 14, color: p.ink),
                         ),
                       ],
@@ -476,6 +480,8 @@ class _QuranScreenState extends State<QuranScreen> {
                       children: [
                         Text(
                           tr('juz_name_${j.number}'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
@@ -485,6 +491,8 @@ class _QuranScreenState extends State<QuranScreen> {
                         const SizedBox(height: 2),
                         Text(
                           range,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style:
                               TextStyle(fontSize: 13.5, color: p.ink),
                         ),

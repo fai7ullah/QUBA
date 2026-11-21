@@ -6,8 +6,8 @@ import 'package:quba/reciters.dart';
 
 void main() {
   group('reciters', () {
-    test('four reciters ship, Alafasy first (the default)', () {
-      expect(reciters.length, 4);
+    test('seventeen reciters ship, Alafasy first (the default)', () {
+      expect(reciters.length, 17);
       expect(reciters.first.id, 'ar.alafasy');
       expect(
         reciters.map((r) => r.id).toList(),
@@ -16,15 +16,32 @@ void main() {
           'ar.abdulsamad',
           'ar.mahermuaiqly',
           'ar.saoodshuraym',
+          // Phase 2 (2026-11-21): thirteen more, all verified complete
+          // on the CDN (6 probe ayahs each, 200 at one bitrate).
+          'ar.husary',
+          'ar.husarymujawwad',
+          'ar.minshawi',
+          'ar.minshawimujawwad',
+          'ar.hudhaify',
+          'ar.abdurrahmaansudais',
+          'ar.shaatree',
+          'ar.muhammadjibreel',
+          'ar.muhammadayyoub',
+          'ar.hanirifai',
+          'ar.ahmedajamy',
+          'ar.aymanswoaid',
+          'ar.abdullahbasfar',
         ],
       );
     });
 
     test('every reciter has a unique id and a name key', () {
-      expect(reciters.map((r) => r.id).toSet().length, 4);
-      expect(reciters.map((r) => r.nameKey).toSet().length, 4);
+      expect(reciters.map((r) => r.id).toSet().length, 17);
+      expect(reciters.map((r) => r.nameKey).toSet().length, 17);
+      expect(reciters.map((r) => r.shortNameKey).toSet().length, 17);
       for (final r in reciters) {
         expect(r.nameKey, startsWith('reciter_name_'));
+        expect(r.shortNameKey, startsWith('reciter_short_'));
       }
     });
 
@@ -42,13 +59,26 @@ void main() {
           'https://cdn.islamic.network/quran/audio/64/ar.abdulsamad/1.mp3');
       expect(reciterById('ar.saoodshuraym').ayahUrl(3000),
           'https://cdn.islamic.network/quran/audio/64/ar.saoodshuraym/3000.mp3');
+      // Phase 2 additions: 128kbps editions and 64kbps-only editions.
+      expect(reciterById('ar.husary').ayahUrl(1),
+          'https://cdn.islamic.network/quran/audio/128/ar.husary/1.mp3');
+      expect(reciterById('ar.minshawi').ayahUrl(6236),
+          'https://cdn.islamic.network/quran/audio/128/ar.minshawi/6236.mp3');
+      expect(reciterById('ar.hanirifai').ayahUrl(262),
+          'https://cdn.islamic.network/quran/audio/64/ar.hanirifai/262.mp3');
+      expect(reciterById('ar.abdurrahmaansudais').ayahUrl(3000),
+          'https://cdn.islamic.network/quran/audio/64/ar.abdurrahmaansudais/3000.mp3');
+      expect(reciterById('ar.minshawimujawwad').ayahUrl(8),
+          'https://cdn.islamic.network/quran/audio/64/ar.minshawimujawwad/8.mp3');
     });
 
     test('only Alafasy has whole-surah files', () {
       expect(reciterById('ar.alafasy').hasWholeSurahFiles, isTrue);
-      expect(reciterById('ar.abdulsamad').hasWholeSurahFiles, isFalse);
-      expect(reciterById('ar.mahermuaiqly').hasWholeSurahFiles, isFalse);
-      expect(reciterById('ar.saoodshuraym').hasWholeSurahFiles, isFalse);
+      for (final r in reciters) {
+        if (r.id != 'ar.alafasy') {
+          expect(r.hasWholeSurahFiles, isFalse, reason: r.id);
+        }
+      }
       expect(reciterById('ar.alafasy').surahUrl(2),
           'https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/2.mp3');
     });

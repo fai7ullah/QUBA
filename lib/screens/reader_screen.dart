@@ -9,6 +9,7 @@ import '../audio.dart';
 import '../data.dart';
 import '../i18n.dart';
 import '../juz_data.dart';
+import '../tafsir/tafsir_screen.dart';
 import '../theme.dart';
 import '../translation_data.dart';
 import '../widgets.dart';
@@ -24,7 +25,7 @@ import 'search_screen.dart';
 /// sits at the bottom while audio plays.
 ///
 /// Audio is per-verse streaming with auto-advance through the surah, in
-/// any of four reciters; a surah downloaded once plays offline (whole
+/// any of seventeen reciters; a surah downloaded once plays offline (whole
 /// file for Alafasy, verse by verse for the others).
 /// No teacher-feedback banner (QUBA has no teacher service).
 class ReaderScreen extends StatefulWidget {
@@ -615,6 +616,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
                           if (mounted) setState(() {});
                         },
                       ),
+                      // Phase 2: this ayah's tafsir in a bottom sheet
+                      // (same content as the Extras screen, opened at
+                      // this ayah). The word-by-word button is hidden
+                      // until licensed word data exists — restore it
+                      // (WordByWordScreen.showSheet) with the data.
+                      IconButton(
+                        icon: const Icon(Icons.menu_book_rounded),
+                        iconSize: 24,
+                        color: p.emerald,
+                        tooltip: tr('tafsir'),
+                        onPressed: () => TafsirScreen.showSheet(
+                            context, _surahNumber, ayah.number),
+                      ),
                       const Spacer(),
                       Material(
                         color: p.emerald,
@@ -724,11 +738,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 6, 10),
+              padding: const EdgeInsets.fromLTRB(10, 10, 4, 10),
               child: Row(
                 children: [
-                  RosetteNumber(number: surah.number, size: 40),
-                  const SizedBox(width: 10),
+                  RosetteNumber(number: surah.number, size: 36),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -766,17 +780,27 @@ class _ReaderScreenState extends State<ReaderScreen> {
                       ],
                     ),
                   ),
-                  // Player buttons are tightened (40px instead of the
-                  // 48px default) so the text column gets room: with
-                  // five full-size buttons the reciter name was
-                  // squeezed to ~50px and wrapped vertically.
+                  // Player buttons are tightened (36px) so the text
+                  // column gets room: with five full-size buttons the
+                  // reciter name was squeezed to ~50px and wrapped
+                  // vertically. NOTE: `constraints` alone does NOT
+                  // shrink an IconButton — Material 3 pads every
+                  // button to the 48px tap target unless
+                  // `tapTargetSize: shrinkWrap` is set (build-12 set
+                  // 40px constraints without it, so the buttons
+                  // stayed 48px and the bar still overflowed by 22px
+                  // at 320px screens — caught by the squeeze audit).
                   if (ayahMode)
                     IconButton(
                       icon: const Icon(Icons.skip_previous_rounded),
-                      iconSize: 28,
+                      iconSize: 26,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(
-                          minWidth: 40, minHeight: 40),
+                          minWidth: 36, minHeight: 36),
+                      style: IconButton.styleFrom(
+                        tapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                      ),
                       color: p.ink,
                       tooltip: tr('prev_verse'),
                       onPressed: audio.playPrevAyah,
@@ -791,11 +815,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
                           playing
                               ? Icons.pause_rounded
                               : Icons.play_arrow_rounded,
-                          size: 30,
+                          size: 28,
                         ),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
-                            minWidth: 40, minHeight: 40),
+                            minWidth: 36, minHeight: 36),
+                        style: IconButton.styleFrom(
+                          tapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
                         color: p.ink,
                         tooltip: playing ? tr('pause') : tr('play'),
                         onPressed: audio.togglePause,
@@ -805,10 +833,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
                   if (ayahMode)
                     IconButton(
                       icon: const Icon(Icons.skip_next_rounded),
-                      iconSize: 28,
+                      iconSize: 26,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(
-                          minWidth: 40, minHeight: 40),
+                          minWidth: 36, minHeight: 36),
+                      style: IconButton.styleFrom(
+                        tapTargetSize:
+                            MaterialTapTargetSize.shrinkWrap,
+                      ),
                       color: p.ink,
                       tooltip: tr('next_verse'),
                       onPressed: audio.playNextAyah,
@@ -818,7 +850,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     iconSize: 24,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
-                        minWidth: 40, minHeight: 40),
+                        minWidth: 36, minHeight: 36),
+                    style: IconButton.styleFrom(
+                      tapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
+                    ),
                     color: p.muted,
                     tooltip: tr('player_options'),
                     onPressed: () => showPlayerOptionsSheet(context),
@@ -828,7 +864,11 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     iconSize: 24,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
-                        minWidth: 40, minHeight: 40),
+                        minWidth: 36, minHeight: 36),
+                    style: IconButton.styleFrom(
+                      tapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
+                    ),
                     color: p.muted,
                     tooltip: tr('stop'),
                     onPressed: audio.stop,

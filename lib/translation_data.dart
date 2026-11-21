@@ -9,6 +9,8 @@ import 'data.dart';
 /// English already inside [QuranRepository]'s bundle.
 ///
 /// Translation ids (see [ids]):
+/// - `en.yusufali` — Yusuf Ali English, the DEFAULT since round 4
+///   (assets/quran/trans_en_yusufali.json).
 /// - `en.pickthall` — Pickthall English, read from the Quran bundle.
 /// - `ur.jalandhry` — Urdu, Fateh Muhammad Jalandhari
 ///   (assets/quran/trans_ur_jalandhry.json).
@@ -20,7 +22,7 @@ import 'data.dart';
 /// TRANSLATIONS.md at the project root for the translator dates and the
 /// copyright-term reasoning, including the life+70 caveat.
 ///
-/// The two JSON assets have the same shape as quran_indopak.json:
+/// The JSON assets have the same shape as quran_indopak.json:
 /// `{"surahs": [{"number": 1, "ayahs": ["...", ...]}, ...]}` — 114
 /// surahs, 6,236 ayahs, per-surah ayah counts matching the Uthmani
 /// bundle. [load] validates those counts; a missing or invalid file
@@ -32,6 +34,7 @@ class TranslationRepository {
 
   /// Translation ids the app can offer, in display order.
   static const List<String> ids = [
+    'en.yusufali',
     'en.pickthall',
     'ur.jalandhry',
     'fa.ghomshei',
@@ -44,13 +47,15 @@ class TranslationRepository {
 
   /// [surah index 0..113] -> [ayah index 0..n-1] -> translated text.
   /// Null when the asset is missing or failed validation.
+  List<List<String>>? _yusufAli;
   List<List<String>>? _ur;
   List<List<String>>? _fa;
 
-  /// Loads both translation assets via rootBundle. Never throws: a
+  /// Loads the translation assets via rootBundle. Never throws: a
   /// missing or invalid file just leaves that translation unavailable.
   Future<void> load() async {
     if (loaded) return;
+    _yusufAli = await _loadOne('assets/quran/trans_en_yusufali.json');
     _ur = await _loadOne('assets/quran/trans_ur_jalandhry.json');
     _fa = await _loadOne('assets/quran/trans_fa_ghomshei.json');
     loaded = true;
@@ -101,9 +106,11 @@ class TranslationRepository {
   /// Test-only loader: installs small hand-built translation maps so
   /// [textFor] is unit-testable without Flutter asset loading.
   @visibleForTesting
-  void loadForTest(Map<String, dynamic> ur, Map<String, dynamic> fa) {
+  void loadForTest(Map<String, dynamic> ur, Map<String, dynamic> fa,
+      [Map<String, dynamic>? yusufAli]) {
     _ur = _parse(ur);
     _fa = _parse(fa);
+    if (yusufAli != null) _yusufAli = _parse(yusufAli);
     loaded = true;
   }
 
@@ -122,11 +129,13 @@ class TranslationRepository {
       if (ayah < 1 || ayah > s.ayahs.length) return null;
       return s.ayahs[ayah - 1].english;
     }
-    final text = id == 'ur.jalandhry'
-        ? _ur
-        : id == 'fa.ghomshei'
-            ? _fa
-            : null;
+    final text = id == 'en.yusufali'
+        ? _yusufAli
+        : id == 'ur.jalandhry'
+            ? _ur
+            : id == 'fa.ghomshei'
+                ? _fa
+                : null;
     if (text == null) return null;
     if (surah < 1 || surah > text.length) return null;
     final ayahs = text[surah - 1];
@@ -136,7 +145,7 @@ class TranslationRepository {
 
   /// True when [id] can currently serve text. `'none'` is always
   /// available (it is a choice, not a file); `'en.pickthall'` needs
-  /// the Quran bundle loaded; the other two need their asset loaded.
+  /// the Quran bundle loaded; the others need their asset loaded.
   /// Unknown ids are never available.
   bool isAvailable(String id) {
     switch (id) {
@@ -144,6 +153,8 @@ class TranslationRepository {
         return true;
       case 'en.pickthall':
         return QuranRepository.instance.loaded;
+      case 'en.yusufali':
+        return _yusufAli != null;
       case 'ur.jalandhry':
         return _ur != null;
       case 'fa.ghomshei':
@@ -160,6 +171,8 @@ class TranslationRepository {
   /// with tr()). Unknown ids fall back to the Pickthall label.
   static String labelKeyFor(String id) {
     switch (id) {
+      case 'en.yusufali':
+        return 'translation_yusufali';
       case 'ur.jalandhry':
         return 'translation_jalandhry';
       case 'fa.ghomshei':

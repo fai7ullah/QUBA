@@ -115,37 +115,50 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
                   const SizedBox(height: 8),
                   ValueListenableBuilder<(int, int)?>(
                     valueListenable: audio.repeatRange,
-                    builder: (context, range, _) => Row(
+                    // Steppers on their own row, the button full-width
+                    // below: the two steppers (2 x ~116px) plus the
+                    // button (min 64px + a long label like Arabic
+                    // "تكرار مجموعة آيات") overflowed a single Row at
+                    // every phone width (352px needed in 280px at
+                    // 320px screens) — the squeeze defect class.
+                    builder: (context, range, _) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _stepper(
-                          context,
-                          p,
-                          label: tr('range_from'),
-                          value: _rangeFrom,
-                          min: 1,
-                          max: ayahCount,
-                          onChanged: (v) => setState(() => _rangeFrom = v),
+                        Row(
+                          children: [
+                            _stepper(
+                              context,
+                              p,
+                              label: tr('range_from'),
+                              value: _rangeFrom,
+                              min: 1,
+                              max: ayahCount,
+                              onChanged: (v) =>
+                                  setState(() => _rangeFrom = v),
+                            ),
+                            const SizedBox(width: 12),
+                            _stepper(
+                              context,
+                              p,
+                              label: tr('range_to'),
+                              value: _rangeTo,
+                              min: 1,
+                              max: ayahCount,
+                              onChanged: (v) =>
+                                  setState(() => _rangeTo = v),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        _stepper(
-                          context,
-                          p,
-                          label: tr('range_to'),
-                          value: _rangeTo,
-                          min: 1,
-                          max: ayahCount,
-                          onChanged: (v) => setState(() => _rangeTo = v),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: () {
-                              audio.setRepeatRange(_rangeFrom, _rangeTo);
-                              setState(() {});
-                            },
-                            child: Text(range == null
-                                ? tr('repeat_range')
-                                : tr('save')),
+                        const SizedBox(height: 12),
+                        FilledButton(
+                          onPressed: () {
+                            audio.setRepeatRange(_rangeFrom, _rangeTo);
+                            setState(() {});
+                          },
+                          child: Text(
+                            range == null ? tr('repeat_range') : tr('save'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -279,8 +292,19 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Tightened to 40px (like the mini-player buttons) so
+              // two steppers fit side by side at 320px screens.
+              // shrinkWrap is required: without it Material 3 pads
+              // the button back to the 48px tap target and the
+              // constraints do nothing (see the mini-player note).
               IconButton(
                 icon: const Icon(Icons.remove_rounded, size: 18),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                    minWidth: 40, minHeight: 40),
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 onPressed: value > min ? () => onChanged(value - 1) : null,
               ),
               SizedBox(
@@ -294,6 +318,12 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
               ),
               IconButton(
                 icon: const Icon(Icons.add_rounded, size: 18),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                    minWidth: 40, minHeight: 40),
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
                 onPressed: value < max ? () => onChanged(value + 1) : null,
               ),
             ],

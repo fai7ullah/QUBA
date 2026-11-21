@@ -14,12 +14,13 @@ class AppState extends ChangeNotifier {
   bool asrHanafi = true;
   double arabicFontSize = 30;
 
-  /// Quran translation shown under each verse: 'en.pickthall' (default),
-  /// 'ur.jalandhry', 'fa.ghomshei', or 'none' (Arabic only).
+  /// Quran translation shown under each verse: 'en.yusufali' (default
+  /// since round 4), 'en.pickthall', 'ur.jalandhry', 'fa.ghomshei',
+  /// or 'none' (Arabic only).
   /// Replaces the old showTranslation toggle (round 3): 'none' means
   /// hidden. The old 'showTranslation' preference is still read once for
   /// users upgrading from a build that had the toggle.
-  String translationId = 'en.pickthall';
+  String translationId = 'en.yusufali';
 
   /// True when a translation is shown (translationId != 'none').
   bool get showTranslation => translationId != 'none';
@@ -102,7 +103,7 @@ class AppState extends ChangeNotifier {
     asrHanafi = p.getBool('asrHanafi') ?? true;
     arabicFontSize = p.getDouble('arabicFontSize') ?? 30;
     translationId = p.getString('translation_id') ??
-        ((p.getBool('showTranslation') ?? true) ? 'en.pickthall' : 'none');
+        ((p.getBool('showTranslation') ?? true) ? 'en.yusufali' : 'none');
     reciterId = p.getString('reciter_id') ?? 'ar.alafasy';
     onboardingDone = p.getBool('onboarding_done') ?? false;
     final logEntries = p.getStringList('prayer_log') ?? const [];
@@ -149,6 +150,17 @@ class AppState extends ChangeNotifier {
     bookmarks = (p.getStringList('bookmarks') ?? const []).toSet();
     downloadedSurahs =
         (p.getStringList('downloadedSurahs') ?? const []).map(int.parse).toSet();
+    // Round 4: Yusuf Ali is the new default English translation, for
+    // new installs AND existing users. One-time migration, done here
+    // at the END of load (all fields are read, so _save is safe):
+    // anyone still on the old default (Pickthall) moves to Yusuf Ali
+    // once. The flag keeps it one-time, so a user who re-picks
+    // Pickthall afterwards is never moved again.
+    if (p.getBool('translation_migrated_yusufali') != true) {
+      if (translationId == 'en.pickthall') translationId = 'en.yusufali';
+      await p.setBool('translation_migrated_yusufali', true);
+      await _save();
+    }
     _ready = true;
     notifyListeners();
   }

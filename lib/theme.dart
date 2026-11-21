@@ -53,7 +53,6 @@ class QubaPalette {
     required this.champagne,
     required this.activeFill,
     required this.activeText,
-    required this.pattern,
     required this.shadow,
     required this.onEmerald,
   });
@@ -71,7 +70,6 @@ class QubaPalette {
   final Color champagne;
   final Color activeFill;
   final Color activeText;
-  final Color pattern;
   final Color shadow;
   final Color onEmerald;
 
@@ -89,7 +87,6 @@ class QubaPalette {
     champagne: QubaColors.champagne,
     activeFill: QubaColors.mintActive,
     activeText: QubaColors.mintActiveText,
-    pattern: Color(0x1AC9A45C),
     shadow: Color(0x1A064735),
     onEmerald: Colors.white,
   );
@@ -108,7 +105,6 @@ class QubaPalette {
     champagne: QubaColors.champagne,
     activeFill: QubaColors.nightActive,
     activeText: QubaColors.nightActiveText,
-    pattern: Color(0x14C9A45C),
     shadow: Color(0x59000000),
     onEmerald: Colors.white,
   );
@@ -227,49 +223,6 @@ ThemeData qubaDarkTheme() {
       ),
     ),
   );
-}
-
-/// Subtle Islamic 8-point star lattice used as the app background pattern —
-/// drawn lines only, very low alpha so it whispers rather than shouts.
-class GeometricPatternPainter extends CustomPainter {
-  GeometricPatternPainter({required this.color, this.step = 52.0});
-  final Color color;
-  final double step;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    for (double x = -step; x < size.width + step; x += step) {
-      for (double y = -step; y < size.height + step; y += step) {
-        final cx = x + step / 2;
-        final cy = y + step / 2;
-        // 8-point star: two overlapping squares rotated 45°
-        for (final rot in [0.0, math.pi / 4]) {
-          final path = Path();
-          const r = 13.0;
-          for (int i = 0; i < 4; i++) {
-            final a = rot + i * math.pi / 2;
-            final px = cx + r * math.cos(a);
-            final py = cy + r * math.sin(a);
-            if (i == 0) {
-              path.moveTo(px, py);
-            } else {
-              path.lineTo(px, py);
-            }
-          }
-          path.close();
-          canvas.drawPath(path, paint);
-        }
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant GeometricPatternPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.step != step;
 }
 
 /// A filled 8-point star (two overlapping squares), used for the gold

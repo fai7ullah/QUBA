@@ -12,9 +12,9 @@ import '../prayer_service.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
-/// Home — matches the reference mockup: QUBA header with mosque skyline,
-/// Next Prayer glass card, gold divider, prayer schedule, Continue Reading.
-/// Feature chips and the daily card follow below the fold.
+/// Home — QUBA header, Next Prayer glass card, gold divider, prayer
+/// schedule, Continue Reading. Feature chips and the daily card follow
+/// below the fold.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
     super.key,
@@ -64,23 +64,10 @@ class _HomeScreenState extends State<HomeScreen> {
             next.time.month == now.month &&
             next.time.year == now.year;
         final bottomInset = MediaQuery.of(context).padding.bottom;
-        final p = QubaPalette.of(context);
-        return Stack(
-          children: [
-            // Green waves + faint domes behind the bottom navigation bar.
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 125 + bottomInset,
-              child: IgnorePointer(
-                child: CustomPaint(painter: BottomDecorPainter(dark: p.dark)),
-              ),
-            ),
-            ListView(
+        return ListView(
               padding: EdgeInsets.zero,
               children: [
-                QubaHeader(onSettings: () => widget.onGoTab(3)),
+                QubaHeader(onSettings: () => widget.onGoTab(4)),
                 Padding(
                   padding: EdgeInsets.fromLTRB(13, 0, 13, 120 + bottomInset),
                   child: Column(
@@ -147,9 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ],
-            ),
-          ],
-        );
+            );
       },
     );
   }
@@ -391,6 +376,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: Text(
               trf('streak_days', {'count': appState.readingStreak}),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 15.5,
                 fontWeight: FontWeight.w800,

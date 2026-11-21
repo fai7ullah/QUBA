@@ -28,7 +28,7 @@ enum VerseRepeatMode {
   loop,
 }
 
-/// Audio: four reciters via the Islamic Network CDN (EveryAyah mirror).
+/// Audio: seventeen reciters via the Islamic Network CDN (EveryAyah mirror).
 /// See [Reciter] for the per-edition bitrates and which editions have
 /// whole-surah files.
 ///

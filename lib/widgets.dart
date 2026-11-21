@@ -11,8 +11,10 @@ import 'theme.dart';
 /// Shared QUBA widgets — the liquid-glass design system.
 /// Every screen is built from these so light/dark stay consistent.
 
-/// Full-screen background: spec background color + the subtle Islamic
-/// geometric pattern.
+/// Full-screen background: plain spec background color only.
+/// (Phase 2, round 4 item 5: all code-drawn decorations removed at the
+/// owner's request — mosque skyline, crescent, birds, branch, waves,
+/// and the geometric star pattern. The background is just the colour.)
 class QubaBackground extends StatelessWidget {
   const QubaBackground({super.key, required this.child});
   final Widget child;
@@ -35,16 +37,7 @@ class QubaBackground extends StatelessWidget {
                 end: Alignment.bottomCenter,
               ),
       ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: GeometricPatternPainter(color: p.pattern),
-            ),
-          ),
-          child,
-        ],
-      ),
+      child: child,
     );
   }
 }
@@ -417,6 +410,7 @@ class GlassButton extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 16,

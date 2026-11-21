@@ -270,14 +270,27 @@ class _QiblaScreenState extends State<QiblaScreen> {
         Icon(icon, size: 20, color: p.gold),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(label, style: TextStyle(fontSize: 14.5, color: p.muted)),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 14.5, color: p.muted),
+          ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
-            color: p.ink,
+        const SizedBox(width: 8),
+        // Flexible + ellipsis: the value can be a long location name
+        // ("My location (GPS)"), which used to starve the label to one
+        // letter wide — the squeeze defect class.
+        Flexible(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: p.ink,
+            ),
           ),
         ),
       ],

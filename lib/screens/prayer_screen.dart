@@ -39,18 +39,28 @@ class _PrayerScreenState extends State<PrayerScreen> {
             children: [
               Icon(Icons.checklist_rounded, color: p.gold, size: 20),
               const SizedBox(width: 8),
-              Text(
-                tr('prayer_log'),
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: p.ink,
+              // Expanded + ellipsis: two unprotected Texts with a
+              // Spacer between them is the squeeze defect class — a
+              // long label in another language starved the count (or
+              // vice versa) and overflowed the row.
+              Expanded(
+                child: Text(
+                  tr('prayer_log'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: p.ink,
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Text(
                 trf('prayers_prayed_count',
                     {'count': appState.prayedCountOn(today)}),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w700,
@@ -111,6 +121,8 @@ class _PrayerScreenState extends State<PrayerScreen> {
               Expanded(
                 child: Text(
                   trPrayer(name),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight:

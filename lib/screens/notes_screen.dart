@@ -91,6 +91,9 @@ class NotesScreen extends StatelessWidget {
                                         Expanded(
                                           child: Text(
                                             '${surah.nameEnglish} $s:$a',
+                                            maxLines: 1,
+                                            overflow:
+                                                TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: 16.5,
                                               fontWeight: FontWeight.w800,

@@ -111,6 +111,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                                 Expanded(
                                                   child: Text(
                                                     '${surah.nameEnglish} • ${tr('ayah')} ${hit.ayah}',
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow
+                                                        .ellipsis,
                                                     style: TextStyle(
                                                       fontSize: 14.5,
                                                       fontWeight:

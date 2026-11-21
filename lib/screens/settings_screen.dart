@@ -1,8 +1,10 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../app_state.dart';
 import '../data.dart';
+import '../homewidget/home_widget_service.dart';
 import '../i18n.dart';
 import '../notifications.dart';
 import '../reciters.dart';
@@ -41,6 +43,7 @@ class SettingsScreen extends StatelessWidget {
         appState.locationIsGps = true;
       });
       await NotificationService.instance.scheduleAll(appState);
+      await HomeWidgetService.update(appState);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(tr('loc_updated_gps'))));
@@ -155,6 +158,8 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(tr('language'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                               fontWeight: FontWeight.w600, color: p.ink)),
                     ),
@@ -183,6 +188,8 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(tr('arabic_text_size'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                               fontWeight: FontWeight.w600, color: p.ink)),
                     ),
@@ -356,6 +363,8 @@ class SettingsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(trLocation(appState.locationName),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: p.ink)),
@@ -375,7 +384,14 @@ class SettingsScreen extends StatelessWidget {
                     Expanded(
                       child: FilledButton.icon(
                         icon: const Icon(Icons.my_location_rounded),
-                        label: Text(tr('use_my_location')),
+                        // One line + ellipsis: the Farsi label ("از مکان
+                        // من استفاده کن") is wider than its half-width
+                        // slot at 320px and overflowed the button.
+                        label: Text(
+                          tr('use_my_location'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         onPressed: () => _useGps(context),
                       ),
                     ),
@@ -383,7 +399,11 @@ class SettingsScreen extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.location_city_rounded),
-                        label: Text(tr('kabul_default')),
+                        label: Text(
+                          tr('kabul_default'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         onPressed: () async {
                           appState.update(() {
                             appState.lat = AppState.kabulLat;
@@ -405,6 +425,8 @@ class SettingsScreen extends StatelessWidget {
           GlassCard(
             child: Column(
               children: [
+                const _NotificationStatusCard(),
+                const SizedBox(height: 8),
                 for (final name in [
                   'Fajr',
                   'Sunrise',
@@ -433,26 +455,10 @@ class SettingsScreen extends StatelessWidget {
                   tr('exact_alarm_note'),
                   style: TextStyle(fontSize: 12.5, color: p.muted),
                 ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    icon: const Icon(Icons.alarm_rounded),
-                    label: Text(tr('allow_exact_alarms')),
-                    onPressed: () async {
-                      final ok = await NotificationService.instance
-                          .requestExactAlarmPermission();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(ok
-                                ? tr('exact_alarms_allowed')
-                                : tr('exact_alarm_denied')),
-                          ),
-                        );
-                      }
-                    },
-                  ),
+                const SizedBox(height: 6),
+                Text(
+                  tr('oppo_battery_note'),
+                  style: TextStyle(fontSize: 12.5, color: p.muted),
                 ),
               ],
             ),
@@ -519,6 +525,252 @@ class SettingsScreen extends StatelessWidget {
           color: QubaPalette.of(context).ink,
         ),
       ),
+    );
+  }
+}
+
+/// Round 4: live notification permission + scheduling status. The 7-day
+/// Athan soak test failed at day 3 with NO notifications at all on the
+/// owner's OPPO, so this card makes the state visible instead of failing
+/// silently: whether notifications + exact alarms are granted, how many
+/// alerts are scheduled, a 1-minute test button, and the way to fix a
+/// blocked state (request again, or open the system settings).
+class _NotificationStatusCard extends StatefulWidget {
+  const _NotificationStatusCard();
+
+  @override
+  State<_NotificationStatusCard> createState() =>
+      _NotificationStatusCardState();
+}
+
+class _NotificationStatusCardState extends State<_NotificationStatusCard> {
+  late Future<NotificationPermissionState> _future;
+
+  /// Last ScheduleResult seen: when scheduleAll runs elsewhere (a
+  /// prayer toggle), a new result instance appears and the card
+  /// re-queries so the count stays fresh.
+  ScheduleResult? _seenResult;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = NotificationService.instance.permissionState();
+    _seenResult = NotificationService.instance.lastResult;
+  }
+
+  void _refresh() {
+    setState(() {
+      _future = NotificationService.instance.permissionState();
+      _seenResult = NotificationService.instance.lastResult;
+    });
+  }
+
+  Future<void> _requestNotifications() async {
+    final ok =
+        await NotificationService.instance.requestNotificationPermission();
+    _refresh();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(ok ? tr('notif_now_on') : tr('notif_still_off'))),
+    );
+  }
+
+  Future<void> _requestExactAlarms() async {
+    final ok =
+        await NotificationService.instance.requestExactAlarmPermission();
+    _refresh();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            ok ? tr('exact_alarms_allowed') : tr('exact_alarm_denied')),
+      ),
+    );
+  }
+
+  Future<void> _sendTest() async {
+    final ok = await NotificationService.instance.sendTestNotification();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(ok ? tr('notif_test_sent') : tr('notif_test_failed'))),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = QubaPalette.of(context);
+    // A new schedule result (e.g. after a prayer toggle) means the
+    // count below changed: re-query the live state in this build.
+    final current = NotificationService.instance.lastResult;
+    if (!identical(current, _seenResult)) {
+      _seenResult = current;
+      _future = NotificationService.instance.permissionState();
+    }
+    return FutureBuilder<NotificationPermissionState>(
+      future: _future,
+      builder: (context, snap) {
+        final state = snap.data;
+        final notifOk = state?.notificationsEnabled ?? true;
+        final exactOk = state?.exactAlarmsEnabled ?? false;
+        final result = NotificationService.instance.lastResult;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _statusRow(
+              context,
+              icon: Icons.notifications_rounded,
+              label: tr('notif_permission'),
+              granted: notifOk,
+              loading: snap.connectionState == ConnectionState.waiting,
+            ),
+            const SizedBox(height: 6),
+            _statusRow(
+              context,
+              icon: Icons.alarm_rounded,
+              label: tr('exact_alarm_permission'),
+              granted: exactOk,
+              loading: snap.connectionState == ConnectionState.waiting,
+            ),
+            if (result != null) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.event_available_rounded,
+                      size: 20, color: p.emerald),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      result.failed > 0
+                          ? tr('notif_some_failed')
+                          : result.scheduled > 0
+                              ? trf('notif_scheduled_n',
+                                  {'count': result.scheduled})
+                              : tr('notif_none_scheduled'),
+                      style: TextStyle(fontSize: 13.5, color: p.muted),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (!notifOk) ...[
+              const SizedBox(height: 8),
+              Text(
+                tr('notif_blocked_warning'),
+                style: TextStyle(fontSize: 13, color: p.muted),
+              ),
+            ],
+            const SizedBox(height: 10),
+            if (!notifOk)
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.notifications_active_rounded),
+                  label: Text(
+                    tr('allow_notifications'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: _requestNotifications,
+                ),
+              ),
+            if (!notifOk) const SizedBox(height: 8),
+            if (!exactOk)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.alarm_rounded),
+                  label: Text(
+                    tr('allow_exact_alarms'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: _requestExactAlarms,
+                ),
+              ),
+            if (!exactOk) const SizedBox(height: 8),
+            if (!notifOk || !exactOk)
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.settings_rounded),
+                  label: Text(
+                    tr('notif_open_settings'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onPressed: AppSettings.openAppSettings,
+                ),
+              ),
+            if (!notifOk || !exactOk) const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.science_rounded),
+                label: Text(
+                  tr('notif_test'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onPressed: _sendTest,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _statusRow(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required bool granted,
+    required bool loading,
+  }) {
+    final p = QubaPalette.of(context);
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: p.emerald),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontWeight: FontWeight.w600, color: p.ink),
+          ),
+        ),
+        if (loading)
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        else
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                granted
+                    ? Icons.check_circle_rounded
+                    : Icons.cancel_rounded,
+                size: 18,
+                color: granted ? p.emerald : Colors.red.shade700,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                granted ? tr('notif_allowed') : tr('notif_blocked'),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: granted ? p.emerald : Colors.red.shade700,
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 }
