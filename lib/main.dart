@@ -28,11 +28,9 @@ import 'screens/ramadan_screen.dart';
 import 'screens/reader_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/settings_screen.dart';
-import 'screens/sync_screen.dart';
 import 'screens/tasbih_screen.dart';
 import 'screens/test_mode_screen.dart';
 import 'screens/widget_screen.dart';
-import 'sync/sync_service.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -55,9 +53,6 @@ Future<void> main() async {
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     await NotificationService.instance.init();
     await NotificationService.instance.scheduleAll(appState);
-    // Cloud sync initialises here; it no-ops until the Supabase
-    // project exists and its URL + key are in SyncConfig.
-    await SyncService.instance.init();
     // Push fresh data to the home-screen widget (best-effort; the
     // widget also refreshes at most every 30 minutes on its own).
     await HomeWidgetService.update(appState);
@@ -164,8 +159,6 @@ class _ShellState extends State<Shell> {
         return const TestModeScreen();
       case 'ramadan':
         return const RamadanScreen();
-      case 'sync':
-        return const SyncScreen();
       case 'widget':
         return const WidgetScreen();
       default:

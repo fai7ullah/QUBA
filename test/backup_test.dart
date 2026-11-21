@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quba/app_state.dart';
 import 'package:quba/sync/backup_service.dart';
-import 'package:quba/sync/sync_payload.dart';
+import 'package:quba/sync/backup_payload.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Backup/restore tests: JSON round-trip (all fields survive), plus
@@ -77,7 +77,7 @@ void main() {
               as Map<String, dynamic>;
       expect(
         backup['data'],
-        SyncPayload.toJson(state),
+        BackupPayload.toJson(state),
       );
     });
 

@@ -41,13 +41,21 @@ class _DuasScreenState extends State<DuasScreen> {
                   subtitle: trf('duas_with_sources', {'n': duas.length}),
                 ),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final c in duaCategories)
-                      _chip(p, c, c == _category),
-                  ],
+                // Horizontal chip strip (not a Wrap): with 20
+                // categories a Wrap would fill half the screen and
+                // overflow short viewports. One fixed-height row that
+                // scrolls sideways, like a filter bar.
+                SizedBox(
+                  height: 38,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: duaCategories.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                    itemBuilder: (context, i) {
+                      final c = duaCategories[i];
+                      return _chip(p, c, c == _category);
+                    },
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(

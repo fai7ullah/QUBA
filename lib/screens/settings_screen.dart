@@ -8,12 +8,13 @@ import '../homewidget/home_widget_service.dart';
 import '../i18n.dart';
 import '../notifications.dart';
 import '../reciters.dart';
+import '../sync/backup_service.dart';
 import '../theme.dart';
 import '../translation_data.dart';
 import '../widgets.dart';
 
 /// Settings tab: theme, language, text, prayer calculation, location,
-/// reminders, feature links, about.
+/// reminders, feature links, backup, about.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key, required this.onOpenFeature});
   final void Function(String key) onOpenFeature;
@@ -496,6 +497,8 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
           ),
+          _section(context, tr('backup_title')),
+          const _BackupCard(),
           _section(context, tr('about')),
           GlassCard(
             child: Column(
@@ -529,6 +532,87 @@ class SettingsScreen extends StatelessWidget {
           fontWeight: FontWeight.w800,
           color: QubaPalette.of(context).ink,
         ),
+      ),
+    );
+  }
+}
+
+/// Local backup & restore (fully offline file export/import, no
+/// account). Moved here from the deleted Sync screen when cloud sync
+/// was removed (2026-11-21, owner's order): the backup itself stays,
+/// only the cloud part went.
+class _BackupCard extends StatefulWidget {
+  const _BackupCard();
+
+  @override
+  State<_BackupCard> createState() => _BackupCardState();
+}
+
+class _BackupCardState extends State<_BackupCard> {
+  bool _busy = false;
+
+  void _snack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Future<void> _run(Future<BackupResult> Function() op) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final result = await op();
+      _snack(result.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = QubaPalette.of(context);
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            tr('backup_subtitle'),
+            style: TextStyle(fontSize: 13.5, color: p.muted),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: _busy
+                ? null
+                : () => _run(BackupService.instance.exportToFile),
+            icon: const Icon(Icons.upload_rounded),
+            label: Text(
+              tr('backup_export'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: p.emerald,
+              foregroundColor: p.onEmerald,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: _busy
+                ? null
+                : () => _run(BackupService.instance.importFromPicker),
+            icon: const Icon(Icons.download_rounded),
+            label: Text(
+              tr('backup_import'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ],
       ),
     );
   }

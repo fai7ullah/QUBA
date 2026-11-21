@@ -29,7 +29,6 @@ import 'package:quba/screens/ramadan_screen.dart';
 import 'package:quba/screens/reader_screen.dart';
 import 'package:quba/screens/search_screen.dart';
 import 'package:quba/screens/settings_screen.dart';
-import 'package:quba/screens/sync_screen.dart';
 import 'package:quba/screens/tasbih_screen.dart';
 import 'package:quba/screens/test_mode_screen.dart';
 import 'package:quba/screens/widget_screen.dart';
@@ -241,7 +240,6 @@ void main() {
     'WordByWord': () => const WordByWordScreen(surah: 2, ayah: 255),
     'TestMode': () => const TestModeScreen(),
     'Ramadan': () => const RamadanScreen(),
-    'Sync': () => const SyncScreen(),
     'Widget': () => const WidgetScreen(),
     'Settings': () => SettingsScreen(onOpenFeature: (_) {}),
     'Calendar': () => const CalendarScreen(),

@@ -7,7 +7,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../app_state.dart';
 import '../i18n.dart';
-import 'sync_payload.dart';
+import 'backup_payload.dart';
 
 /// The outcome of one backup operation. [ok] is false for every
 /// failure (bad file, no file chosen, share-sheet error) and [message]
@@ -20,16 +20,17 @@ class BackupResult {
 }
 
 /// Local backup & restore: export the user's data to a JSON file and
-/// import it back. Works fully offline, no account needed — the
-/// fallback for users who never set up cloud sync.
+/// import it back. Works fully offline, no account needed — the only
+/// way to move QUBA data between devices (cloud sync was removed
+/// 2026-11-21, owner's order).
 ///
-/// File format (same payload shape as cloud sync, plus a header):
+/// File format (BackupPayload shape, plus a header):
 /// ```json
 /// {
 ///   "format": "quba-backup",
 ///   "version": 1,
 ///   "exported_at": "2026-11-21T12:00:00.000Z",
-///   "data": { ...SyncPayload... }
+///   "data": { ...BackupPayload... }
 /// }
 /// ```
 class BackupService {
@@ -45,7 +46,7 @@ class BackupService {
       'format': formatName,
       'version': formatVersion,
       'exported_at': DateTime.now().toUtc().toIso8601String(),
-      'data': SyncPayload.toJson(state),
+      'data': BackupPayload.toJson(state),
     };
     return const JsonEncoder.withIndent('  ').convert(map);
   }
@@ -68,7 +69,7 @@ class BackupService {
       if (data is! Map<String, dynamic>) {
         return BackupResult(false, tr('backup_invalid'));
       }
-      final applied = SyncPayload.apply(state ?? appState, data);
+      final applied = BackupPayload.apply(state ?? appState, data);
       if (!applied) return BackupResult(false, tr('backup_invalid'));
       return BackupResult(true, tr('backup_imported'));
     } catch (_) {
