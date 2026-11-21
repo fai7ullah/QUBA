@@ -383,6 +383,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                       const SizedBox(height: 8),
                       GridView.builder(
+                        // NOT primary: nested inside the screen's
+                        // scrollable; it must not attach to the
+                        // route's PrimaryScrollController.
+                        primary: false,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate:

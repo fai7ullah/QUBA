@@ -44,6 +44,9 @@ class ExtrasScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
     return ListView(
+      // NOT primary: see home_screen.dart — each tab owns its scroll
+      // state instead of sharing the route's PrimaryScrollController.
+      primary: false,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
       children: [
         Text(
@@ -61,6 +64,9 @@ class ExtrasScreen extends StatelessWidget {
         ),
         const SizedBox(height: 18),
         GridView.count(
+          // NOT primary: nested inside the tab's ListView; it must not
+          // attach to the route's PrimaryScrollController.
+          primary: false,
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,

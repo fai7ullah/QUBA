@@ -374,6 +374,9 @@ class _QuranScreenState extends State<QuranScreen> {
     final p = QubaPalette.of(context);
     final repo = QuranRepository.instance;
     return ListView.separated(
+      // NOT primary: see home_screen.dart — each tab owns its scroll
+      // state instead of sharing the route's PrimaryScrollController.
+      primary: false,
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 120),
       itemCount: repo.surahs.length,
       separatorBuilder: (_, _) => Divider(
@@ -450,6 +453,9 @@ class _QuranScreenState extends State<QuranScreen> {
     final p = QubaPalette.of(context);
     final repo = QuranRepository.instance;
     return ListView.separated(
+      // NOT primary: see home_screen.dart — each tab owns its scroll
+      // state instead of sharing the route's PrimaryScrollController.
+      primary: false,
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 120),
       itemCount: juzList.length,
       separatorBuilder: (_, _) => Divider(

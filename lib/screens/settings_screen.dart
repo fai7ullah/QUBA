@@ -63,6 +63,11 @@ class SettingsScreen extends StatelessWidget {
     return AnimatedBuilder(
       animation: appState,
       builder: (context, _) => ListView(
+        // NOT primary: see home_screen.dart — each tab owns its scroll
+        // state instead of sharing the route's PrimaryScrollController
+        // across the IndexedStack (2026-11-21: this list scrolled down
+        // and would not scroll back up on the owner's phone).
+        primary: false,
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
         children: [
           _section(context, tr('appearance')),

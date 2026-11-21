@@ -65,6 +65,15 @@ class _HomeScreenState extends State<HomeScreen> {
             next.time.year == now.year;
         final bottomInset = MediaQuery.of(context).padding.bottom;
         return ListView(
+              // NOT primary: all five tab ListViews live in one
+              // IndexedStack in the Shell, and primary ListViews all
+              // attach to the route's single PrimaryScrollController.
+              // Each tab owns its scroll state instead (2026-11-21:
+              // Settings scrolled down and would not scroll back up
+              // on the owner's phone — the shared controller is the
+              // one structural anomaly in the scroll path, so every
+              // tab gets its own controller now).
+              primary: false,
               padding: EdgeInsets.zero,
               children: [
                 QubaHeader(onSettings: () => widget.onGoTab(4)),

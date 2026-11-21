@@ -210,6 +210,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
             ? PrayerService.nextPrayer(now, appState)
             : null;
         return ListView(
+          // NOT primary: see home_screen.dart — each tab owns its
+          // scroll state instead of sharing the route's single
+          // PrimaryScrollController across the IndexedStack.
+          primary: false,
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
           children: [
             Row(
