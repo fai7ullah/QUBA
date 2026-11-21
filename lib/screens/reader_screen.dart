@@ -189,7 +189,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final surah = _surah;
     final text =
         '${ayah.arabic}\n\n"${ayah.english}"\n— ${surah.nameEnglish} ${surah.number}:${ayah.number}';
-    unawaited(Share.share(text));
+    unawaited(SharePlus.instance.share(ShareParams(text: text)));
   }
 
   void _onPlayTap(Ayah ayah) {

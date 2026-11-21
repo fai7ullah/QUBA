@@ -90,9 +90,11 @@ class BackupService {
           '${now.minute.toString().padLeft(2, '0')}';
       final file = File('${dir.path}/quba-backup-$stamp.json');
       await file.writeAsString(buildBackupJson(s));
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'QUBA backup',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          subject: 'QUBA backup',
+        ),
       );
       return BackupResult(true, tr('backup_exported'));
     } catch (_) {
@@ -101,22 +103,24 @@ class BackupService {
   }
 
   /// Let the user pick a `.json` backup file and restore it.
+  /// file_picker v13 API: [FilePicker.pickFile] returns a single
+  /// [PlatformFile] (null on cancel); bytes are read with
+  /// [PlatformFile.readAsBytes] (the old `withData` flag is gone).
   Future<BackupResult> importFromPicker([AppState? state]) async {
     try {
-      final result = await FilePicker.pickFiles(
+      final picked = await FilePicker.pickFile(
         type: FileType.custom,
         allowedExtensions: ['json'],
-        withData: true,
       );
-      if (result == null || result.files.isEmpty) {
+      if (picked == null) {
         return BackupResult(false, tr('backup_no_file'));
       }
-      final picked = result.files.single;
       String? text;
-      if (picked.bytes != null) {
-        text = utf8.decode(picked.bytes!);
-      } else if (picked.path != null) {
+      if (picked.path != null) {
         text = await File(picked.path!).readAsString();
+      } else {
+        final bytes = await picked.readAsBytes();
+        if (bytes.isNotEmpty) text = utf8.decode(bytes);
       }
       if (text == null) return BackupResult(false, tr('backup_failed'));
       return restoreFromJson(text, state);
