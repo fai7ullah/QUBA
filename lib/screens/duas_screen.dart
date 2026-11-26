@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../content.dart';
 import '../i18n.dart';
+import '../share_card.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -170,6 +171,21 @@ class _DuasScreenState extends State<DuasScreen> {
                                       ),
                                     ),
                                   ],
+                                ),
+                                Align(
+                                  alignment: AlignmentDirectional.centerEnd,
+                                  child: TextButton.icon(
+                                    onPressed: () => ShareCard.share(
+                                      arabic: duaArabic(dua),
+                                      body: dua.english,
+                                      reference: dua.source,
+                                      fallbackText:
+                                          '${duaArabic(dua)}\n\n${dua.english}\n— ${dua.source}',
+                                    ),
+                                    icon: const Icon(Icons.ios_share_rounded,
+                                        size: 18),
+                                    label: Text(tr('share_as_image')),
+                                  ),
                                 ),
                               ] else ...[
                                 const SizedBox(height: 8),

@@ -13,6 +13,7 @@ import 'notifications.dart';
 import 'tafsir/tafsir_screen.dart';
 import 'translation_data.dart';
 import 'wordbyword/wordbyword_screen.dart';
+import 'screens/azkar_screen.dart';
 import 'screens/calendar_screen.dart';
 import 'screens/duas_screen.dart';
 import 'screens/extras_screen.dart';
@@ -22,6 +23,7 @@ import 'screens/mushaf_screen.dart';
 import 'screens/names_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/prayer_screen.dart';
+import 'screens/progress_screen.dart';
 import 'screens/qibla_screen.dart';
 import 'screens/quran_screen.dart';
 import 'screens/ramadan_screen.dart';
@@ -79,6 +81,11 @@ class QubaApp extends StatelessWidget {
           Locale('fa'),
           Locale('ur'),
           Locale('ar'),
+          Locale('id'),
+          Locale('tr'),
+          Locale('bn'),
+          Locale('fr'),
+          Locale('ms'),
         ],
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
@@ -161,6 +168,10 @@ class _ShellState extends State<Shell> {
         return const RamadanScreen();
       case 'widget':
         return const WidgetScreen();
+      case 'azkar':
+        return const AzkarScreen();
+      case 'progress':
+        return const ProgressScreen();
       default:
         return const QiblaScreen();
     }

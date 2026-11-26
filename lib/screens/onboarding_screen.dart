@@ -294,7 +294,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _stepTitle(p, tr('onboard_welcome'), tr('onboard_welcome_body')),
       SectionLabel(tr('onboard_language')),
       const SizedBox(height: 12),
-      for (final lang in QubaStrings.langs)
+      for (final lang in QubaStrings.allLangs)
         _option(
           p,
           selected: appState.lang == lang,

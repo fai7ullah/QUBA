@@ -48,6 +48,10 @@ class ExtrasScreen extends StatelessWidget {
         'khatma'),
     (Icons.calendar_month_rounded, 'calendar', 'calendar_desc',
         Color(0xFF00838F), 'calendar'),
+    (Icons.wb_twilight_rounded, 'azkar', 'azkar_desc',
+        Color(0xFFEF6C00), 'azkar'),
+    (Icons.emoji_events_rounded, 'progress', 'progress_desc',
+        Color(0xFFC9A45C), 'progress'),
     // Study
     (Icons.library_books_rounded, 'hadith', 'hadith_desc',
         Color(0xFF6D4C41), 'hadith'),
@@ -68,9 +72,9 @@ class ExtrasScreen extends StatelessWidget {
 
   /// Row index ranges per section (into [_rows]).
   static const _sections = [
-    ('extras_everyday', 0, 6),
-    ('extras_study', 6, 9),
-    ('extras_more', 9, 11),
+    ('extras_everyday', 0, 8),
+    ('extras_study', 8, 11),
+    ('extras_more', 11, 13),
   ];
 
   @override

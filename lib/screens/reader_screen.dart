@@ -9,6 +9,7 @@ import '../audio.dart';
 import '../data.dart';
 import '../i18n.dart';
 import '../juz_data.dart';
+import '../share_card.dart';
 import '../tafsir/tafsir_screen.dart';
 import '../theme.dart';
 import '../translation_data.dart';
@@ -187,9 +188,46 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   void _shareAyah(Ayah ayah) {
     final surah = _surah;
-    final text =
-        '${ayah.arabic}\n\n"${ayah.english}"\n— ${surah.nameEnglish} ${surah.number}:${ayah.number}';
-    unawaited(SharePlus.instance.share(ShareParams(text: text)));
+    final ref = '${surah.nameEnglish} ${surah.number}:${ayah.number}';
+    final repo = QuranRepository.instance;
+    final arabic = repo.arabicText(_surahNumber, ayah.number);
+    final shown = TranslationRepository.instance
+        .textFor(appState.translationId, _surahNumber, ayah.number);
+    final text = '$arabic\n\n"${ayah.english}"\n— $ref';
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: Text(tr('share_as_image')),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                unawaited(ShareCard.share(
+                  arabic: arabic,
+                  body: shown ?? '',
+                  reference: ref,
+                  fallbackText: text,
+                  bodyRtl: TranslationRepository.instance
+                      .isRtl(appState.translationId),
+                  arabicFont: repo.arabicFontFamily,
+                ));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.text_fields_rounded),
+              title: Text(tr('share_as_text')),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                unawaited(SharePlus.instance.share(ShareParams(text: text)));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _onPlayTap(Ayah ayah) {

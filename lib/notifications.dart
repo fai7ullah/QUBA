@@ -273,12 +273,98 @@ class NotificationService {
         if (done) scheduled++;
       }
     }
+    // Azkar reminders ride along with every prayer reschedule so they
+    // follow the (possibly adjusted) prayer times.
+    await scheduleAzkar(state);
     final result = ScheduleResult(
         scheduled: scheduled, failed: failed, exactAlarms: exactUsed);
     lastResult = result;
     debugPrint('QUBA: scheduled ${result.scheduled} prayer notifications '
         '(${result.failed} failed, exact=${result.exactAlarms})');
     return result;
+  }
+
+  // ------------------------------------------------------------------
+  // Azkar reminders (morning after Fajr, evening after Asr).
+  // ------------------------------------------------------------------
+
+  static const _azkarChannelId = 'azkar_reminders';
+
+  /// Azkar alerts use ids 2000 + day * 2 + (0 morning | 1 evening) —
+  /// clear of the prayer ids (1000..1065) and the test id (7).
+  static int _azkarId(int day, bool morning) =>
+      2000 + day * 2 + (morning ? 0 : 1);
+
+  NotificationDetails _azkarDetails() {
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        _azkarChannelId,
+        tr('azkar_channel'),
+        channelDescription: tr('azkar_channel_desc'),
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+      ),
+    );
+  }
+
+  /// When a reminder should fire: [gapMinutes] after [start], but always
+  /// inside the window [start, end): if the window is too short, use the
+  /// middle of it.
+  static DateTime azkarTime(DateTime start, DateTime end, int gapMinutes) {
+    final candidate = start.add(Duration(minutes: gapMinutes));
+    if (candidate.isBefore(end)) return candidate;
+    return start.add(Duration(minutes: (end.difference(start).inMinutes ~/ 2)));
+  }
+
+  /// (Re)schedules the next 7 days of Azkar reminders from the current
+  /// settings. Never throws. Inexact alarms are enough here (a reminder
+  /// a few minutes late is fine), so no exact-alarm permission is needed.
+  Future<void> scheduleAzkar(AppState state) async {
+    try {
+      if (!_initialized) await init();
+      for (var day = 0; day < 7; day++) {
+        for (final morning in const [true, false]) {
+          try {
+            await _plugin.cancel(_azkarId(day, morning));
+          } catch (_) {}
+        }
+      }
+      if (!state.azkarMorningNotify && !state.azkarEveningNotify) return;
+      final now = DateTime.now();
+      for (var day = 0; day < 7; day++) {
+        final date = now.add(Duration(days: day));
+        final list = PrayerService.dayList(date, state);
+        DateTime timeOf(String name) =>
+            list.firstWhere((e) => e.name == name).time;
+        final fajr = timeOf('Fajr');
+        final sunrise = timeOf('Sunrise');
+        final asr = timeOf('Asr');
+        final maghrib = timeOf('Maghrib');
+        for (final morning in const [true, false]) {
+          if (morning && !state.azkarMorningNotify) continue;
+          if (!morning && !state.azkarEveningNotify) continue;
+          final at = morning
+              ? azkarTime(fajr, sunrise, 20)
+              : azkarTime(asr, maghrib, 20);
+          if (!at.isAfter(now)) continue;
+          try {
+            await _plugin.zonedSchedule(
+              _azkarId(day, morning),
+              tr(morning ? 'azkar_morning_notif_title' : 'azkar_evening_notif_title'),
+              tr(morning ? 'azkar_morning_notif_body' : 'azkar_evening_notif_body'),
+              tz.TZDateTime.from(at, tz.local),
+              _azkarDetails(),
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+              payload: morning ? 'azkar_morning' : 'azkar_evening',
+            );
+          } catch (_) {
+            // One failed reminder must not stop the others.
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('QUBA: azkar scheduling failed: $e');
+    }
   }
 
   /// Schedules a one-off test notification 1 minute from now so the

@@ -28,6 +28,8 @@ class PrayerService {
       tzHours: tzHours,
       method: s.calcMethod,
       hanafi: s.asrHanafi,
+      highLat: s.highLatRule,
+      adjust: s.prayerAdjust,
     );
   }
 
@@ -52,9 +54,8 @@ class PrayerService {
     return tomorrow.first;
   }
 
-  static String methodLabel(AppState s) => s.calcMethod == 'karachi'
-      ? 'Univ. of Islamic Sciences, Karachi'
-      : 'Muslim World League';
+  static String methodLabel(AppState s) =>
+      PrayerMethod.byId(s.calcMethod).name;
 
   static String madhabLabel(AppState s) =>
       s.asrHanafi ? tr('madhab_hanafi') : tr('madhab_shafii');

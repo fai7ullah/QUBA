@@ -8,6 +8,7 @@ import '../app_state.dart';
 ///   "notes": {"2:255": "free text"},
 ///   "prayer_log": {"2026-11-21": ["Fajr", "Dhuhr"]},
 ///   "reading_days": [20750],
+///   "azkar_done": ["2026-11-21:morning"],
 ///   "khatma": {"days": 30, "start_global": 0, "start_day": 20750},
 ///   "tasbih_totals": {"subhanallah": 100},
 ///   "last_read": {"surah": 2, "ayah": 5}
@@ -29,6 +30,7 @@ class BackupPayload {
             e.key: e.value.toList()..sort(),
         },
         'reading_days': state.readingDays.toList()..sort(),
+        'azkar_done': state.azkarDone.toList()..sort(),
         'khatma': {
           'days': state.khatmaDays,
           'start_global': state.khatmaStartGlobal,
@@ -58,6 +60,11 @@ class BackupPayload {
       final prayerLog = _prayerLog(data['prayer_log']);
       final readingDays = _intList(data['reading_days']);
       final tasbihTotals = _intMap(data['tasbih_totals']);
+      final azkarRaw = _stringList(data['azkar_done']);
+      final azkarDone = azkarRaw
+          ?.where((e) => RegExp(r'^\d{4}-\d{2}-\d{2}:(morning|evening|after)$')
+              .hasMatch(e))
+          .toSet();
 
       final khatma = data['khatma'];
       int? khatmaDays;
@@ -84,6 +91,7 @@ class BackupPayload {
           prayerLog != null ||
           readingDays != null ||
           tasbihTotals != null ||
+          azkarDone != null ||
           khatmaDays != null ||
           lastSurah != null;
       if (!appliedAny) return false;
@@ -94,6 +102,7 @@ class BackupPayload {
         if (prayerLog != null) state.prayerLog = prayerLog;
         if (readingDays != null) state.readingDays = readingDays.toSet();
         if (tasbihTotals != null) state.tasbihTotals = tasbihTotals;
+        if (azkarDone != null) state.azkarDone = azkarDone;
         if (khatmaDays != null) state.khatmaDays = khatmaDays;
         if (khatmaStartGlobal != null) {
           state.khatmaStartGlobal = khatmaStartGlobal;

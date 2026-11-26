@@ -12,6 +12,7 @@ import '../sync/backup_service.dart';
 import '../theme.dart';
 import '../translation_data.dart';
 import '../widgets.dart';
+import 'calc_settings.dart';
 
 /// Settings tab: theme, language, text, prayer calculation, location,
 /// reminders, feature links, backup, about.
@@ -173,7 +174,7 @@ class SettingsScreen extends StatelessWidget {
                       value: appState.lang,
                       underline: const SizedBox.shrink(),
                       items: [
-                        for (final l in QubaStrings.langs)
+                        for (final l in QubaStrings.allLangs)
                           DropdownMenuItem(
                             value: l,
                             child: Text(QubaStrings.langNames[l]!),
@@ -295,66 +296,7 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           _section(context, tr('calculation')),
-          GlassCard(
-            child: Column(
-              children: [
-                RadioGroup<String>(
-                  groupValue: appState.calcMethod,
-                  onChanged: (v) async {
-                    if (v == null) return;
-                    appState.update(() => appState.calcMethod = v);
-                    await NotificationService.instance.scheduleAll(appState);
-                  },
-                  child: Column(
-                    children: [
-                      RadioListTile<String>(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Muslim World League'),
-                        subtitle: Text(
-                            '${trPrayer('Fajr')} 18° • ${trPrayer('Isha')} 17°'),
-                        value: 'mwl',
-                      ),
-                      RadioListTile<String>(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                            'Univ. of Islamic Sciences, Karachi'),
-                        subtitle: Text(
-                            '${trPrayer('Fajr')} 18° • ${trPrayer('Isha')} 18°'),
-                        value: 'karachi',
-                      ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                RadioGroup<bool>(
-                  groupValue: appState.asrHanafi,
-                  onChanged: (v) async {
-                    if (v == null) return;
-                    appState.update(() => appState.asrHanafi = v);
-                    await NotificationService.instance.scheduleAll(appState);
-                  },
-                  child: Column(
-                    children: [
-                      RadioListTile<bool>(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                            "${trPrayer('Asr')} — ${tr('madhab_hanafi')}"),
-                        subtitle: Text(tr('asr_hanafi_sub')),
-                        value: true,
-                      ),
-                      RadioListTile<bool>(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                            "${trPrayer('Asr')} — ${tr('madhab_shafii')}"),
-                        subtitle: Text(tr('asr_shafii_sub')),
-                        value: false,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const CalcSettingsCard(),
           _section(context, tr('location')),
           GlassCard(
             child: Column(

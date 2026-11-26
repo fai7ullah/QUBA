@@ -2,10 +2,71 @@ import 'dart:math' as math;
 
 import 'i18n.dart';
 
+/// One prayer-time calculation method: Fajr angle, and either an Isha
+/// angle or "Isha = N minutes after Maghrib" (Umm al-Qura, Qatar).
+/// Values follow the published standards used by PrayTimes / Aladhan.
+class PrayerMethod {
+  const PrayerMethod(this.id, this.name, this.fajr, this.isha,
+      {this.ishaMinutes = 0});
+  final String id;
+
+  /// Proper name of the authority (not translated, like the other names).
+  final String name;
+  final double fajr;
+  final double isha;
+
+  /// When > 0, Isha is this many minutes after Maghrib and [isha] is unused.
+  final int ishaMinutes;
+
+  static const List<PrayerMethod> all = [
+    PrayerMethod('mwl', 'Muslim World League', 18, 17),
+    PrayerMethod('isna', 'ISNA (North America)', 15, 15),
+    PrayerMethod('egypt', 'Egyptian General Authority of Survey', 19.5, 17.5),
+    PrayerMethod('makkah', 'Umm al-Qura, Makkah', 18.5, 0, ishaMinutes: 90),
+    PrayerMethod('karachi', 'Univ. of Islamic Sciences, Karachi', 18, 18),
+    PrayerMethod('kuwait', 'Kuwait', 18, 17.5),
+    PrayerMethod('qatar', 'Qatar', 18, 0, ishaMinutes: 90),
+    PrayerMethod('dubai', 'Dubai (UAE)', 18.2, 18.2),
+    PrayerMethod('singapore', 'Singapore / Malaysia (JAKIM)', 20, 18),
+    PrayerMethod('turkey', 'Diyanet, Turkey', 18, 17),
+    PrayerMethod('france', 'France (UOIF)', 12, 12),
+  ];
+
+  /// The method for [id]; unknown ids fall back to Muslim World League.
+  static PrayerMethod byId(String id) {
+    for (final m in all) {
+      if (m.id == id) return m;
+    }
+    return all.first;
+  }
+
+  /// A rough, offline suggestion of the method most used around a
+  /// location (coarse regions, NOT country borders). It is only ever a
+  /// suggestion — the user confirms it. Falls back to MWL.
+  static String suggestFor(double lat, double lng) {
+    bool inBox(double la1, double la2, double ln1, double ln2) =>
+        lat >= la1 && lat <= la2 && lng >= ln1 && lng <= ln2;
+    if (inBox(36, 42.5, 26, 45)) return 'turkey';
+    if (inBox(16, 32.5, 34.5, 56)) return 'makkah';
+    if (inBox(22, 32, 24.5, 34.5)) return 'egypt';
+    if (inBox(22, 26.5, 51, 56.5)) return 'dubai';
+    if (inBox(-11, 8, 95, 141)) return 'singapore';
+    if (inBox(5, 38, 60, 93)) return 'karachi';
+    if (inBox(15, 72, -170, -50)) return 'isna';
+    if (inBox(41, 51.5, -5, 8.5)) return 'france';
+    return 'mwl';
+  }
+}
+
 /// On-device prayer-time calculation — a faithful Dart port of the native
 /// QUBA `PrayerCalc` (standard PrayTimes-family solar-position formulas).
-/// Angles per method: MWL Fajr 18 / Isha 17; Karachi Fajr 18 / Isha 18.
-/// Asr factor: Shafi'i 1, Hanafi 2. No network is ever involved.
+/// Methods: see [PrayerMethod.all]. Asr factor: Shafi'i 1, Hanafi 2.
+/// Optional high-latitude rule ([highLat]) and per-prayer minute
+/// adjustments ([adjust]). No network is ever involved.
+///
+/// [highLat] values: 'auto' (default — only fixes prayers that cannot be
+/// computed at all, the original behaviour), 'midnight', 'oneseventh',
+/// 'anglebased' (the three PrayTimes rules, always applied).
 ///
 /// Verified against the native app's Aladhan-checked values for Kabul
 /// (34.5553, 69.2075) on 2026-11-11, MWL + Hanafi — see
@@ -26,17 +87,25 @@ class PrayerCalc {
     required this.tzHours,
     this.method = 'mwl',
     this.hanafi = true,
-  })  : fajrAngle = 18,
-        ishaAngle = method == 'karachi' ? 18 : 17,
+    this.highLat = 'auto',
+    this.adjust = const [0, 0, 0, 0, 0, 0],
+  })  : fajrAngle = PrayerMethod.byId(method).fajr,
+        ishaAngle = PrayerMethod.byId(method).isha,
+        ishaMinutes = PrayerMethod.byId(method).ishaMinutes,
         asrFactor = hanafi ? 2 : 1;
 
   final double lat;
   final double lng;
   final double tzHours;
-  final String method; // 'mwl' | 'karachi'
+  final String method; // a PrayerMethod id
   final bool hanafi;
+  final String highLat;
+
+  /// Minute offsets for [Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha].
+  final List<int> adjust;
   final double fajrAngle;
   final double ishaAngle;
+  final int ishaMinutes;
   final int asrFactor;
 
   static double _dtr(double d) => d * math.pi / 180.0;
@@ -106,25 +175,52 @@ class PrayerCalc {
   /// Minutes-from-midnight for the 6 prayers on the given local date.
   List<int> timesFor(int year, int month, int day) {
     final jd = _julian(year, month, day) - lng / (15.0 * 24.0);
+    final dhuhr = _midDay(jd);
     var fajr = _sunAngleTime(jd, fajrAngle, true);
     var sunrise = _sunAngleTime(jd, 0.833, true);
-    final dhuhr = _midDay(jd);
-    final asr = _asrTime(jd, asrFactor);
+    var asr = _asrTime(jd, asrFactor);
     var maghrib = _sunAngleTime(jd, 0.833, false);
-    var isha = _sunAngleTime(jd, ishaAngle, false);
+    var isha = ishaMinutes > 0
+        ? maghrib + ishaMinutes / 60.0
+        : _sunAngleTime(jd, ishaAngle, false);
 
-    // High-latitude fallback: middle-of-the-night portion method.
-    if (fajr.isNaN || sunrise.isNaN || maghrib.isNaN || isha.isNaN) {
-      final night = _fixHour(sunrise - maghrib);
-      if (fajr.isNaN) fajr = sunrise - (fajrAngle / 60.0) * night;
-      if (isha.isNaN) isha = maghrib + (ishaAngle / 60.0) * night;
-      if (sunrise.isNaN) sunrise = dhuhr - 6;
-      if (maghrib.isNaN) maghrib = dhuhr + 6;
+    // Polar day/night: keep every value finite.
+    if (sunrise.isNaN) sunrise = dhuhr - 6;
+    if (maghrib.isNaN) maghrib = dhuhr + 6;
+    if (asr.isNaN) asr = dhuhr + 3;
+    if (isha.isNaN && ishaMinutes > 0) isha = maghrib + ishaMinutes / 60.0;
+
+    // High-latitude handling (PrayTimes "night portion" rules).
+    final night = _fixHour(sunrise - maghrib); // sunset -> sunrise, hours
+    final always = highLat != 'auto';
+    double portion(double angle) {
+      switch (highLat) {
+        case 'midnight':
+          return 0.5;
+        case 'oneseventh':
+          return 1.0 / 7.0;
+        default: // 'anglebased' and the 'auto' fallback
+          return angle / 60.0;
+      }
     }
+
+    final fajrLimit = portion(fajrAngle) * night;
+    if (fajr.isNaN || (always && _fixHour(sunrise - fajr) > fajrLimit)) {
+      fajr = sunrise - fajrLimit;
+    }
+    if (ishaMinutes == 0) {
+      final ishaLimit = portion(ishaAngle) * night;
+      if (isha.isNaN || (always && _fixHour(isha - maghrib) > ishaLimit)) {
+        isha = maghrib + ishaLimit;
+      }
+    }
+
     final hours = [fajr, sunrise, dhuhr, asr, maghrib, isha];
     return [
-      for (final h in hours)
-        (_fixHour(h + (tzHours - lng / 15.0)) * 60.0).round() % (24 * 60),
+      for (var i = 0; i < hours.length; i++)
+        ((_fixHour(hours[i] + (tzHours - lng / 15.0)) * 60.0).round() +
+                (i < adjust.length ? adjust[i] : 0)) %
+            (24 * 60),
     ];
   }
 
@@ -193,8 +289,13 @@ class HijriDate {
     return HijriDate(year, month, day);
   }
 
+  /// User correction (in days, -2..+2) applied by [fromDate], because
+  /// moon-sighting calendars differ by country. Set from the settings.
+  /// 0 by default (and in tests).
+  static int dayOffset = 0;
+
   static HijriDate fromDate(DateTime date) =>
-      fromGregorian(date.year, date.month, date.day);
+      fromGregorian(date.year, date.month, date.day + dayOffset);
 
   /// Number of days in a Hijri month (civil calendar: 30/29 alternating,
   /// with leap years in the 30-year cycle adding a day to Dhul-Hijjah).

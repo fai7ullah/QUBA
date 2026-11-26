@@ -111,8 +111,9 @@ void main() {
         reason: 'Settings content must overflow the viewport');
     expect(settingsOffset(tester), 0);
 
-    // Scroll DOWN (drag up) to the bottom.
-    for (var i = 0; i < 5; i++) {
+    // Scroll DOWN (drag up) to the bottom. Settings content height
+    // varies by version, so drag until near the bottom is reached.
+    for (var i = 0; i < 12; i++) {
       await tester.drag(
         find.descendant(
           of: find.byType(SettingsScreen),
@@ -121,15 +122,17 @@ void main() {
         const Offset(0, -500),
       );
       await tester.pump();
+      if (settingsOffset(tester) > settingsMaxExtent(tester) * 0.8) break;
     }
     final atBottom = settingsOffset(tester);
+    final maxAtBottom = settingsMaxExtent(tester);
     // ignore: avoid_print
-    print('A: after scrolling down: offset=$atBottom max=$maxExtent');
-    expect(atBottom, greaterThan(maxExtent * 0.8),
+    print('A: after scrolling down: offset=$atBottom max=$maxAtBottom');
+    expect(atBottom, greaterThan(maxAtBottom * 0.8),
         reason: 'should have reached (near) the bottom');
 
     // Now scroll back UP (drag down). This is the reported bug.
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 12; i++) {
       await tester.drag(
         find.descendant(
           of: find.byType(SettingsScreen),
@@ -138,6 +141,7 @@ void main() {
         const Offset(0, 500),
       );
       await tester.pump();
+      if (settingsOffset(tester) < atBottom * 0.5) break;
     }
     final afterUp = settingsOffset(tester);
     // ignore: avoid_print
@@ -166,18 +170,21 @@ void main() {
     expect(maxExtent, greaterThan(0),
         reason: 'Settings content must overflow the viewport');
 
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 12; i++) {
       await tester.drag(find.byType(ListView), const Offset(0, -500));
       await tester.pump();
+      if (settingsOffset(tester) > settingsMaxExtent(tester) * 0.8) break;
     }
     final atBottom = settingsOffset(tester);
+    final maxAtBottom = settingsMaxExtent(tester);
     // ignore: avoid_print
-    print('B: after scrolling down: offset=$atBottom max=$maxExtent');
-    expect(atBottom, greaterThan(maxExtent * 0.8));
+    print('B: after scrolling down: offset=$atBottom max=$maxAtBottom');
+    expect(atBottom, greaterThan(maxAtBottom * 0.8));
 
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 12; i++) {
       await tester.drag(find.byType(ListView), const Offset(0, 500));
       await tester.pump();
+      if (settingsOffset(tester) < atBottom * 0.5) break;
     }
     final afterUp = settingsOffset(tester);
     // ignore: avoid_print

@@ -9,6 +9,7 @@ import '../decor.dart';
 import '../i18n.dart';
 import '../notifications.dart';
 import '../prayer_service.dart';
+import '../rate_service.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -32,6 +33,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Timer? _ticker;
+  Timer? _ratingTimer;
 
   @override
   void initState() {
@@ -39,11 +41,41 @@ class _HomeScreenState extends State<HomeScreen> {
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
+    // After a real achievement (7-day streak) ask once, politely, for a
+    // rating — a few seconds after launch, never over the first frame.
+    _ratingTimer = Timer(const Duration(seconds: 4), _maybeAskRating);
+  }
+
+  Future<void> _maybeAskRating() async {
+    if (!mounted || !appState.shouldAskForRating) return;
+    appState.noteRatingAsked();
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(tr('rate_title')),
+        content: Text(tr('rate_body')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(tr('rate_later')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(tr('rate_now')),
+          ),
+        ],
+      ),
+    );
+    if (yes == true) {
+      appState.noteRated();
+      await RateService.requestReview();
+    }
   }
 
   @override
   void dispose() {
     _ticker?.cancel();
+    _ratingTimer?.cancel();
     super.dispose();
   }
 
@@ -96,6 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 12),
                         _streakChip(context),
                       ],
+                      if (appState.prayerStreak > 0) ...[
+                        const SizedBox(height: 12),
+                        _prayerStreakChip(context),
+                      ],
                       // Below the fold: shortcuts and the daily card.
                       const SizedBox(height: 120),
                       Align(
@@ -133,6 +169,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               icon: Icons.calendar_month_rounded,
                               label: tr('calendar'),
                               onTap: () => widget.onOpenFeature('calendar'),
+                            ),
+                            FeatureChip(
+                              icon: Icons.wb_twilight_rounded,
+                              label: tr('azkar'),
+                              onTap: () => widget.onOpenFeature('azkar'),
+                            ),
+                            FeatureChip(
+                              icon: Icons.emoji_events_rounded,
+                              label: tr('progress'),
+                              onTap: () => widget.onOpenFeature('progress'),
                             ),
                           ],
                         ),
@@ -358,6 +404,41 @@ class _HomeScreenState extends State<HomeScreen> {
               color: p.dark ? p.activeText : p.emeraldDeep,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  /// Prayer streak chip (all five prayers logged on consecutive days).
+  /// Tapping opens the Progress screen.
+  Widget _prayerStreakChip(BuildContext context) {
+    final p = QubaPalette.of(context);
+    final doneToday = appState.allFivePrayedOn(DateTime.now());
+    return GlassCard(
+      radius: 22,
+      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
+      onTap: () => widget.onOpenFeature('progress'),
+      child: Row(
+        children: [
+          Icon(
+            doneToday ? Icons.verified_rounded : Icons.verified_outlined,
+            size: 24,
+            color: p.emerald,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              trf('prayer_streak_days', {'count': appState.prayerStreak}),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w800,
+                color: p.ink,
+              ),
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: p.muted),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'app_state.dart'; // for the global appState singleton
+import 'i18n_extra.dart';
 
 /// UI strings in English (default), Pashto, Dari/Farsi, Urdu and Arabic.
 ///
@@ -16,8 +17,29 @@ import 'app_state.dart'; // for the global appState singleton
 /// surah-meaning and Asma-ul-Husna lists, standard Persian/Dari and
 /// Pashto Islamic terms) in simple, everyday wording.
 class QubaStrings {
+  /// The five fully translated languages (every key present — enforced by
+  /// test/i18n_test.dart).
   static const List<String> langs = ['en', 'ps', 'fa', 'ur', 'ar'];
-  static const Map<String, String> langNames = {'en': 'English', 'ps': 'پښتو', 'fa': 'دری', 'ur': 'اردو', 'ar': 'العربية'};
+
+  /// Languages added later with the most-used UI strings (i18n_extra.dart);
+  /// any string not translated there falls back to English.
+  static const List<String> extraLangs = ['id', 'tr', 'bn', 'fr', 'ms'];
+
+  /// Everything the language picker offers.
+  static const List<String> allLangs = [...langs, ...extraLangs];
+
+  static const Map<String, String> langNames = {
+    'en': 'English',
+    'ps': 'پښتو',
+    'fa': 'دری',
+    'ur': 'اردو',
+    'ar': 'العربية',
+    'id': 'Bahasa Indonesia',
+    'tr': 'Türkçe',
+    'bn': 'বাংলা',
+    'fr': 'Français',
+    'ms': 'Bahasa Melayu',
+  };
 
   static const Map<String, Map<String, String>> _strings = {
     // ---- Original 32 keys (kept, values revised where better wording exists) ----
@@ -906,6 +928,69 @@ class QubaStrings {
     "widget_refresh": {'en': "Refresh widget now", 'ps': "ویجټ اوس تازه کړئ", 'fa': "به‌روزرسانی ابزارک اکنون", 'ur': "وجٹ ابھی تازہ کریں", 'ar': "حدّث الأداة الآن"},
     "widget_refreshed": {'en': "Widget updated", 'ps': "ویجټ تازه شو", 'fa': "ابزارک به‌روز شد", 'ur': "وجٹ اپ ڈیٹ ہو گیا", 'ar': "تم تحديث الأداة"},
     "widget_note": {'en': "The countdown updates when you open QUBA, and at most every 30 minutes on its own — so it can lag the true time a little.", 'ps': "شمېرنه هغه وخت تازه کېږي چې قوبا پرانیستل شي، او په خپله لږ تر لږه هر ۳۰ دقیقې — نو کله ناکله له اصلي وخت څخه شاته پاتې کېدای شي.", 'fa': "شمارش معکوس وقتی به‌روز می‌شود که قبا را باز کنید، و به‌خودی‌خود حداکثر هر ۳۰ دقیقه — پس ممکن است کمی از زمان واقعی عقب باشد.", 'ur': "الٹی گنتی اس وقت اپ ڈیٹ ہوتی ہے جب آپ قوبا کھولتے ہیں، اور خود بخود زیادہ سے زیادہ ہر 30 منٹ میں — اس لیے یہ اصل وقت سے تھوڑا پیچھے ہوسکتی ہے۔", 'ar': "يُحدَّث العد التنازلي عندما تفتح قُبا، وبحد أقصى كل ٣٠ دقيقة من تلقاء نفسه — فقد يتأخر قليلاً عن الوقت الحقيقي."},
+    // ---- Progress, Azkar, calculation settings, sharing (5 languages) ----
+    "calc_method": {'en': "Calculation method", 'ps': "د محاسبې طریقه", 'fa': "روش محاسبه", 'ur': "حساب کا طریقہ", 'ar': "طريقة الحساب"},
+    "calc_suggest": {'en': "Suggest for my location", 'ps': "زما د ځای لپاره وړاندیز", 'fa': "پیشنهاد برای موقعیت من", 'ur': "میرے مقام کے لیے تجویز", 'ar': "اقتراح حسب موقعي"},
+    "calc_suggest_body": {'en': "Suggested for your location: {method}. This is an approximate suggestion. Use it?", 'ps': "ستاسو د ځای لپاره وړاندیز: {method}. دا یو نژدې وړاندیز دی. وکاروو؟", 'fa': "پیشنهاد برای موقعیت شما: {method}. این یک پیشنهاد تقریبی است. استفاده شود؟", 'ur': "آپ کے مقام کے لیے تجویز: {method}۔ یہ ایک اندازاً تجویز ہے۔ استعمال کریں؟", 'ar': "المقترح لموقعك: {method}. هذا اقتراح تقريبي. هل تريد استخدامه؟"},
+    "calc_suggest_same": {'en': "{method} already matches your location.", 'ps': "{method} لا دمخه ستاسو له ځای سره سمون لري.", 'fa': "{method} از قبل با موقعیت شما مطابقت دارد.", 'ur': "{method} پہلے ہی آپ کے مقام کے مطابق ہے۔", 'ar': "{method} يناسب موقعك بالفعل."},
+    "use_it": {'en': "Use it", 'ps': "وکاروئ", 'fa': "استفاده شود", 'ur': "استعمال کریں", 'ar': "استخدمه"},
+    "reset_all": {'en': "Reset all", 'ps': "ټول بیا سم کړئ", 'fa': "بازنشانی همه", 'ur': "سب ری سیٹ کریں", 'ar': "إعادة الضبط"},
+    "minutes_short": {'en': "min", 'ps': "دقیقې", 'fa': "دقیقه", 'ur': "منٹ", 'ar': "د"},
+    "days_short": {'en': "days", 'ps': "ورځې", 'fa': "روز", 'ur': "دن", 'ar': "أيام"},
+    "high_lat": {'en': "High-latitude rule", 'ps': "د لوړ عرض البلد قاعده", 'fa': "قاعدهٔ عرض‌های جغرافیایی بالا", 'ur': "بلند عرض البلد کا اصول", 'ar': "قاعدة العروض المرتفعة"},
+    "high_lat_auto": {'en': "Automatic (only when needed)", 'ps': "اتوماتیک (یوازې کله چې اړتیا وي)", 'fa': "خودکار (فقط در صورت نیاز)", 'ur': "خودکار (صرف ضرورت پر)", 'ar': "تلقائي (عند الحاجة فقط)"},
+    "high_lat_midnight": {'en': "Middle of the night", 'ps': "د شپې منځ", 'fa': "نیمهٔ شب", 'ur': "آدھی رات", 'ar': "منتصف الليل"},
+    "high_lat_seventh": {'en': "One-seventh of the night", 'ps': "د شپې اوومه برخه", 'fa': "یک‌هفتم شب", 'ur': "رات کا ساتواں حصہ", 'ar': "سُبع الليل"},
+    "high_lat_angle": {'en': "Angle-based", 'ps': "د زاویې پر بنسټ", 'fa': "بر پایهٔ زاویه", 'ur': "زاویے پر مبنی", 'ar': "حسب الزاوية"},
+    "high_lat_hint": {'en': "For far-north or far-south places where Fajr or Isha cannot be computed in summer.", 'ps': "د ډیرو شمالي یا جنوبي ځایونو لپاره چې په دوبي کې فجر یا عشا نه محاسبه کېږي.", 'fa': "برای مناطق بسیار شمالی یا جنوبی که در تابستان فجر یا عشا محاسبه نمی‌شود.", 'ur': "بہت شمالی یا جنوبی علاقوں کے لیے جہاں گرمیوں میں فجر یا عشاء کا حساب ممکن نہیں ہوتا۔", 'ar': "للأماكن الشمالية أو الجنوبية البعيدة التي لا يمكن فيها حساب الفجر أو العشاء صيفًا."},
+    "adjust_minutes": {'en': "Adjust minutes per prayer", 'ps': "د هر لمانځه دقیقې سمې کړئ", 'fa': "تنظیم دقیقه برای هر نماز", 'ur': "ہر نماز کے منٹ ایڈجسٹ کریں", 'ar': "ضبط الدقائق لكل صلاة"},
+    "adjust_hint": {'en': "Fine-tune to match your local mosque timetable.", 'ps': "د سیمه ایزې جومات له مهالویش سره د سمون لپاره.", 'fa': "برای هماهنگی با جدول مسجد محل شما.", 'ur': "اپنی مقامی مسجد کے اوقات سے ملانے کے لیے۔", 'ar': "لمطابقة جدول مسجدك المحلي."},
+    "hijri_adjust": {'en': "Hijri date correction", 'ps': "د هجري نېټې سمون", 'fa': "تصحیح تاریخ هجری", 'ur': "ہجری تاریخ کی درستی", 'ar': "تصحيح التاريخ الهجري"},
+    "hijri_adjust_hint": {'en': "Shift by up to 2 days to match your local moon sighting.", 'ps': "تر ۲ ورځو پورې بدلون، د سیمه ایزې میاشتې لیدلو سره سم.", 'fa': "تا ۲ روز جابه‌جایی برای مطابقت با رؤیت هلال محل شما.", 'ur': "مقامی رویتِ ہلال کے مطابق زیادہ سے زیادہ 2 دن کا فرق۔", 'ar': "إزاحة حتى يومين لتوافق رؤية الهلال المحلية."},
+    "isha_minutes_after": {'en': "Isha {min} min after Maghrib", 'ps': "عشا له مغرب {min} دقیقې وروسته", 'fa': "عشا {min} دقیقه پس از مغرب", 'ur': "عشاء مغرب کے {min} منٹ بعد", 'ar': "العشاء بعد المغرب بـ {min} دقيقة"},
+    "azkar": {'en': "Azkar", 'ps': "اذکار", 'fa': "اذکار", 'ur': "اذکار", 'ar': "الأذكار"},
+    "azkar_desc": {'en': "Morning, evening and after-prayer remembrance", 'ps': "سهار، ماښام او د لمانځه وروسته ذکرونه", 'fa': "ذکرهای صبح، شام و بعد از نماز", 'ur': "صبح، شام اور نماز کے بعد کے اذکار", 'ar': "أذكار الصباح والمساء وبعد الصلاة"},
+    "azkar_subtitle": {'en': "Daily remembrance with counters", 'ps': "ورځني ذکرونه د شمېرنې سره", 'fa': "ذکرهای روزانه با شمارنده", 'ur': "گنتی کے ساتھ روزانہ اذکار", 'ar': "أذكار يومية مع عدّاد"},
+    "azkar_morning": {'en': "Morning", 'ps': "سهار", 'fa': "صبح", 'ur': "صبح", 'ar': "الصباح"},
+    "azkar_evening": {'en': "Evening", 'ps': "ماښام", 'fa': "شام", 'ur': "شام", 'ar': "المساء"},
+    "azkar_after": {'en': "After prayer", 'ps': "د لمانځه وروسته", 'fa': "بعد از نماز", 'ur': "نماز کے بعد", 'ar': "بعد الصلاة"},
+    "azkar_progress": {'en': "{done} of {total} done", 'ps': "{done} له {total} څخه بشپړ", 'fa': "{done} از {total} انجام شد", 'ur': "{total} میں سے {done} مکمل", 'ar': "تم {done} من {total}"},
+    "azkar_done_today": {'en': "Completed today", 'ps': "نن بشپړ شو", 'fa': "امروز کامل شد", 'ur': "آج مکمل ہو گیا", 'ar': "اكتمل اليوم"},
+    "azkar_mark_done": {'en': "Mark as done", 'ps': "بشپړ ونوموئ", 'fa': "علامت انجام شد", 'ur': "مکمل کا نشان لگائیں", 'ar': "وضع علامة الإتمام"},
+    "azkar_undo": {'en': "Undo", 'ps': "بیرته", 'fa': "بازگردانی", 'ur': "واپس", 'ar': "تراجع"},
+    "azkar_reset": {'en': "Reset counters", 'ps': "شمېرنې بیا سم کړئ", 'fa': "بازنشانی شمارنده‌ها", 'ur': "گنتی ری سیٹ کریں", 'ar': "إعادة ضبط العدّاد"},
+    "azkar_item_done": {'en': "Done", 'ps': "بشپړ", 'fa': "انجام شد", 'ur': "مکمل", 'ar': "تم"},
+    "azkar_taps_left": {'en': "Tap to count — {left} of {total} left", 'ps': "د شمېرلو لپاره ټک وکړئ — {left} له {total} پاتې", 'fa': "برای شمارش لمس کنید — {left} از {total} باقی", 'ur': "گننے کے لیے ٹیپ کریں — {total} میں سے {left} باقی", 'ar': "اضغط للعدّ — متبقٍ {left} من {total}"},
+    "azkar_reminders": {'en': "Daily reminders", 'ps': "ورځني یادونې", 'fa': "یادآوری‌های روزانه", 'ur': "روزانہ یاد دہانیاں", 'ar': "تذكيرات يومية"},
+    "azkar_reminders_hint": {'en': "A gentle reminder after Fajr and after Asr.", 'ps': "د فجر او عصر وروسته نرمه یادونه.", 'fa': "یادآوری ملایم پس از فجر و عصر.", 'ur': "فجر اور عصر کے بعد نرم یاد دہانی۔", 'ar': "تذكير لطيف بعد الفجر وبعد العصر."},
+    "azkar_perm_denied": {'en': "Notifications are blocked. Allow them in system settings to get reminders.", 'ps': "خبرتیاوې بندې دي. د یادونو لپاره یې د سیسټم په ترتیباتو کې اجازه ورکړئ.", 'fa': "اعلان‌ها مسدود است. برای دریافت یادآوری، در تنظیمات سیستم اجازه دهید.", 'ur': "اطلاعات بند ہیں۔ یاد دہانیوں کے لیے سسٹم سیٹنگز میں اجازت دیں۔", 'ar': "الإشعارات محظورة. اسمح بها من إعدادات النظام لتصلك التذكيرات."},
+    "azkar_channel": {'en': "Azkar reminders", 'ps': "د اذکارو یادونې", 'fa': "یادآوری اذکار", 'ur': "اذکار کی یاد دہانیاں", 'ar': "تذكيرات الأذكار"},
+    "azkar_channel_desc": {'en': "Morning and evening Azkar reminders", 'ps': "د سهار او ماښام د اذکارو یادونې", 'fa': "یادآوری اذکار صبح و شام", 'ur': "صبح اور شام کے اذکار کی یاد دہانیاں", 'ar': "تذكيرات أذكار الصباح والمساء"},
+    "azkar_morning_notif_title": {'en': "Morning Azkar", 'ps': "د سهار اذکار", 'fa': "اذکار صبح", 'ur': "صبح کے اذکار", 'ar': "أذكار الصباح"},
+    "azkar_morning_notif_body": {'en': "Time for your morning remembrance.", 'ps': "د سهار ذکر وخت دی.", 'fa': "وقت ذکرهای صبح است.", 'ur': "صبح کے اذکار کا وقت ہے۔", 'ar': "حان وقت أذكار الصباح."},
+    "azkar_evening_notif_title": {'en': "Evening Azkar", 'ps': "د ماښام اذکار", 'fa': "اذکار شام", 'ur': "شام کے اذکار", 'ar': "أذكار المساء"},
+    "azkar_evening_notif_body": {'en': "Time for your evening remembrance.", 'ps': "د ماښام ذکر وخت دی.", 'fa': "وقت ذکرهای شام است.", 'ur': "شام کے اذکار کا وقت ہے۔", 'ar': "حان وقت أذكار المساء."},
+    "azkar_open": {'en': "Open Azkar", 'ps': "اذکار پرانیزئ", 'fa': "باز کردن اذکار", 'ur': "اذکار کھولیں", 'ar': "فتح الأذكار"},
+    "progress": {'en': "Progress", 'ps': "پرمختګ", 'fa': "پیشرفت", 'ur': "پیش رفت", 'ar': "التقدم"},
+    "progress_desc": {'en': "Streaks, weekly prayers and badges", 'ps': "لړۍ، د اونۍ لمونځونه او نښانونه", 'fa': "رشته‌ها، نمازهای هفته و نشان‌ها", 'ur': "لڑیاں، ہفتے کی نمازیں اور بیجز", 'ar': "السلاسل وصلوات الأسبوع والأوسمة"},
+    "badges": {'en': "Badges", 'ps': "نښانونه", 'fa': "نشان‌ها", 'ur': "بیجز", 'ar': "الأوسمة"},
+    "badges_earned": {'en': "{n} of {total} badges earned", 'ps': "{n} له {total} نښانونو ترلاسه شول", 'fa': "{n} از {total} نشان کسب شد", 'ur': "{total} میں سے {n} بیجز حاصل", 'ar': "تم الحصول على {n} من {total} وساماً"},
+    "prayer_streak_days": {'en': "{count} day prayer streak", 'ps': "د لمانځه {count} ورځنۍ لړۍ", 'fa': "رشتهٔ نماز {count} روزه", 'ur': "نماز کی {count} دن کی لڑی", 'ar': "سلسلة صلاة {count} أيام"},
+    "prayer_streak_label": {'en': "Prayer streak", 'ps': "د لمانځه لړۍ", 'fa': "رشتهٔ نماز", 'ur': "نماز کی لڑی", 'ar': "سلسلة الصلاة"},
+    "reading_streak_label": {'en': "Reading streak", 'ps': "د لوستلو لړۍ", 'fa': "رشتهٔ مطالعه", 'ur': "پڑھنے کی لڑی", 'ar': "سلسلة القراءة"},
+    "azkar_streak_label": {'en': "Azkar streak", 'ps': "د اذکارو لړۍ", 'fa': "رشتهٔ اذکار", 'ur': "اذکار کی لڑی", 'ar': "سلسلة الأذكار"},
+    "week_summary": {'en': "{done} of {total} prayers this week", 'ps': "دا اونۍ {done} له {total} لمونځونو", 'fa': "این هفته {done} از {total} نماز", 'ur': "اس ہفتے {total} میں سے {done} نمازیں", 'ar': "{done} من {total} صلاة هذا الأسبوع"},
+    "badge_prayer_streak": {'en': "{n}-day prayer streak", 'ps': "د {n} ورځو د لمانځه لړۍ", 'fa': "رشتهٔ {n} روزهٔ نماز", 'ur': "{n} دن نماز کی لڑی", 'ar': "سلسلة صلاة {n} يومًا"},
+    "badge_read_streak": {'en': "{n}-day reading streak", 'ps': "د {n} ورځو د لوستلو لړۍ", 'fa': "رشتهٔ {n} روزهٔ مطالعه", 'ur': "{n} دن پڑھنے کی لڑی", 'ar': "سلسلة قراءة {n} يومًا"},
+    "badge_azkar_streak": {'en': "{n}-day Azkar streak", 'ps': "د {n} ورځو د اذکارو لړۍ", 'fa': "رشتهٔ {n} روزهٔ اذکار", 'ur': "{n} دن اذکار کی لڑی", 'ar': "سلسلة أذكار {n} يومًا"},
+    "badge_total_prayers": {'en': "{n} prayers logged", 'ps': "{n} لمونځونه ثبت شول", 'fa': "{n} نماز ثبت شد", 'ur': "{n} نمازیں درج ہوئیں", 'ar': "تم تسجيل {n} صلاة"},
+    "badge_tasbih": {'en': "{n} tasbih counted", 'ps': "{n} تسبیحات شمېرل شول", 'fa': "{n} تسبیح شمرده شد", 'ur': "{n} تسبیحات گنی گئیں", 'ar': "تم عدّ {n} تسبيحة"},
+    "share_as_image": {'en': "Share as image", 'ps': "د انځور په توګه ورکړئ", 'fa': "اشتراک به‌صورت تصویر", 'ur': "تصویر کے طور پر شیئر کریں", 'ar': "مشاركة كصورة"},
+    "share_as_text": {'en': "Share as text", 'ps': "د متن په توګه ورکړئ", 'fa': "اشتراک به‌صورت متن", 'ur': "متن کے طور پر شیئر کریں", 'ar': "مشاركة كنص"},
+    "rate_title": {'en': "Enjoying QUBA?", 'ps': "له QUBA څخه خوند اخلئ؟", 'fa': "از QUBA راضی هستید؟", 'ur': "کیا QUBA پسند آ رہا ہے؟", 'ar': "هل يعجبك QUBA؟"},
+    "rate_body": {'en': "If QUBA helps you, a quick rating helps others find it.", 'ps': "که QUBA ستاسو سره مرسته کوي، یو چټک ریټنګ نورو ته د موندلو کې مرسته کوي.", 'fa': "اگر QUBA به شما کمک می‌کند، یک امتیاز کوتاه به دیگران برای یافتن آن کمک می‌کند.", 'ur': "اگر QUBA آپ کے کام آ رہا ہے تو ایک مختصر ریٹنگ دوسروں کو اسے ڈھونڈنے میں مدد دیتی ہے۔", 'ar': "إن كان QUBA يفيدك، فتقييم سريع يساعد الآخرين على إيجاده."},
+    "rate_later": {'en': "Later", 'ps': "وروسته", 'fa': "بعداً", 'ur': "بعد میں", 'ar': "لاحقًا"},
+    "rate_now": {'en': "Rate QUBA", 'ps': "QUBA ریټ کړئ", 'fa': "امتیاز به QUBA", 'ur': "QUBA کو ریٹ کریں", 'ar': "قيّم QUBA"},
   };
 
   /// The full dictionary (test-visible; also used by tools that audit coverage).
@@ -917,7 +1002,7 @@ class QubaStrings {
   static String get(String lang, String key) {
     final entry = _strings[key];
     if (entry == null) return key;
-    return entry[lang] ?? entry['en'] ?? key;
+    return entry[lang] ?? extraStrings[lang]?[key] ?? entry['en'] ?? key;
   }
 
   /// Like [get], then replaces `{name}` placeholders with [args] values.
