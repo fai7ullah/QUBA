@@ -106,10 +106,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
   }
 
   void _switchSurah(int surah, int ayah) {
-    if (surah != _surahNumber) {
-      // Stop audio of the old surah so the player follows the new one.
-      unawaited(AudioService.instance.stop());
-    }
+    // Playback is app-wide now: switching the surah being read does
+    // not stop the recitation session. The bottom player keeps
+    // showing (and controlling) whatever is actually playing until
+    // the user plays a verse here or closes the player.
     setState(() {
       _surahNumber = surah;
       _visibleJuz = juzOf(surah, ayah);

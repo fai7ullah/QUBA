@@ -88,38 +88,54 @@ class _AzkarScreenState extends State<AzkarScreen> {
               final done = _doneItems(items);
               final today = DateTime.now();
               final setDone = appState.isAzkarDone(today, _set);
-              return ListView(
+              return ListView.builder(
                 primary: false,
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
-                children: [
-                  TitleRow(title: tr('azkar'), subtitle: tr('azkar_subtitle')),
-                  const SizedBox(height: 16),
-                  SegmentedButton<String>(
-                    showSelectedIcon: false,
-                    segments: [
-                      for (final s in AzkarData.sets)
-                        ButtonSegment(
-                          value: s.id,
-                          label: Text(
-                            tr(s.titleKey),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                itemCount: items.length + 2,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TitleRow(
+                          title: tr('azkar'),
+                          subtitle: tr('azkar_subtitle'),
                         ),
-                    ],
-                    selected: {_set},
-                    onSelectionChanged: (v) => setState(() => _set = v.first),
-                  ),
-                  const SizedBox(height: 14),
-                  _summaryCard(p, items, done, setDone),
-                  const SizedBox(height: 12),
-                  for (final r in items) ...[
-                    _itemCard(p, r, items),
-                    const SizedBox(height: 12),
-                  ],
-                  const SizedBox(height: 4),
-                  _remindersCard(p),
-                ],
+                        const SizedBox(height: 16),
+                        SegmentedButton<String>(
+                          showSelectedIcon: false,
+                          segments: [
+                            for (final s in AzkarData.sets)
+                              ButtonSegment(
+                                value: s.id,
+                                label: Text(
+                                  tr(s.titleKey),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                          ],
+                          selected: {_set},
+                          onSelectionChanged: (v) =>
+                              setState(() => _set = v.first),
+                        ),
+                        const SizedBox(height: 14),
+                        _summaryCard(p, items, done, setDone),
+                        const SizedBox(height: 12),
+                      ],
+                    );
+                  }
+                  if (index == items.length + 1) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: _remindersCard(p),
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _itemCard(p, items[index - 1], items),
+                  );
+                },
               );
             },
           ),

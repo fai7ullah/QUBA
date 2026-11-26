@@ -134,91 +134,106 @@ class _NamesScreenState extends State<NamesScreen> {
     return Scaffold(
       body: QubaBackground(
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _header(p),
-                const SizedBox(height: 14),
-                QubaSearchField(
-                  controller: _controller,
-                  hint: tr('search_names_hint'),
-                  onChanged: (v) => setState(() => _query = v),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _header(p),
+                    const SizedBox(height: 14),
+                    QubaSearchField(
+                      controller: _controller,
+                      hint: tr('search_names_hint'),
+                      onChanged: (v) => setState(() => _query = v),
+                    ),
+                    const SizedBox(height: 10),
+                    _countDivider(p, filtered.length),
+                    const SizedBox(height: 10),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                _countDivider(p, filtered.length),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: filtered.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.search_off_rounded,
-                                size: 44,
-                                color: p.muted,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                tr('no_names_found'),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: p.ink,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                tr('try_different_spelling'),
-                                style: TextStyle(fontSize: 14, color: p.muted),
-                              ),
-                            ],
-                          ),
-                        )
-                      : AnimatedBuilder(
-                          animation: audio.sessionListenable,
-                          builder: (context, _) => GridView.builder(
-                            padding: EdgeInsets.only(
-                              bottom: audio.hasActiveSession ? 104 : 16,
+              ),
+              Expanded(
+                child: filtered.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.search_off_rounded,
+                              size: 44,
+                              color: p.muted,
                             ),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3,
-                                  mainAxisSpacing: 12,
-                                  crossAxisSpacing: 12,
-                                  mainAxisExtent: 132,
-                                ),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, i) {
-                              final number = filtered[i].$1;
-                              final name = filtered[i].$2;
-                              return _nameCard(p, number, name);
-                            },
-                          ),
+                            const SizedBox(height: 12),
+                            Text(
+                              tr('no_names_found'),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: p.ink,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              tr('try_different_spelling'),
+                              style: TextStyle(fontSize: 14, color: p.muted),
+                            ),
+                          ],
                         ),
-                ),
-                Text(
+                      )
+                    : ValueListenableBuilder<int?>(
+                        valueListenable: audio.currentName,
+                        builder: (context, currentName, _) =>
+                            GridView.builder(
+                              padding: EdgeInsets.fromLTRB(
+                                20,
+                                12,
+                                20,
+                                audio.hasActiveSession ? 104 : 16,
+                              ),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
+                                    mainAxisSpacing: 14,
+                                    crossAxisSpacing: 12,
+                                    mainAxisExtent: 124,
+                                  ),
+                              itemCount: filtered.length,
+                              itemBuilder: (context, i) {
+                                final number = filtered[i].$1;
+                                final name = filtered[i].$2;
+                                return _nameCard(p, number, name);
+                              },
+                            ),
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
                   tr('names_audio_credit'),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 10.5, color: p.muted),
                 ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  height: 46,
-                  child: CustomPaint(
-                    painter: _MosqueSilhouettePainter(
-                      silhouette: p.emerald.withValues(alpha: 0.28),
-                      wave: p.emerald.withValues(alpha: 0.55),
-                    ),
-                    size: Size.infinite,
+              ),
+              const SizedBox(height: 4),
+              // Full-width mosque-silhouette footer band, as in the
+              // reference: domes/minarets over a green wave.
+              SizedBox(
+                height: 54,
+                width: double.infinity,
+                child: CustomPaint(
+                  painter: _MosqueSilhouettePainter(
+                    silhouette: p.emerald.withValues(alpha: 0.20),
+                    wave: p.emerald.withValues(alpha: 0.85),
                   ),
+                  size: Size.infinite,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -231,6 +246,19 @@ class _NamesScreenState extends State<NamesScreen> {
   Widget _header(QubaPalette p) {
     return Stack(
       children: [
+        // Arched cream header panel behind the title (reference).
+        Positioned.fill(
+          child: IgnorePointer(
+            child: CustomPaint(
+              painter: _HeaderArchPainter(
+                fill: p.dark
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.white.withValues(alpha: 0.55),
+                stroke: const Color(0xFFC9A45C).withValues(alpha: 0.45),
+              ),
+            ),
+          ),
+        ),
         Column(
           children: [
             Row(
@@ -318,12 +346,12 @@ class _NamesScreenState extends State<NamesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CustomPaint(
-                  size: const Size(24, 52),
+                  size: const Size(30, 66),
                   painter: const _LanternPainter(),
                 ),
                 const SizedBox(width: 6),
                 CustomPaint(
-                  size: const Size(30, 68),
+                  size: const Size(38, 88),
                   painter: const _LanternPainter(),
                 ),
               ],
@@ -389,8 +417,8 @@ class _NamesScreenState extends State<NamesScreen> {
         CustomPaint(
           size: const Size(24, 24),
           painter: Star8Painter(
-            fill: p.gold.withValues(alpha: 0.16),
-            stroke: p.gold,
+            fill: p.emerald.withValues(alpha: 0.16),
+            stroke: p.emerald,
             strokeWidth: 1.3,
           ),
         ),
@@ -401,131 +429,129 @@ class _NamesScreenState extends State<NamesScreen> {
   Widget _nameCard(QubaPalette p, int number, AllahName name) {
     final audio = AudioService.instance;
     final isCurrent = audio.currentName.value == number;
-    return GlassCard(
+    // Uniform card (reference): green badge overlapping the top
+    // edge, big Arabic, transliteration, gold ornament on the
+    // bottom edge, small play button bottom-end.
+    return Stack(
       key: ValueKey('name-card-$number'),
-      radius: 22,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-      onTap: () => _showName(number, name),
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              _numberBadge(p, number),
-              const SizedBox(height: 4),
-              // Fixed-height Arabic slot: the name can never overlap
-              // the transliteration below it.
-              SizedBox(
-                height: 42,
-                child: Center(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      name.arabic,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'AmiriQuran',
-                        fontSize: 25,
-                        height: 1.35,
-                        color: p.ink,
+      clipBehavior: Clip.none,
+      children: [
+        Positioned.fill(
+          child: GlassCard(
+            radius: 22,
+            padding: const EdgeInsets.fromLTRB(6, 16, 6, 8),
+            onTap: () => _showName(number, name),
+            child: Column(
+              children: [
+                // Fixed-height Arabic slot: the name can never
+                // overlap the transliteration below it.
+                SizedBox(
+                  height: 44,
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        name.arabic,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'AmiriQuran',
+                          fontSize: 27,
+                          height: 1.35,
+                          color: p.ink,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  name.transliteration,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: p.dark ? p.muted : const Color(0xFF14532D),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    name.transliteration,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: p.dark ? p.muted : const Color(0xFF14532D),
+                    ),
                   ),
                 ),
-              ),
-              const Spacer(),
-              // Small gold ornament at the card bottom.
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 16,
-                    height: 1,
-                    color: const Color(0xFFC9A45C).withValues(alpha: 0.7),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: CustomPaint(
-                      size: const Size(11, 11),
-                      painter: Star8Painter(
-                        fill: const Color(0xFFC9A45C).withValues(alpha: 0.25),
-                        stroke: const Color(0xFFC9A45C),
-                        strokeWidth: 1,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 16,
-                    height: 1,
-                    color: const Color(0xFFC9A45C).withValues(alpha: 0.7),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          PositionedDirectional(
-            bottom: 0,
-            end: 0,
-            child: StreamBuilder<bool>(
-              stream: audio.player.playingStream,
-              initialData: audio.player.playing,
-              builder: (context, snap) {
-                final playing = isCurrent && (snap.data ?? false);
-                return IconButton(
-                  icon: Icon(
-                    playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    size: 18,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 30,
-                    minHeight: 30,
-                  ),
-                  style: IconButton.styleFrom(
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: isCurrent
-                        ? p.emerald
-                        : (p.dark
-                              ? Colors.white.withValues(alpha: 0.12)
-                              : Colors.white.withValues(alpha: 0.75)),
-                    foregroundColor: isCurrent ? p.onEmerald : p.emerald,
-                    side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                  tooltip: playing ? tr('pause') : tr('play'),
-                  onPressed: () => _toggleName(number),
-                );
-              },
+                const Spacer(),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+        // Number badge overlapping the top edge.
+        Positioned(
+          top: -11,
+          left: 0,
+          right: 0,
+          child: Center(child: _numberBadge(p, number)),
+        ),
+        // Gold ornament on the bottom edge.
+        Positioned(
+          bottom: -6,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: CustomPaint(
+              size: const Size(16, 16),
+              painter: Star8Painter(
+                fill: const Color(0xFFC9A45C).withValues(alpha: 0.3),
+                stroke: const Color(0xFFC9A45C),
+                strokeWidth: 1,
+              ),
+            ),
+          ),
+        ),
+        PositionedDirectional(
+          bottom: 4,
+          end: 4,
+          child: StreamBuilder<bool>(
+            stream: audio.player.playingStream,
+            initialData: audio.player.playing,
+            builder: (context, snap) {
+              final playing = isCurrent && (snap.data ?? false);
+              return IconButton(
+                icon: Icon(
+                  playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  size: 18,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 30,
+                  minHeight: 30,
+                ),
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  backgroundColor: isCurrent
+                      ? p.emerald
+                      : (p.dark
+                            ? Colors.white.withValues(alpha: 0.12)
+                            : Colors.white.withValues(alpha: 0.75)),
+                  foregroundColor: isCurrent ? p.onEmerald : p.emerald,
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.8)),
+                ),
+                tooltip: playing ? tr('pause') : tr('play'),
+                onPressed: () => _toggleName(number),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Widget _numberBadge(QubaPalette p, int number) {
     return SizedBox(
-      width: 30,
-      height: 30,
+      width: 34,
+      height: 34,
       child: Stack(
         alignment: Alignment.center,
         children: [
           CustomPaint(
-            size: const Size(30, 30),
+            size: const Size(34, 34),
             painter: Star8Painter(
               fill: p.emerald,
               stroke: Colors.white.withValues(alpha: 0.85),
@@ -544,6 +570,48 @@ class _NamesScreenState extends State<NamesScreen> {
       ),
     );
   }
+}
+
+/// Arched header panel behind the Names title (reference): a dome
+/// arch with a thin gold outline.
+class _HeaderArchPainter extends CustomPainter {
+  const _HeaderArchPainter({required this.fill, required this.stroke});
+
+  final Color fill;
+  final Color stroke;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(6, size.height)
+      ..lineTo(6, size.height * 0.42)
+      ..quadraticBezierTo(
+        6,
+        size.height * 0.06,
+        size.width / 2,
+        size.height * 0.02,
+      )
+      ..quadraticBezierTo(
+        size.width - 6,
+        size.height * 0.06,
+        size.width - 6,
+        size.height * 0.42,
+      )
+      ..lineTo(size.width - 6, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = fill);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = stroke
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_HeaderArchPainter old) =>
+      old.fill != fill || old.stroke != stroke;
 }
 
 /// A simple hanging lantern (gold outline, warm glow), code-drawn.

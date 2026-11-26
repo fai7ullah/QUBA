@@ -20,13 +20,15 @@ class QubaBackground extends StatelessWidget {
   const QubaBackground({super.key, required this.child});
   final Widget child;
 
-  Widget _blob(Color color, double size) => IgnorePointer(
-    child: Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
+  Widget _blob(Color color, double size) => RepaintBoundary(
+    child: IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
+        ),
       ),
     ),
   );
@@ -204,27 +206,32 @@ class GlassCard extends StatelessWidget {
         Padding(padding: padding, child: child),
       ],
     );
-    final card = Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: [
-          BoxShadow(
-            color: p.dark
-                ? p.shadow
-                : const Color(0xFF146441).withValues(alpha: 0.12),
-            blurRadius: 35,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: blur > 0
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                child: glass,
-              )
-            : glass,
+    final card = RepaintBoundary(
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius),
+          boxShadow: [
+            BoxShadow(
+              color: p.dark
+                  ? p.shadow
+                  : const Color(0xFF146441).withValues(alpha: 0.12),
+              // List cards (no backdrop blur) get a cheaper shadow
+              // so long scrolling lists stay smooth; major blurred
+              // surfaces keep the deeper liquid-glass shadow.
+              blurRadius: blur > 0 ? 35 : 16,
+              offset: Offset(0, blur > 0 ? 12 : 5),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: blur > 0
+              ? BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                  child: glass,
+                )
+              : glass,
+        ),
       ),
     );
     if (onTap == null) return card;
@@ -694,7 +701,7 @@ class QubaSearchField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(color: p.muted),
-          prefixIcon: Icon(Icons.search_rounded, color: p.muted),
+          prefixIcon: Icon(Icons.search_rounded, color: p.emerald),
           border: InputBorder.none,
         ),
       ),

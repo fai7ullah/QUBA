@@ -23,11 +23,12 @@ class QubaRouteObserver extends NavigatorObserver {
   final Set<Route<dynamic>> _modals = {};
 
   void _sync() {
-    final atRootValue = _pages.length <= 1;
-    final modalValue = _modals.isNotEmpty;
     void apply() {
-      atRoot.value = atRootValue;
-      modalOpen.value = modalValue;
+      // Recompute at apply time: a deferred apply must never
+      // overwrite a newer route state with values captured earlier
+      // (that could leave modalOpen stuck on and hide the player).
+      atRoot.value = _pages.length <= 1;
+      modalOpen.value = _modals.isNotEmpty;
     }
 
     // NavigatorObserver callbacks can fire during the build phase

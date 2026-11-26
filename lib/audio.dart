@@ -186,6 +186,12 @@ class AudioService {
   String _lastReciterId = 'ar.alafasy';
   Timer? _sleepCountdown;
 
+  /// Bumped whenever a session starts or stops, so a play call that
+  /// was still loading when the user stopped/switched cannot start
+  /// orphan playback with no visible player, and a stale load error
+  /// cannot clear a newer session.
+  int _sessionGeneration = 0;
+
   Reciter get _reciter => currentReciter.value;
 
   // ------------------------------------------------------------------
@@ -259,11 +265,13 @@ class AudioService {
       await playAyah(surah, 1);
       return;
     }
+    final generation = ++_sessionGeneration;
     try {
       currentName.value = null;
       currentSurah.value = surah;
       currentAyah.value = null;
       final f = await _localFile(surah);
+      if (generation != _sessionGeneration) return;
       if (await f.exists()) {
         await player.setAudioSource(AudioSource.file(f.path));
       } else {
@@ -271,11 +279,14 @@ class AudioService {
           AudioSource.uri(Uri.parse(_reciter.surahUrl(surah))),
         );
       }
+      if (generation != _sessionGeneration) return;
       await player.play();
     } catch (e) {
       debugPrint('QUBA audio error: $e');
-      currentSurah.value = null;
-      currentAyah.value = null;
+      if (generation == _sessionGeneration) {
+        currentSurah.value = null;
+        currentAyah.value = null;
+      }
     }
   }
 
@@ -288,6 +299,7 @@ class AudioService {
       await playSurah(surah);
       return;
     }
+    final generation = ++_sessionGeneration;
     try {
       currentName.value = null;
       currentSurah.value = surah;
@@ -296,6 +308,7 @@ class AudioService {
       final repo = QuranRepository.instance;
       final global = repo.globalIndexOf(surah, ayah);
       final f = await _localAyahFile(_reciter.id, global);
+      if (generation != _sessionGeneration) return;
       if (await f.exists()) {
         await player.setAudioSource(AudioSource.file(f.path));
       } else {
@@ -303,11 +316,14 @@ class AudioService {
           AudioSource.uri(Uri.parse(_reciter.ayahUrl(global))),
         );
       }
+      if (generation != _sessionGeneration) return;
       await player.play();
     } catch (e) {
       debugPrint('QUBA audio error: $e');
-      currentSurah.value = null;
-      currentAyah.value = null;
+      if (generation == _sessionGeneration) {
+        currentSurah.value = null;
+        currentAyah.value = null;
+      }
     }
   }
 
@@ -318,17 +334,21 @@ class AudioService {
   /// Recites one of the 99 Names (bundled human pronunciation; see
   /// assets/names/LICENSE.txt). Replaces any Quran session.
   Future<void> playName(int number) async {
+    final generation = ++_sessionGeneration;
     try {
       currentSurah.value = null;
       currentAyah.value = null;
       currentName.value = number;
       await player.setAudioSource(AudioSource.asset(nameAssetPath(number)));
+      if (generation != _sessionGeneration) return;
       await player.play();
     } catch (e) {
       debugPrint('QUBA audio error: $e');
-      currentSurah.value = null;
-      currentAyah.value = null;
-      currentName.value = null;
+      if (generation == _sessionGeneration) {
+        currentSurah.value = null;
+        currentAyah.value = null;
+        currentName.value = null;
+      }
     }
   }
 
@@ -371,6 +391,7 @@ class AudioService {
   }
 
   Future<void> stop() async {
+    _sessionGeneration++;
     cancelSleepTimer();
     _repeatLeft = 0;
     // Clear the session first: close must hide the player at once,
