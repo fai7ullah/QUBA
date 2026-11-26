@@ -319,7 +319,7 @@ class _GlassNavBar extends StatelessWidget {
                           bottom: 11,
                           width: 1,
                           child: ColoredBox(
-                            color: p.gold.withValues(alpha: 0.35),
+                            color: Colors.black.withValues(alpha: 0.12),
                           ),
                         ),
                       Row(

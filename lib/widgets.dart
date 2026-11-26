@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
-import 'decor.dart';
 import 'i18n.dart';
 import 'prayer_service.dart';
 import 'theme.dart';
@@ -19,25 +18,53 @@ class QubaBackground extends StatelessWidget {
   const QubaBackground({super.key, required this.child});
   final Widget child;
 
+  Widget _blob(Color color, double size) => IgnorePointer(
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [color, color.withValues(alpha: 0)],
+            ),
+          ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
+    if (p.dark) {
+      return Container(color: p.bg, child: child);
+    }
+    // Soft mint wash with a few pale-green glows: the glass cards blur
+    // these, which is what gives the frosted look.
     return Container(
-      decoration: BoxDecoration(
-        color: p.bg,
-        gradient: p.dark
-            ? null
-            : const LinearGradient(
-                colors: [
-                  Color(0xFFF9F1E4),
-                  Color(0xFFF5EBDC),
-                  Color(0xFFF7EEE0),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFEFF9F3), Color(0xFFE3F3EA), Color(0xFFF1FAF5)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
       ),
-      child: child,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+              top: -90,
+              right: -80,
+              child: _blob(const Color(0x4D6FCF97), 300)),
+          Positioned(
+              top: 330,
+              left: -140,
+              child: _blob(const Color(0x40A8E6C1), 320)),
+          Positioned(
+              bottom: -110,
+              right: -60,
+              child: _blob(const Color(0x4D5CC48A), 320)),
+          child,
+        ],
+      ),
     );
   }
 }
@@ -50,9 +77,9 @@ class GlassCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(16),
-    this.radius = 24,
+    this.radius = 30,
     this.onTap,
-    this.blur = 18,
+    this.blur = 20,
   });
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -68,9 +95,9 @@ class GlassCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
         boxShadow: [
           BoxShadow(
-            color: p.shadow,
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: p.dark ? p.shadow : Colors.green.withValues(alpha: 0.08),
+            blurRadius: 25,
+            spreadRadius: 2,
           ),
         ],
       ),
@@ -201,15 +228,15 @@ IconData prayerIcon(String name) {
     case 'Fajr':
       return Icons.wb_twilight_rounded;
     case 'Sunrise':
-      return Icons.wb_sunny_outlined;
-    case 'Dhuhr':
-      return Icons.mosque_rounded;
-    case 'Asr':
       return Icons.wb_sunny_rounded;
+    case 'Dhuhr':
+      return Icons.wb_sunny_rounded;
+    case 'Asr':
+      return Icons.wb_cloudy_rounded;
     case 'Maghrib':
-      return Icons.brightness_4_rounded;
+      return Icons.wb_twilight_rounded;
     case 'Isha':
-      return Icons.nights_stay_rounded;
+      return Icons.nightlight_round;
     default:
       return Icons.mosque_rounded;
   }
@@ -228,48 +255,64 @@ String prayerKind(String name) {
   }
 }
 
-/// The green scalloped medallion with a cream rim and gold border that
-/// holds a prayer glyph in the reference design. Pass [kind] (see
-/// [prayerKind]) for the drawn prayer glyphs, or [icon] for any other icon.
+/// Round frosted-glass medallion holding a coloured prayer icon (sun
+/// glyphs in orange, night in green), as in the reference. Pass [kind]
+/// (see [prayerKind]) for the prayer glyphs, or [icon] for any other icon.
 class PrayerMedallion extends StatelessWidget {
   const PrayerMedallion({
     super.key,
     this.icon = Icons.mosque_rounded,
     this.kind,
     this.size = 44,
+    this.prayer,
   });
   final IconData icon;
   final String? kind;
   final double size;
 
+  /// Prayer name ('Fajr' ...): picks that prayer's icon and colour.
+  final String? prayer;
+
+  static const Color _sun = Color(0xFFF58A1F);
+  static const Color _green = Color(0xFF0B7A3B);
+
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
-    final glyphColor = p.dark ? p.champagne : const Color(0xFFF3D68E);
-    final drawn = kind == 'fajr' || kind == 'ring';
-    return SizedBox(
+    IconData glyph = icon;
+    Color color = p.dark ? p.activeText : _green;
+    if (prayer != null) {
+      glyph = prayerIcon(prayer!);
+      switch (prayer) {
+        case 'Fajr':
+        case 'Isha':
+          color = p.dark ? p.activeText : _green;
+          break;
+        default:
+          color = _sun;
+      }
+    }
+    return Container(
       width: size,
       height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: Size(size, size),
-            painter: MedallionPainter(dark: p.dark),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: p.dark
+              ? [const Color(0x3334D399), const Color(0x1A34D399)]
+              : [Colors.white.withValues(alpha: 0.95), const Color(0xFFE2F2E8)],
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: p.dark ? 0.2 : 0.9),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withValues(alpha: 0.12),
+            blurRadius: 8,
           ),
-          if (drawn)
-            CustomPaint(
-              size: Size(size * 0.62, size * 0.62),
-              painter: PrayerGlyphPainter(kind: kind!, color: glyphColor),
-            )
-          else
-            Icon(
-              kind == 'mosque' ? Icons.mosque_rounded : icon,
-              size: size * 0.46,
-              color: p.dark ? p.champagne : Colors.white,
-            ),
         ],
       ),
+      child: Icon(glyph, size: size * 0.56, color: color),
     );
   }
 }
@@ -602,21 +645,88 @@ class PrayerScheduleCard extends StatelessWidget {
     required this.entries,
     required this.nextName,
     required this.onToggle,
+    this.onViewAll,
   });
   final List<PrayerEntry> entries;
   final String? nextName;
   final Future<void> Function(String name, bool enabled) onToggle;
 
-  static const double _rowHeight = 46;
+  /// When set, the card shows a "Prayer Times  View All →" header.
+  final VoidCallback? onViewAll;
+
+  static const double _rowHeight = 50;
+
+  Widget _header(BuildContext context, QubaPalette p) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      child: Row(
+        children: [
+          Icon(Icons.mosque_rounded, size: 34, color: p.emerald),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              tr('prayer_times'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 21,
+                fontWeight: FontWeight.w600,
+                color: p.emerald,
+              ),
+            ),
+          ),
+          InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: onViewAll,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tr('view_all'),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: p.emerald,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    rtl
+                        ? Icons.arrow_back_rounded
+                        : Icons.arrow_forward_rounded,
+                    size: 22,
+                    color: p.emerald,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
     return GlassCard(
-      radius: 26,
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 3),
+      radius: 30,
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
       child: Column(
         children: [
+          if (onViewAll != null) ...[
+            _header(context, p),
+            Divider(
+              height: 1,
+              thickness: 1,
+              indent: 14,
+              endIndent: 14,
+              color: Colors.black.withValues(alpha: 0.08),
+            ),
+          ],
           for (var i = 0; i < entries.length; i++) ...[
             _row(context, entries[i], entries[i].name == nextName),
             if (i != entries.length - 1)
@@ -626,9 +736,9 @@ class PrayerScheduleCard extends StatelessWidget {
                 Divider(
                   height: 1,
                   thickness: 1,
-                  indent: 17,
-                  endIndent: 17,
-                  color: p.gold.withValues(alpha: 0.28),
+                  indent: 14,
+                  endIndent: 14,
+                  color: Colors.black.withValues(alpha: 0.08),
                 )
               else
                 const SizedBox(height: 1),
@@ -642,7 +752,7 @@ class PrayerScheduleCard extends StatelessWidget {
     final p = QubaPalette.of(context);
     final notify = appState.prayerNotify[e.name] ?? false;
     final textColor =
-        isNext ? (p.dark ? p.activeText : const Color(0xFF0B4A37)) : p.ink;
+        isNext ? (p.dark ? p.activeText : p.emerald) : p.ink;
     final row = Row(
       children: [
         const SizedBox(width: 10),
@@ -661,7 +771,7 @@ class PrayerScheduleCard extends StatelessWidget {
               : null,
         ),
         const SizedBox(width: 6),
-        PrayerMedallion(kind: prayerKind(e.name), size: 36),
+        PrayerMedallion(prayer: e.name, size: 36),
         const SizedBox(width: 14),
         Expanded(
           child: Text(
@@ -673,7 +783,7 @@ class PrayerScheduleCard extends StatelessWidget {
             ),
           ),
         ),
-        Container(width: 1, height: 28, color: p.gold.withValues(alpha: 0.45)),
+        Container(width: 1, height: 26, color: Colors.black.withValues(alpha: 0.08)),
         SizedBox(
           width: 58,
           height: 40,
@@ -706,7 +816,7 @@ class PrayerScheduleCard extends StatelessWidget {
               gradient: LinearGradient(
                 colors: p.dark
                     ? [p.activeFill, p.activeFill]
-                    : const [Color(0xFFD9F0E1), Color(0xFFC6E8D3)],
+                    : const [Color(0xFFD3F0DE), Color(0xFFBFE8CF)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -714,7 +824,7 @@ class PrayerScheduleCard extends StatelessWidget {
               border: Border.all(
                 color: p.dark
                     ? p.activeText.withValues(alpha: 0.4)
-                    : const Color(0xFF7CC4A0),
+                    : const Color(0xFFA7DDBE),
                 width: 1.2,
               ),
               boxShadow: [

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
@@ -14,122 +15,152 @@ import 'theme.dart';
 /// request — the background is plain now. Only the logo mark and the
 /// functional prayer medallions remain.
 
-const Color _gold = Color(0xFFC9A45C);
+const Color _gold = Color(0xFF2E9E5B);
 
 // ---------------------------------------------------------------------------
 // Header
 // ---------------------------------------------------------------------------
 
-/// "QUBA — Your Islamic Companion" header: the arch logo mark, the
-/// wordmark + tagline, and the glass settings button. Plain and simple
-/// (Round 4, 2026-11-21): the mosque skyline, crescent moon, birds and
-/// olive branch were removed at the owner's request.
+/// "QUBA — Your Islamic Companion" header, as in the reference: a wide
+/// frosted-glass pill (logo tile, thin divider, wordmark + tagline) and a
+/// round glass settings button beside it.
 class QubaHeader extends StatelessWidget {
   const QubaHeader({super.key, required this.onSettings});
   final VoidCallback onSettings;
 
-  /// Height of the header below the status bar.
-  static const double _body = 100;
+  static const double _pill = 76;
+
+  static BoxDecoration _glass(QubaPalette p, {bool circle = false, double radius = 38}) =>
+      BoxDecoration(
+        shape: circle ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: circle ? null : BorderRadius.circular(radius),
+        color: p.dark ? p.cardFill : Colors.white.withValues(alpha: 0.55),
+        border: Border.all(color: p.cardBorder),
+        boxShadow: [
+          BoxShadow(
+            color: p.dark ? p.shadow : Colors.green.withValues(alpha: 0.08),
+            blurRadius: 25,
+            spreadRadius: 2,
+          ),
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
-    final mq = MediaQuery.of(context);
-    // The tab body sits inside a top SafeArea (main.dart), so the
-    // status-bar space is already accounted for above this header and
-    // padding.top reads 0 here: the header keeps its exact height.
-    final inset = mq.padding.top;
-    final h = _body + inset;
-    final ink = p.dark ? p.ink : p.emeraldDeep;
-
-    return SizedBox(
-      height: h,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Logo mark.
-          Positioned(
-            left: 26,
-            top: inset + 20,
-            width: 50,
-            height: 53,
-            child: CustomPaint(
-              painter: ArchLogoPainter(
-                outline: p.dark ? p.emerald : p.emeraldDeep,
-                dome: p.emerald,
-              ),
-            ),
-          ),
-          // Wordmark + tagline (always laid out left-to-right: it is a brand).
-          Positioned(
-            left: 92,
-            top: inset + 25,
-            child: Directionality(
-              textDirection: TextDirection.ltr,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'QUBA',
-                    style: TextStyle(
-                      fontFamily: 'serif',
-                      fontSize: 38,
-                      height: 1.0,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
-                      color: ink,
+    final ink = p.dark ? p.ink : p.emerald;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(13, 10, 13, 12),
+      child: SizedBox(
+        height: _pill,
+        child: Row(
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(38),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    decoration: _glass(p),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 54,
+                          height: 54,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withValues(alpha: 0.9),
+                                const Color(0xFFD7EFE0),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.9)),
+                          ),
+                          child: CustomPaint(
+                            painter: ArchLogoPainter(
+                              outline: p.dark ? p.emerald : p.emeraldDeep,
+                              dome: p.emerald,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          width: 1.5,
+                          height: 40,
+                          color: p.emerald.withValues(alpha: 0.6),
+                        ),
+                        const SizedBox(width: 14),
+                        // The brand is always laid out left-to-right.
+                        Expanded(
+                          child: Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'QUBA',
+                                    style: TextStyle(
+                                      fontFamily: 'serif',
+                                      fontSize: 40,
+                                      height: 1.0,
+                                      fontWeight: FontWeight.w800,
+                                      color: ink,
+                                    ),
+                                  ),
+                                  Text(
+                                    tr('tagline'),
+                                    style: TextStyle(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: p.dark ? p.muted : p.emerald,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    tr('tagline'),
-                    style: TextStyle(
-                      fontFamily: 'serif',
-                      fontSize: 14.5,
-                      color: p.dark ? p.muted : const Color(0xFF3B3F38),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Settings button.
-          Positioned(
-            right: 13,
-            top: inset + 1,
-            width: 43,
-            height: 43,
-            child: Material(
-              color: Colors.transparent,
-              shape: const CircleBorder(),
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: onSettings,
-                child: Ink(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: p.dark
-                        ? p.activeFill
-                        : Colors.white.withValues(alpha: 0.62),
-                    border: Border.all(color: p.cardBorder),
-                    boxShadow: [
-                      BoxShadow(
-                        color: p.shadow,
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.settings_rounded,
-                    size: 23,
-                    color: p.dark ? p.activeText : p.emeraldDeep,
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: onSettings,
+                    child: Ink(
+                      width: 62,
+                      height: 62,
+                      decoration: _glass(p, circle: true),
+                      child: Icon(
+                        Icons.settings_rounded,
+                        size: 32,
+                        color: p.dark ? p.activeText : p.emerald,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -9,20 +9,20 @@ import 'package:flutter/material.dart';
 /// Dark: deep emerald-black with the same gold accents.
 class QubaColors {
   // Brand (shared by both themes)
-  static const emerald = Color(0xFF075B43);
-  static const emeraldDeep = Color(0xFF064735);
-  static const emeraldBright = Color(0xFF2E9E7B);
-  static const gold = Color(0xFFC9A45C);
-  static const champagne = Color(0xFFE8D6B5);
+  static const emerald = Color(0xFF0B7A3B);
+  static const emeraldDeep = Color(0xFF0A6232);
+  static const emeraldBright = Color(0xFF3FBF7F);
+  static const gold = Color(0xFF2E9E5B); // accent (was gold; now fresh green)
+  static const champagne = Color(0xFFCFE9D9);
 
   // Light (creamy) — exact spec values
-  static const creamBg = Color(0xFFF8F0E5);
-  static const creamSecondary = Color(0xFFFFF9F0);
+  static const creamBg = Color(0xFFE9F6EE);
+  static const creamSecondary = Color(0xFFF5FBF7);
   static const creamCard = Color(0x8CFFFFFF); // rgba(255,255,255,0.55)
-  static const creamBorder = Color(0xD9FFFFFF); // rgba(255,255,255,0.85)
-  static const inkText = Color(0xFF252B26);
+  static const creamBorder = Color(0xCCFFFFFF); // rgba(255,255,255,0.8)
+  static const inkText = Color(0xFF16201A);
   static const inkMuted = Color(0xFF77786F);
-  static const mintActive = Color(0xE6D8F0E0);
+  static const mintActive = Color(0xE6C9EBD6);
   static const mintActiveText = emerald;
 
   // Dark (emerald-black)
@@ -87,7 +87,7 @@ class QubaPalette {
     champagne: QubaColors.champagne,
     activeFill: QubaColors.mintActive,
     activeText: QubaColors.mintActiveText,
-    shadow: Color(0x1A064735),
+    shadow: Color(0x144CAF50), // Colors.green @ 0.08
     onEmerald: Colors.white,
   );
 

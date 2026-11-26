@@ -18,8 +18,8 @@ class ShareCard {
   static const double width = 1080;
   static const double height = 1350;
 
-  static const Color _gold = Color(0xFFC9A45C);
-  static const Color _emerald = Color(0xFF075B43);
+  static const Color _gold = Color(0xFF2E9E5B);
+  static const Color _emerald = Color(0xFF0B7A3B);
   static const Color _ink = Color(0xFF252B26);
   static const Color _muted = Color(0xFF5E625A);
 
@@ -101,7 +101,7 @@ class ShareCard {
       full,
       Paint()
         ..shader = const LinearGradient(
-          colors: [Color(0xFFFCF5E9), Color(0xFFF2E5CD)],
+          colors: [Color(0xFFF4FBF6), Color(0xFFDDF1E5)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ).createShader(full),
