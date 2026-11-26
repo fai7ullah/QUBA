@@ -110,9 +110,8 @@ class _HadithScreenState extends State<HadithScreen> {
     final book = repo.book(id);
     if (!mounted) return;
     if (book == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('hadith_unavailable'))),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(tr('hadith_unavailable'))));
       return;
     }
     await Navigator.of(context).push(
@@ -367,8 +366,7 @@ class _HadithChaptersScreen extends StatelessWidget {
                       final chapter = book.chapters[i];
                       final title = chapter.titleEn.isNotEmpty
                           ? chapter.titleEn
-                          : trf('hadith_chapter_n',
-                              {'n': chapter.number});
+                          : trf('hadith_chapter_n', {'n': chapter.number});
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: GlassCard(
@@ -382,15 +380,11 @@ class _HadithChaptersScreen extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              RosetteNumber(
-                                number: chapter.number,
-                                size: 42,
-                              ),
+                              RosetteNumber(number: chapter.number, size: 42),
                               const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       title,
@@ -418,8 +412,9 @@ class _HadithChaptersScreen extends StatelessWidget {
                                     ],
                                     const SizedBox(height: 2),
                                     Text(
-                                      trf('hadith_count',
-                                          {'n': chapter.hadiths.length}),
+                                      trf('hadith_count', {
+                                        'n': chapter.hadiths.length,
+                                      }),
                                       style: TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w600,
@@ -531,9 +526,7 @@ class _HadithCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: p.activeFill,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: p.gold.withValues(alpha: 0.5),
-                      ),
+                      border: Border.all(color: p.gold.withValues(alpha: 0.5)),
                     ),
                     child: Text(
                       // Grades carry a scholar attribution in
@@ -573,11 +566,7 @@ class _HadithCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               hadith.english!,
-              style: TextStyle(
-                fontSize: 14.5,
-                color: p.muted,
-                height: 1.55,
-              ),
+              style: TextStyle(fontSize: 14.5, color: p.muted, height: 1.55),
             ),
           ] else ...[
             const SizedBox(height: 8),

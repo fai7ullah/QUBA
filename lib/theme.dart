@@ -111,8 +111,8 @@ class QubaPalette {
 
   static QubaPalette of(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
-          ? darkPalette
-          : lightPalette;
+      ? darkPalette
+      : lightPalette;
 }
 
 ThemeData qubaLightTheme() {
@@ -134,8 +134,8 @@ ThemeData qubaLightTheme() {
       color: QubaColors.creamCard,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: QubaColors.creamBorder),
+        borderRadius: BorderRadius.circular(26),
+        side: const BorderSide(color: QubaColors.creamBorder, width: 1.4),
       ),
     ),
     appBarTheme: const AppBarTheme(
@@ -158,13 +158,15 @@ ThemeData qubaLightTheme() {
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: QubaColors.creamSecondary,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        side: BorderSide(color: QubaColors.creamBorder, width: 1.4),
       ),
     ),
     dialogTheme: const DialogThemeData(
       backgroundColor: QubaColors.creamSecondary,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(24)),
+        borderRadius: BorderRadius.all(Radius.circular(30)),
+        side: BorderSide(color: QubaColors.creamBorder, width: 1.4),
       ),
     ),
   );
@@ -189,8 +191,8 @@ ThemeData qubaDarkTheme() {
       color: QubaColors.nightCard,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: QubaColors.nightBorder),
+        borderRadius: BorderRadius.circular(26),
+        side: const BorderSide(color: QubaColors.nightBorder, width: 1.4),
       ),
     ),
     appBarTheme: const AppBarTheme(
@@ -213,13 +215,15 @@ ThemeData qubaDarkTheme() {
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: QubaColors.nightSecondary,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        side: BorderSide(color: QubaColors.nightBorder, width: 1.4),
       ),
     ),
     dialogTheme: const DialogThemeData(
       backgroundColor: QubaColors.nightSecondary,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(24)),
+        borderRadius: BorderRadius.all(Radius.circular(30)),
+        side: BorderSide(color: QubaColors.nightBorder, width: 1.4),
       ),
     ),
   );
@@ -255,7 +259,11 @@ class Star8Painter extends CustomPainter {
       path.addPath(square, Offset.zero);
     }
     canvas.drawPath(
-        path, Paint()..color = fill..style = PaintingStyle.fill);
+      path,
+      Paint()
+        ..color = fill
+        ..style = PaintingStyle.fill,
+    );
     if (stroke != null && strokeWidth > 0) {
       canvas.drawPath(
         path,

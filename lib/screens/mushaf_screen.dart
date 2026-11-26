@@ -12,7 +12,6 @@ import '../juz_data.dart';
 import '../mushaf_data.dart';
 import '../theme.dart';
 import '../widgets.dart';
-import '../widgets/player_options.dart';
 
 /// Mushaf-page reader: the true Madani 604-page layout (or the IndoPak
 /// 15-line 610-page layout when the user's Mushaf style is IndoPak),
@@ -87,8 +86,7 @@ class MushafChunk {
   /// (surah, ayah) pairs, in Quran order.
   final List<(int, int)> ayahs;
 
-  bool get hasBasmala =>
-      bannerSurah != null && hasBasmalaHeader(bannerSurah!);
+  bool get hasBasmala => bannerSurah != null && hasBasmalaHeader(bannerSurah!);
 }
 
 /// Splits a mushaf page (1-based, in [layout] or the active layout)
@@ -183,34 +181,40 @@ List<InlineSpan> mushafChunkSpans(
       );
       collectRecognizers?.add(recognizer);
     }
-    spans.add(TextSpan(
-      text: repo.arabicText(surah, ayah),
-      style: TextStyle(
-        fontFamily: fontFamily,
-        fontSize: fontSize,
-        height: kMushafLineHeight,
-        color: ink,
-        backgroundColor:
-            playingAyah == (surah, ayah) ? highlightColor : null,
+    spans.add(
+      TextSpan(
+        text: repo.arabicText(surah, ayah),
+        style: TextStyle(
+          fontFamily: fontFamily,
+          fontSize: fontSize,
+          height: kMushafLineHeight,
+          color: ink,
+          backgroundColor: playingAyah == (surah, ayah) ? highlightColor : null,
+        ),
+        recognizer: recognizer,
       ),
-      recognizer: recognizer,
-    ));
+    );
     // A space each side of the medallion so it never touches the words.
     spans.add(const TextSpan(text: ' '));
-    final medallion =
-        AyahMedallion(number: ayah, size: medallionSize, dark: dark);
-    spans.add(WidgetSpan(
-      alignment: PlaceholderAlignment.middle,
-      child: onTapAyah == null
-          ? medallion
-          : GestureDetector(
-              onTap: () => onTapAyah(surah, ayah),
-              onLongPress: onLongPressAyah == null
-                  ? null
-                  : () => onLongPressAyah(surah, ayah),
-              child: medallion,
-            ),
-    ));
+    final medallion = AyahMedallion(
+      number: ayah,
+      size: medallionSize,
+      dark: dark,
+    );
+    spans.add(
+      WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: onTapAyah == null
+            ? medallion
+            : GestureDetector(
+                onTap: () => onTapAyah(surah, ayah),
+                onLongPress: onLongPressAyah == null
+                    ? null
+                    : () => onLongPressAyah(surah, ayah),
+                child: medallion,
+              ),
+      ),
+    );
     spans.add(const TextSpan(text: ' '));
   }
   return spans;
@@ -221,7 +225,9 @@ List<InlineSpan> mushafChunkSpans(
 /// widget is exactly this size, so a TextPainter measurement with these
 /// dimensions lays out exactly like the real RichText.
 List<PlaceholderDimensions> mushafChunkPlaceholders(
-    MushafChunk chunk, double fontSize) {
+  MushafChunk chunk,
+  double fontSize,
+) {
   final s = fontSize * kMushafMedallionScale;
   return List<PlaceholderDimensions>.filled(
     chunk.ayahs.length,
@@ -252,8 +258,7 @@ double _measureChunkTextHeight(
     textDirection: TextDirection.rtl,
     textAlign: TextAlign.justify,
   );
-  painter.setPlaceholderDimensions(
-      mushafChunkPlaceholders(chunk, fontSize));
+  painter.setPlaceholderDimensions(mushafChunkPlaceholders(chunk, fontSize));
   painter.layout(maxWidth: maxWidth);
   return painter.height;
 }
@@ -296,12 +301,20 @@ double _chunkHeight(
     h += kMushafBannerHeight + kMushafGapAfterBanner;
   }
   if (chunk.hasBasmala) {
-    h += _measureBasmalaHeight(
-            fontSize: fontSize, maxWidth: maxWidth, fontFamily: fontFamily) +
+    h +=
+        _measureBasmalaHeight(
+          fontSize: fontSize,
+          maxWidth: maxWidth,
+          fontFamily: fontFamily,
+        ) +
         kMushafGapAfterBasmala;
   }
-  h += _measureChunkTextHeight(chunk,
-      fontSize: fontSize, maxWidth: maxWidth, fontFamily: fontFamily);
+  h += _measureChunkTextHeight(
+    chunk,
+    fontSize: fontSize,
+    maxWidth: maxWidth,
+    fontFamily: fontFamily,
+  );
   return h;
 }
 
@@ -319,8 +332,12 @@ double mushafPageHeight(
   var h = 0.0;
   for (var i = 0; i < chunks.length; i++) {
     if (i > 0) h += kMushafGapBeforeBanner;
-    h += _chunkHeight(chunks[i],
-        fontSize: fontSize, maxWidth: maxWidth, fontFamily: fontFamily);
+    h += _chunkHeight(
+      chunks[i],
+      fontSize: fontSize,
+      maxWidth: maxWidth,
+      fontFamily: fontFamily,
+    );
   }
   return h;
 }
@@ -357,14 +374,16 @@ MushafFit fitMushafPage(
 }) {
   final chunks = mushafPageChunks(page, layout);
   double lastH = 0;
-  for (var size = kMushafMaxFontSize;
-      size >= kMushafMinFontSize;
-      size -= 1) {
+  for (var size = kMushafMaxFontSize; size >= kMushafMinFontSize; size -= 1) {
     var h = 0.0;
     for (var i = 0; i < chunks.length; i++) {
       if (i > 0) h += kMushafGapBeforeBanner;
-      h += _chunkHeight(chunks[i],
-          fontSize: size, maxWidth: maxWidth, fontFamily: fontFamily);
+      h += _chunkHeight(
+        chunks[i],
+        fontSize: size,
+        maxWidth: maxWidth,
+        fontFamily: fontFamily,
+      );
     }
     lastH = h;
     if (h <= maxHeight) {
@@ -372,7 +391,10 @@ MushafFit fitMushafPage(
     }
   }
   return MushafFit(
-      fontSize: kMushafMinFontSize, scrolls: true, contentHeight: lastH);
+    fontSize: kMushafMinFontSize,
+    scrolls: true,
+    contentHeight: lastH,
+  );
 }
 
 /// Fit cache: one entry per page + layout + style + width + height, so a
@@ -380,17 +402,24 @@ MushafFit fitMushafPage(
 final Map<String, MushafFit> _fitCache = {};
 
 MushafFit _cachedFit(
-    MushafLayout layout, int page, double maxWidth, double maxHeight,
-    String fontFamily) {
+  MushafLayout layout,
+  int page,
+  double maxWidth,
+  double maxHeight,
+  String fontFamily,
+) {
   final key =
       '${layout.name}|$page|$fontFamily|${maxWidth.round()}|${maxHeight.round()}';
   return _fitCache.putIfAbsent(
-      key,
-      () => fitMushafPage(page,
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          fontFamily: fontFamily,
-          layout: layout));
+    key,
+    () => fitMushafPage(
+      page,
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      fontFamily: fontFamily,
+      layout: layout,
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -419,8 +448,8 @@ class AyahMedallion extends StatelessWidget {
     final scale = label.length == 1
         ? 0.42
         : label.length == 2
-            ? 0.36
-            : 0.30;
+        ? 0.36
+        : 0.30;
     return SizedBox(
       width: size,
       height: size,
@@ -608,8 +637,14 @@ class _BannerPainter extends CustomPainter {
   }
 
   /// One side's scroll: a curling stem with three spiral volutes.
-  void _flourish(Canvas canvas, Paint goldStroke, Paint goldFill,
-      double fromX, double toX, double cy) {
+  void _flourish(
+    Canvas canvas,
+    Paint goldStroke,
+    Paint goldFill,
+    double fromX,
+    double toX,
+    double cy,
+  ) {
     final span = (toX - fromX).abs();
     if (span < 10) return;
     final x0 = math.min(fromX, toX);
@@ -696,6 +731,7 @@ class _MushafScreenState extends State<MushafScreen> {
   final Listenable _rebuildListenable = Listenable.merge([
     AudioService.instance.currentSurah,
     AudioService.instance.currentAyah,
+    AudioService.instance.currentName,
     appState,
   ]);
 
@@ -727,8 +763,7 @@ class _MushafScreenState extends State<MushafScreen> {
       debugPrint('QUBA mushaf load error: $e');
     }
     if (!mounted) return;
-    final ok =
-        QuranRepository.instance.loaded && MushafData.instance.loaded;
+    final ok = QuranRepository.instance.loaded && MushafData.instance.loaded;
     if (ok) {
       _page = widget.initialPage.clamp(1, MushafData.instance.totalPages);
       _pageController = PageController(initialPage: _page - 1);
@@ -811,8 +846,9 @@ class _MushafScreenState extends State<MushafScreen> {
               void goToPage() {
                 final n = int.tryParse(controller.text.trim());
                 if (n == null || n < 1 || n > total) {
-                  setDialogState(() =>
-                      error = trf('enter_page_range', {'total': total}));
+                  setDialogState(
+                    () => error = trf('enter_page_range', {'total': total}),
+                  );
                   return;
                 }
                 Navigator.of(ctx).pop(n);
@@ -842,25 +878,27 @@ class _MushafScreenState extends State<MushafScreen> {
                         ),
                         const SizedBox(width: 8),
                         FilledButton(
-                            onPressed: goToPage, child: Text(tr('go'))),
+                          onPressed: goToPage,
+                          child: Text(tr('go')),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     const Divider(),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading:
-                          Icon(Icons.menu_book_rounded, color: p.emerald),
+                      leading: Icon(Icons.menu_book_rounded, color: p.emerald),
                       title: Text(tr('surah')),
                       subtitle: Text(tr('jump_surah')),
                       trailing: const Icon(Icons.chevron_right_rounded),
-                      onTap: () =>
-                          Navigator.of(ctx).pop(_JumpTarget.surah),
+                      onTap: () => Navigator.of(ctx).pop(_JumpTarget.surah),
                     ),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: Icon(Icons.collections_bookmark_rounded,
-                          color: p.emerald),
+                      leading: Icon(
+                        Icons.collections_bookmark_rounded,
+                        color: p.emerald,
+                      ),
                       title: Text(tr('juz')),
                       subtitle: Text(tr('jump_juz')),
                       trailing: const Icon(Icons.chevron_right_rounded),
@@ -908,9 +946,13 @@ class _MushafScreenState extends State<MushafScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                  child: Text(tr('choose_surah'),
-                      style: const TextStyle(
-                          fontSize: 19, fontWeight: FontWeight.w800)),
+                  child: Text(
+                    tr('choose_surah'),
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -920,11 +962,13 @@ class _MushafScreenState extends State<MushafScreen> {
                       final isCurrent = s.number == current;
                       return ListTile(
                         leading: RosetteNumber(number: s.number, size: 40),
-                        title: Text(s.nameEnglish,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700)),
+                        title: Text(
+                          s.nameEnglish,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
                         subtitle: Text(
-                            "${tr('surah_meaning_${s.number}')} • ${s.ayahCount} ${tr('verses')}"),
+                          "${tr('surah_meaning_${s.number}')} • ${s.ayahCount} ${tr('verses')}",
+                        ),
                         trailing: isCurrent
                             ? Icon(Icons.check_rounded, color: p.emerald)
                             : null,
@@ -958,9 +1002,13 @@ class _MushafScreenState extends State<MushafScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                  child: Text(tr('choose_juz'),
-                      style: const TextStyle(
-                          fontSize: 19, fontWeight: FontWeight.w800)),
+                  child: Text(
+                    tr('choose_juz'),
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -969,16 +1017,17 @@ class _MushafScreenState extends State<MushafScreen> {
                       final j = juzList[i];
                       final isCurrent = j.number == current;
                       return ListTile(
-                        leading:
-                            RosetteNumber(number: j.number, size: 40),
-                        title: Text(tr('juz_name_${j.number}'),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700)),
+                        leading: RosetteNumber(number: j.number, size: 40),
+                        title: Text(
+                          tr('juz_name_${j.number}'),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
                         subtitle: Text(
-                            '${repo.surah(j.startSurah).nameEnglish} '
-                            '${j.startSurah}:${j.startAyah} — '
-                            '${repo.surah(j.endSurah).nameEnglish} '
-                            '${j.endSurah}:${j.endAyah}'),
+                          '${repo.surah(j.startSurah).nameEnglish} '
+                          '${j.startSurah}:${j.startAyah} — '
+                          '${repo.surah(j.endSurah).nameEnglish} '
+                          '${j.endSurah}:${j.endAyah}',
+                        ),
                         trailing: isCurrent
                             ? Icon(Icons.check_rounded, color: p.emerald)
                             : null,
@@ -1035,7 +1084,7 @@ class _MushafScreenState extends State<MushafScreen> {
             : null;
         return Column(
           children: [
-            _topBar(context, playingSurah != null),
+            _topBar(context),
             Expanded(
               // Arabic book order: swipe left = next page, regardless of
               // the UI language.
@@ -1053,6 +1102,9 @@ class _MushafScreenState extends State<MushafScreen> {
                 ),
               ),
             ),
+            // Keeps the page's bottom bar clear of the app-wide
+            // player while a session is active.
+            SizedBox(height: audio.hasActiveSession ? 88 : 0),
           ],
         );
       },
@@ -1069,21 +1121,22 @@ class _MushafScreenState extends State<MushafScreen> {
     );
   }
 
-  Widget _topBar(BuildContext context, bool audioActive) {
+  Widget _topBar(BuildContext context) {
     final p = QubaPalette.of(context);
     final repo = QuranRepository.instance;
     final first = MushafData.instance.firstAyahOfPage(_page);
     final surahName = repo.surah(first.$1).nameEnglish;
     final bookmarked = appState.isBookmarked(first.$1, first.$2);
-    final audio = AudioService.instance;
     return SizedBox(
       height: kMushafTopBarHeight,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
         child: Row(
           children: [
-            _circleButton(Icons.arrow_back_ios_new_rounded,
-                () => Navigator.of(context).maybePop()),
+            _circleButton(
+              Icons.arrow_back_ios_new_rounded,
+              () => Navigator.of(context).maybePop(),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -1097,27 +1150,7 @@ class _MushafScreenState extends State<MushafScreen> {
                 ),
               ),
             ),
-            // Compact audio controls while something plays (no
-            // mini-player on this screen — the card reader has one).
-            if (audioActive) ...[
-              StreamBuilder<bool>(
-                stream: audio.player.playingStream,
-                initialData: audio.player.playing,
-                builder: (context, snap) {
-                  final playing = snap.data ?? false;
-                  return _circleButton(
-                    playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    audio.togglePause,
-                  );
-                },
-              ),
-              const SizedBox(width: 8),
-              _circleButton(Icons.stop_rounded, audio.stop),
-              const SizedBox(width: 8),
-              _circleButton(Icons.tune_rounded,
-                  () => showPlayerOptionsSheet(context)),
-              const SizedBox(width: 8),
-            ],
+            // Audio controls live in the app-wide bottom player.
             _circleButton(
               bookmarked
                   ? Icons.bookmark_rounded
@@ -1167,8 +1200,8 @@ class _MushafPageState extends State<_MushafPage> {
 
   void _onTapAyah(int surah, int ayah) {
     final audio = AudioService.instance;
-    final isCurrent = audio.currentSurah.value == surah &&
-        audio.currentAyah.value == ayah;
+    final isCurrent =
+        audio.currentSurah.value == surah && audio.currentAyah.value == ayah;
     if (isCurrent) {
       unawaited(audio.togglePause());
     } else {
@@ -1200,15 +1233,23 @@ class _MushafPageState extends State<_MushafPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = math.max(
-            1.0, constraints.maxWidth - 2 * kMushafPagePadding);
+          1.0,
+          constraints.maxWidth - 2 * kMushafPagePadding,
+        );
         final maxHeight = math.max(
-            1.0,
-            constraints.maxHeight -
-                kMushafLabelHeight -
-                kMushafBottomBarHeight -
-                2 * kMushafPageVerticalPadding);
-        final fit =
-            _cachedFit(layout, widget.page, maxWidth, maxHeight, fontFamily);
+          1.0,
+          constraints.maxHeight -
+              kMushafLabelHeight -
+              kMushafBottomBarHeight -
+              2 * kMushafPageVerticalPadding,
+        );
+        final fit = _cachedFit(
+          layout,
+          widget.page,
+          maxWidth,
+          maxHeight,
+          fontFamily,
+        );
         // Short pages center their text block vertically when there is
         // spare space, as in the reference screenshots.
         final topPad = fit.scrolls
@@ -1243,7 +1284,12 @@ class _MushafPageState extends State<_MushafPage> {
                   child: Padding(
                     padding: EdgeInsets.only(top: topPad),
                     child: _buildContent(
-                        context, p, layout, fit.fontSize, fontFamily),
+                      context,
+                      p,
+                      layout,
+                      fit.fontSize,
+                      fontFamily,
+                    ),
                   ),
                 ),
               ),
@@ -1262,8 +1308,13 @@ class _MushafPageState extends State<_MushafPage> {
   /// cached per page + layout + style + size + playing verse so a
   /// rebuild that changes none of those reuses the same RichText and
   /// its recognizers.
-  Widget _buildContent(BuildContext context, QubaPalette p,
-      MushafLayout layout, double fontSize, String fontFamily) {
+  Widget _buildContent(
+    BuildContext context,
+    QubaPalette p,
+    MushafLayout layout,
+    double fontSize,
+    String fontFamily,
+  ) {
     final playing = widget.playingAyah;
     final key =
         '${layout.name}|${widget.page}|$fontSize|$fontFamily|${playing?.$1}:${playing?.$2}|${p.dark}';
@@ -1276,8 +1327,9 @@ class _MushafPageState extends State<_MushafPage> {
     final chunks = mushafPageChunks(widget.page, layout);
     // Yellow highlight on the playing verse, as in the card reader —
     // a deeper gold-olive in dark mode so the text stays readable.
-    final highlight =
-        p.dark ? const Color(0xFF7A6A1F) : const Color(0xFFFFF6A5);
+    final highlight = p.dark
+        ? const Color(0xFF7A6A1F)
+        : const Color(0xFFFFF6A5);
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

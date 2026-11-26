@@ -21,8 +21,7 @@ void main() {
     expect(text, isNotEmpty);
   });
 
-  test('duaArabic still resolves single-ayah and whole-surah refs',
-      () async {
+  test('duaArabic still resolves single-ayah and whole-surah refs', () async {
     final repo = QuranRepository.instance;
     await repo.load();
 
@@ -41,8 +40,11 @@ void main() {
     await repo.load();
 
     for (final d in duas.where((d) => d.quranRef != null)) {
-      expect(duaArabic(d).trim(), isNotEmpty,
-          reason: 'dua "${d.title}" ref ${d.quranRef}');
+      expect(
+        duaArabic(d).trim(),
+        isNotEmpty,
+        reason: 'dua "${d.title}" ref ${d.quranRef}',
+      );
     }
   });
 
@@ -52,8 +54,7 @@ void main() {
     expect(duaCategories.first, 'All');
     // Every dua's category is listed.
     for (final d in duas) {
-      expect(duaCategories, contains(d.category),
-          reason: 'dua "${d.title}"');
+      expect(duaCategories, contains(d.category), reason: 'dua "${d.title}"');
     }
     // No duplicate titles.
     final titles = duas.map((d) => d.title).toList();

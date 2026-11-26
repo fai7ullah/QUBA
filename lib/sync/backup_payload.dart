@@ -37,10 +37,7 @@ class BackupPayload {
           'start_day': state.khatmaStartDay,
         },
         'tasbih_totals': Map<String, int>.from(state.tasbihTotals),
-        'last_read': {
-          'surah': state.lastReadSurah,
-          'ayah': state.lastReadAyah,
-        },
+        'last_read': {'surah': state.lastReadSurah, 'ayah': state.lastReadAyah},
       };
     } catch (_) {
       return {};
@@ -62,8 +59,11 @@ class BackupPayload {
       final tasbihTotals = _intMap(data['tasbih_totals']);
       final azkarRaw = _stringList(data['azkar_done']);
       final azkarDone = azkarRaw
-          ?.where((e) => RegExp(r'^\d{4}-\d{2}-\d{2}:(morning|evening|after)$')
-              .hasMatch(e))
+          ?.where(
+            (e) =>
+                RegExp(r'^\d{4}-\d{2}-\d{2}:(morning|evening|after)$')
+                    .hasMatch(e),
+          )
           .toSet();
 
       final khatma = data['khatma'];
@@ -86,7 +86,8 @@ class BackupPayload {
         if (a != null && a >= 1) lastAyah = a;
       }
 
-      appliedAny = bookmarks != null ||
+      appliedAny =
+          bookmarks != null ||
           notes != null ||
           prayerLog != null ||
           readingDays != null ||
@@ -144,7 +145,9 @@ class BackupPayload {
     if (v is! Map) return null;
     final out = <String, String>{};
     for (final e in v.entries) {
-      if (e.key is String && e.value is String) out[e.key as String] = e.value as String;
+      if (e.key is String && e.value is String) {
+        out[e.key as String] = e.value as String;
+      }
     }
     return out;
   }

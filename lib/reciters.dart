@@ -1,20 +1,25 @@
 import 'i18n.dart';
 
-/// One reciter whose verse-by-verse audio ships in QUBA.
+/// One reciter whose audio ships in QUBA.
 ///
-/// All are served by the Islamic Network CDN (EveryAyah mirror) at
+/// Most are served verse-by-verse by the Islamic Network CDN
+/// (EveryAyah mirror) at
 /// `https://cdn.islamic.network/quran/audio/{bitrate}/{id}/{global}.mp3`.
-/// Each edition was verified by hand (HEAD requests on ayahs 1, 8, 262,
-/// 293, 3000 and 6236 — all 200) before shipping: the first four in
-/// round 3, the other thirteen in phase 2 (2026-11-21, 170 editions
-/// probed — see build-outputs/DATA-REPORT.md).
+/// Each per-ayah edition was verified by hand (HEAD requests on ayahs
+/// 1, 8, 262, 293, 3000 and 6236 — all 200) before shipping: the first
+/// four in round 3, the other thirteen in phase 2 (2026-11-21, 170
+/// editions probed — see build-outputs/DATA-REPORT.md).
 ///
 /// Bitrates differ per edition: most serve 128kbps; Abdul Basit,
 /// Saud Al-Shuraim, Hani Rifai, Ayman Sowaid, Abdullah Basfar,
 /// Abdurrahmaan As-Sudais and Minshawi Mujawwad serve 64kbps only
 /// (128kbps returns 403 — the API's own audio URL for those editions
-/// points at the /64/ path). The whole-surah files (audio-surah/...)
-/// exist only for Alafasy, so the others download verse-by-verse.
+/// points at the /64/ path). Whole-surah files (audio-surah/...) exist
+/// for Alafasy and Yasser Al-Dosari. Al-Dosari (added 2026-11-26) is
+/// whole-surah ONLY on this CDN: HEAD checks on 2026-11-26 returned
+/// 200 for audio-surah/128/ar.yasseraldossari/{1,36}.mp3 and 403 for
+/// every per-ayah URL, so verse taps with him start the whole surah
+/// and per-verse repeat/highlight cannot follow individual ayahs.
 ///
 /// Notes on the substituted/unavailable picks: Saad Al-Ghamdi is NOT
 /// on this CDN at all (nor are Aziz Alili, Abdullah Awad al-Juhani or
@@ -37,6 +42,7 @@ class Reciter {
     required this.shortNameKey,
     required this.bitrate,
     required this.hasWholeSurahFiles,
+    this.supportsAyahFiles = true,
   });
 
   /// AlQuran Cloud audio edition id, e.g. 'ar.alafasy'.
@@ -52,8 +58,13 @@ class Reciter {
   /// The bitrate the CDN serves for this edition (128 or 64).
   final int bitrate;
 
-  /// True only for Alafasy: the only edition with whole-surah files.
+  /// True when the CDN serves one whole-surah file per surah
+  /// (Alafasy and Yasser Al-Dosari).
   final bool hasWholeSurahFiles;
+
+  /// False only for Yasser Al-Dosari: his edition has no per-ayah
+  /// files, so playback is whole-surah only.
+  final bool supportsAyahFiles;
 
   String get name => tr(nameKey);
 
@@ -68,7 +79,8 @@ class Reciter {
 }
 
 /// The shipped reciters, in picker order: the round-3 four first
-/// (Alafasy is the default), then the thirteen added in phase 2.
+/// (Alafasy is the default), then the thirteen added in phase 2, then
+/// Yasser Al-Dosari (2026-11-26).
 const List<Reciter> reciters = [
   Reciter(
     id: 'ar.alafasy',
@@ -189,6 +201,15 @@ const List<Reciter> reciters = [
     shortNameKey: 'reciter_short_basfar',
     bitrate: 64,
     hasWholeSurahFiles: false,
+  ),
+  // --- 2026-11-26: Yasser Al-Dosari (whole-surah files only) ---
+  Reciter(
+    id: 'ar.yasseraldossari',
+    nameKey: 'reciter_name_dosari',
+    shortNameKey: 'reciter_short_dosari',
+    bitrate: 128,
+    hasWholeSurahFiles: true,
+    supportsAyahFiles: false,
   ),
 ];
 

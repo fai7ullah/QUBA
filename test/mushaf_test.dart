@@ -60,9 +60,9 @@ void main() {
       await MushafData.instance.load();
       _metaSource = 'asset bundle';
     } catch (_) {
-      MushafData.instance
-          .loadFromJsonString(await _readSourceFile(
-              'assets/quran/quran_meta.json'));
+      MushafData.instance.loadFromJsonString(
+        await _readSourceFile('assets/quran/quran_meta.json'),
+      );
       _metaSource = 'source file (dart:io) — not in the asset bundle';
     }
     // IndoPak pages: same pattern. MushafData.load() already tried the
@@ -73,21 +73,27 @@ void main() {
     } else {
       try {
         await MushafData.instance.loadIndoPakFromJsonString(
-            await _readSourceFile(
-                'assets/quran/quran_indopak_pages.json'));
+          await _readSourceFile('assets/quran/quran_indopak_pages.json'),
+        );
         _indopakPagesSource = 'source file (dart:io) — not in the bundle';
       } catch (e) {
         _indopakPagesSource = 'UNAVAILABLE ($e)';
       }
     }
-    _amiriLoaded =
-        await _loadFont('AmiriQuran', 'assets/fonts/AmiriQuran-Regular.ttf');
+    _amiriLoaded = await _loadFont(
+      'AmiriQuran',
+      'assets/fonts/AmiriQuran-Regular.ttf',
+    );
     _indopakFontLoaded = await _loadFont(
-        'IndoPakQuran', 'assets/fonts/IndoPakQuran-Regular.ttf');
-    print('MUSHAF TEST: meta=[$_metaSource] '
-        'indopak-pages=[$_indopakPagesSource] '
-        'indopak-text-available=${repo.indopakAvailable} '
-        'amiri-font=$_amiriLoaded indopak-font=$_indopakFontLoaded');
+      'IndoPakQuran',
+      'assets/fonts/IndoPakQuran-Regular.ttf',
+    );
+    print(
+      'MUSHAF TEST: meta=[$_metaSource] '
+      'indopak-pages=[$_indopakPagesSource] '
+      'indopak-text-available=${repo.indopakAvailable} '
+      'amiri-font=$_amiriLoaded indopak-font=$_indopakFontLoaded',
+    );
   });
 
   // (surah, ayah) of a zero-based global index, via the repository.
@@ -131,8 +137,7 @@ void main() {
       }
       // Juz 30 starts at global 5672 — its page, counted independently
       // from the raw page starts (NOT the 571 the brief guessed at).
-      final expected =
-          madani.pageStarts.where((s) => s <= 5672).length;
+      final expected = madani.pageStarts.where((s) => s <= 5672).length;
       expect(m.pageOfJuz(30, madani), expected);
       expect(expected, 582);
       // The meta's juz starts agree with juz_data's [surah, ayah] starts.
@@ -140,9 +145,10 @@ void main() {
       for (var j = 0; j < 30; j++) {
         final info = juzList[j];
         expect(
-            repo.globalIndexOf(info.startSurah, info.startAyah) - 1,
-            m.juzStarts[j],
-            reason: 'juz ${j + 1} start');
+          repo.globalIndexOf(info.startSurah, info.startAyah) - 1,
+          m.juzStarts[j],
+          reason: 'juz ${j + 1} start',
+        );
       }
     });
 
@@ -180,8 +186,11 @@ void main() {
   group('IndoPak layout (610 pages)', () {
     test('page anchors', () {
       final m = MushafData.instance;
-      expect(m.indopakAvailable, isTrue,
-          reason: 'quran_indopak_pages.json must load for this test');
+      expect(
+        m.indopakAvailable,
+        isTrue,
+        reason: 'quran_indopak_pages.json must load for this test',
+      );
       final indopak = m.indopak!;
       expect(indopak.totalPages, 610);
       // Page 1 = Al-Fatihah complete.
@@ -325,18 +334,28 @@ void main() {
 
     final amiri = width('AmiriQuran');
     final fallback = width('DefinitelyNotAFont');
-    print('MUSHAF TEST: basmala width AmiriQuran=$amiri '
-        'fallback=$fallback (amiri loaded: $_amiriLoaded)');
+    print(
+      'MUSHAF TEST: basmala width AmiriQuran=$amiri '
+      'fallback=$fallback (amiri loaded: $_amiriLoaded)',
+    );
     if (_amiriLoaded) {
-      expect(amiri, isNot(fallback),
-          reason: 'AmiriQuran must measure differently from the fallback');
+      expect(
+        amiri,
+        isNot(fallback),
+        reason: 'AmiriQuran must measure differently from the fallback',
+      );
     }
     final indopak = width('IndoPakQuran');
-    print('MUSHAF TEST: basmala width IndoPakQuran=$indopak '
-        '(indopak font loaded: $_indopakFontLoaded)');
+    print(
+      'MUSHAF TEST: basmala width IndoPakQuran=$indopak '
+      '(indopak font loaded: $_indopakFontLoaded)',
+    );
     if (_indopakFontLoaded) {
-      expect(indopak, isNot(fallback),
-          reason: 'IndoPakQuran must measure differently from the fallback');
+      expect(
+        indopak,
+        isNot(fallback),
+        reason: 'IndoPakQuran must measure differently from the fallback',
+      );
     }
   });
 
@@ -345,9 +364,13 @@ void main() {
   /// (fitCount, scrollCount, scrollPages). Uses the screen's own
   /// [fitMushafPage], so the counts are the counts the screen produces.
   (int, int, List<int>) measureFit(
-      String label, MushafLayout layout, String fontFamily) {
+    String label,
+    MushafLayout layout,
+    String fontFamily,
+  ) {
     const width = kMushafTestScreenWidth - 2 * kMushafPagePadding;
-    const height = kMushafTestScreenHeight -
+    const height =
+        kMushafTestScreenHeight -
         kMushafTestSafeTop -
         kMushafTopBarHeight -
         kMushafLabelHeight -
@@ -357,11 +380,13 @@ void main() {
     final scrollPages = <int>[];
     final histogram = <int, int>{};
     for (var page = 1; page <= layout.totalPages; page++) {
-      final fit = fitMushafPage(page,
-          maxWidth: width,
-          maxHeight: height,
-          fontFamily: fontFamily,
-          layout: layout);
+      final fit = fitMushafPage(
+        page,
+        maxWidth: width,
+        maxHeight: height,
+        fontFamily: fontFamily,
+        layout: layout,
+      );
       if (fit.scrolls) {
         scrollPages.add(page);
       } else {
@@ -371,50 +396,64 @@ void main() {
       histogram[size] = (histogram[size] ?? 0) + 1;
     }
     final sizes = histogram.keys.toList()..sort();
-    print('MUSHAF FIT [$label] phone ${kMushafTestScreenWidth}x'
-        '$kMushafTestScreenHeight content ${width}x$height '
-        'font $fontFamily: ${layout.totalPages} pages, '
-        '$fitCount fit, ${scrollPages.length} scroll');
-    print('MUSHAF FIT [$label] font-size histogram (size: pages): '
-        '{${sizes.map((s) => '$s: ${histogram[s]}').join(', ')}}');
+    print(
+      'MUSHAF FIT [$label] phone ${kMushafTestScreenWidth}x'
+      '$kMushafTestScreenHeight content ${width}x$height '
+      'font $fontFamily: ${layout.totalPages} pages, '
+      '$fitCount fit, ${scrollPages.length} scroll',
+    );
+    print(
+      'MUSHAF FIT [$label] font-size histogram (size: pages): '
+      '{${sizes.map((s) => '$s: ${histogram[s]}').join(', ')}}',
+    );
     if (scrollPages.isNotEmpty) {
       print('MUSHAF FIT [$label] scroll pages: $scrollPages');
     }
     return (fitCount, scrollPages.length, scrollPages);
   }
 
-  test('page-fit measurement: Madani layout at 390x844',
-      timeout: const Timeout(Duration(minutes: 10)), () {
-    final m = MushafData.instance;
-    final (fit, scroll, _) =
-        measureFit('madani', m.madani, 'AmiriQuran');
-    expect(fit + scroll, 604);
-    // The count is the deliverable (printed above); scrolling is a
-    // designed fallback, not a failure — but every page must resolve.
-    expect(fit, greaterThan(0));
-  });
-
-  test('page-fit measurement: IndoPak layout at 390x844',
-      timeout: const Timeout(Duration(minutes: 10)), () {
-    final m = MushafData.instance;
-    expect(m.indopakAvailable, isTrue);
-    // The IndoPak text + font only apply when the style is IndoPak.
-    final prev = appState.mushafStyle;
-    try {
-      appState.mushafStyle = 'indopak';
-      final repo = QuranRepository.instance;
-      if (!repo.indopakAvailable) {
-        print('MUSHAF FIT [indopak]: WARNING — IndoPak TEXT asset not '
-            'loaded, measuring the IndoPak pagination with Madani text');
-      }
-      final (fit, scroll, _) = measureFit(
-          'indopak', m.indopak!, repo.arabicFontFamily);
-      expect(fit + scroll, 610);
+  test(
+    'page-fit measurement: Madani layout at 390x844',
+    timeout: const Timeout(Duration(minutes: 10)),
+    () {
+      final m = MushafData.instance;
+      final (fit, scroll, _) = measureFit('madani', m.madani, 'AmiriQuran');
+      expect(fit + scroll, 604);
+      // The count is the deliverable (printed above); scrolling is a
+      // designed fallback, not a failure — but every page must resolve.
       expect(fit, greaterThan(0));
-    } finally {
-      appState.mushafStyle = prev;
-    }
-  });
+    },
+  );
+
+  test(
+    'page-fit measurement: IndoPak layout at 390x844',
+    timeout: const Timeout(Duration(minutes: 10)),
+    () {
+      final m = MushafData.instance;
+      expect(m.indopakAvailable, isTrue);
+      // The IndoPak text + font only apply when the style is IndoPak.
+      final prev = appState.mushafStyle;
+      try {
+        appState.mushafStyle = 'indopak';
+        final repo = QuranRepository.instance;
+        if (!repo.indopakAvailable) {
+          print(
+            'MUSHAF FIT [indopak]: WARNING — IndoPak TEXT asset not '
+            'loaded, measuring the IndoPak pagination with Madani text',
+          );
+        }
+        final (fit, scroll, _) = measureFit(
+          'indopak',
+          m.indopak!,
+          repo.arabicFontFamily,
+        );
+        expect(fit + scroll, 610);
+        expect(fit, greaterThan(0));
+      } finally {
+        appState.mushafStyle = prev;
+      }
+    },
+  );
 
   group('MushafScreen smoke tests', () {
     Future<void> pumpMushaf(WidgetTester tester, int page) async {
@@ -434,15 +473,17 @@ void main() {
     // current page (verified with a bare-PageView diagnostic in both
     // RTL and LTR — neighbours are not pre-built), so every count
     // below covers the current page alone.
-    testWidgets('page 1 (Madani): banner, medallions, bottom bar',
-        (tester) async {
+    testWidgets('page 1 (Madani): banner, medallions, bottom bar', (
+      tester,
+    ) async {
       await pumpMushaf(tester, 1);
       final m = MushafData.instance;
       final madani = m.madani;
       final medallions = m.pageAyahs(1, madani).length; // 7
-      final banners = mushafPageChunks(1, madani)
-          .where((c) => c.bannerSurah != null)
-          .length; // 1
+      final banners = mushafPageChunks(
+        1,
+        madani,
+      ).where((c) => c.bannerSurah != null).length; // 1
       expect(find.byType(AyahMedallion), findsNWidgets(medallions));
       expect(find.byType(SurahBanner), findsNWidgets(banners));
       // Top-bar title + the page's grey label (bundle spelling).
@@ -453,15 +494,17 @@ void main() {
       expect(find.text('Hizb 1'), findsOneWidget);
     });
 
-    testWidgets('page 3 (Madani): dense page fits without overflow',
-        (tester) async {
+    testWidgets('page 3 (Madani): dense page fits without overflow', (
+      tester,
+    ) async {
       await pumpMushaf(tester, 3);
       final m = MushafData.instance;
       final madani = m.madani;
       final medallions = m.pageAyahs(3, madani).length; // 11
-      final banners = mushafPageChunks(3, madani)
-          .where((c) => c.bannerSurah != null)
-          .length; // 0 — continues surah 2
+      final banners = mushafPageChunks(
+        3,
+        madani,
+      ).where((c) => c.bannerSurah != null).length; // 0 — continues surah 2
       expect(find.byType(AyahMedallion), findsNWidgets(medallions));
       expect(find.byType(SurahBanner), findsNWidgets(banners));
       expect(find.text('3'), findsOneWidget);
@@ -470,8 +513,9 @@ void main() {
       expect(find.text(name), findsNWidgets(2));
     });
 
-    testWidgets('page 586 (IndoPak): juz 30 opens in the IndoPak layout',
-        (tester) async {
+    testWidgets('page 586 (IndoPak): juz 30 opens in the IndoPak layout', (
+      tester,
+    ) async {
       final m = MushafData.instance;
       expect(m.indopakAvailable, isTrue);
       final prev = appState.mushafStyle;
@@ -480,9 +524,10 @@ void main() {
         await pumpMushaf(tester, 586);
         final indopak = m.indopak!;
         final medallions = m.pageAyahs(586, indopak).length; // 27
-        final banners = mushafPageChunks(586, indopak)
-            .where((c) => c.bannerSurah != null)
-            .length; // 1 — surah 78
+        final banners = mushafPageChunks(
+          586,
+          indopak,
+        ).where((c) => c.bannerSurah != null).length; // 1 — surah 78
         expect(find.byType(AyahMedallion), findsNWidgets(medallions));
         expect(find.byType(SurahBanner), findsNWidgets(banners));
         expect(find.text('586'), findsOneWidget);

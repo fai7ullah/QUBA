@@ -40,8 +40,7 @@ class WordByWordRepository {
   Future<void> load() async {
     if (loaded) return;
     try {
-      final raw =
-          await rootBundle.loadString('assets/quran/wordbyword.json');
+      final raw = await rootBundle.loadString('assets/quran/wordbyword.json');
       final json = jsonDecode(raw) as Map<String, dynamic>;
       final words = _parse(json);
       if (words != null) {
@@ -73,11 +72,13 @@ class WordByWordRepository {
           final list = <WbwWord>[];
           for (final w in a as List<dynamic>) {
             final wm = w as Map<String, dynamic>;
-            list.add(WbwWord(
-              arabic: wm['a'] as String,
-              transliteration: (wm['t'] as String?) ?? '',
-              meaning: (wm['m'] as String?) ?? '',
-            ));
+            list.add(
+              WbwWord(
+                arabic: wm['a'] as String,
+                transliteration: (wm['t'] as String?) ?? '',
+                meaning: (wm['m'] as String?) ?? '',
+              ),
+            );
           }
           ayahs.add(list);
         }

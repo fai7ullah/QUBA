@@ -27,8 +27,8 @@ class TestSession {
     required this.endAyah,
     this.mode = TestMode.hideWords,
     this.maskFraction = 0.4,
-  })  : assert(startAyah >= 1),
-        assert(endAyah >= startAyah);
+  }) : assert(startAyah >= 1),
+       assert(endAyah >= startAyah);
 
   final int surah;
   final int startAyah;
@@ -93,10 +93,8 @@ class TestSession {
   // hideWords
   // ------------------------------------------------------------------
 
-  static List<String> splitWords(String arabic) => arabic
-      .split(RegExp(r'\s+'))
-      .where((w) => w.isNotEmpty)
-      .toList();
+  static List<String> splitWords(String arabic) =>
+      arabic.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
 
   /// Masked word indices for one ayah, sorted ascending. Deterministic:
   /// the seed depends only on surah + ayah, so the same ayah always
@@ -127,8 +125,7 @@ class TestSession {
   bool isMasked(int ayah, String arabic, int wordIndex) =>
       maskedIndices(ayah, arabic).contains(wordIndex);
 
-  WordMark? markOf(int ayah, int wordIndex) =>
-      _wordMarks[ayah]?[wordIndex];
+  WordMark? markOf(int ayah, int wordIndex) => _wordMarks[ayah]?[wordIndex];
 
   /// Record that the user recalled the word. Ignored if the word was
   /// already marked (a revealed word can never become "knew").
@@ -156,8 +153,7 @@ class TestSession {
 
   int get wordsAnswered => knewCount + revealedCount;
 
-  double get wordsScore =>
-      wordsAnswered == 0 ? 0 : knewCount / wordsAnswered;
+  double get wordsScore => wordsAnswered == 0 ? 0 : knewCount / wordsAnswered;
 
   // ------------------------------------------------------------------
   // nextAyah
@@ -175,11 +171,9 @@ class TestSession {
 
   bool? nextAyahMark(int ayah) => _nextAyahMarks[ayah];
 
-  int get nextCorrectCount =>
-      _nextAyahMarks.values.where((v) => v).length;
+  int get nextCorrectCount => _nextAyahMarks.values.where((v) => v).length;
 
-  int get nextWrongCount =>
-      _nextAyahMarks.values.where((v) => !v).length;
+  int get nextWrongCount => _nextAyahMarks.values.where((v) => !v).length;
 
   int get nextAyahAnswered => _nextAyahMarks.length;
 
@@ -199,6 +193,5 @@ class TestSession {
   int get answeredCount =>
       mode == TestMode.hideWords ? wordsAnswered : nextAyahAnswered;
 
-  double get score =>
-      answeredCount == 0 ? 0 : correctCount / answeredCount;
+  double get score => answeredCount == 0 ? 0 : correctCount / answeredCount;
 }

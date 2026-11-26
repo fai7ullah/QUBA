@@ -48,10 +48,7 @@ void main() {
       expect(s.prayedCountOn(today), 3);
       s.togglePrayed(today, 'Dhuhr');
       expect(s.prayedCountOn(today), 2);
-      expect(
-        s.prayedCountOn(today.subtract(const Duration(days: 1))),
-        0,
-      );
+      expect(s.prayedCountOn(today.subtract(const Duration(days: 1))), 0);
     });
 
     test('prayedLast7Days returns 7 values with today last', () {
@@ -152,10 +149,12 @@ void main() {
       s.setNote(2, 3, 'c');
       s.setNote(1, 2, 'd');
       final sorted = s.notesSorted;
-      expect(
-        sorted.map((n) => (n.$1, n.$2)).toList(),
-        [(1, 2), (1, 5), (2, 3), (2, 10)],
-      );
+      expect(sorted.map((n) => (n.$1, n.$2)).toList(), [
+        (1, 2),
+        (1, 5),
+        (2, 3),
+        (2, 10),
+      ]);
       expect(sorted.map((n) => n.$3).toList(), ['d', 'a', 'c', 'b']);
     });
   });

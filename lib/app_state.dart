@@ -135,8 +135,12 @@ class AppState extends ChangeNotifier {
     calcMethod = p.getString('calcMethod') ?? 'mwl';
     asrHanafi = p.getBool('asrHanafi') ?? true;
     highLatRule = p.getString('high_lat_rule') ?? 'auto';
-    if (!const {'auto', 'midnight', 'oneseventh', 'anglebased'}
-        .contains(highLatRule)) {
+    if (!const {
+      'auto',
+      'midnight',
+      'oneseventh',
+      'anglebased',
+    }.contains(highLatRule)) {
       highLatRule = 'auto';
     }
     final adj = (p.getStringList('prayer_adjust') ?? const [])
@@ -162,7 +166,8 @@ class AppState extends ChangeNotifier {
     rateNextAfterDay = p.getInt('rate_next_after_day') ?? 0;
     rateDone = p.getBool('rate_done') ?? false;
     arabicFontSize = p.getDouble('arabicFontSize') ?? 30;
-    translationId = p.getString('translation_id') ??
+    translationId =
+        p.getString('translation_id') ??
         ((p.getBool('showTranslation') ?? true) ? 'en.yusufali' : 'none');
     reciterId = p.getString('reciter_id') ?? 'ar.alafasy';
     onboardingDone = p.getBool('onboarding_done') ?? false;
@@ -170,7 +175,9 @@ class AppState extends ChangeNotifier {
     final log = <String, Set<String>>{};
     for (final e in logEntries) {
       final i = e.indexOf(':');
-      if (i > 0) log.putIfAbsent(e.substring(0, i), () => {}).add(e.substring(i + 1));
+      if (i > 0) {
+        log.putIfAbsent(e.substring(0, i), () => {}).add(e.substring(i + 1));
+      }
     }
     prayerLog = log;
     try {
@@ -186,8 +193,8 @@ class AppState extends ChangeNotifier {
         .map((e) => int.tryParse(e) ?? -1)
         .where((d) => d >= 0)
         .toSet();
-    downloadedAyahSets =
-        (p.getStringList('downloaded_ayah_sets') ?? const []).toSet();
+    downloadedAyahSets = (p.getStringList('downloaded_ayah_sets') ?? const [])
+        .toSet();
     lang = p.getString('ui_lang') ?? 'en';
     mushafStyle = p.getString('mushaf_style') ?? 'madani';
     khatmaDays = p.getInt('khatma_days') ?? 0;
@@ -196,7 +203,8 @@ class AppState extends ChangeNotifier {
     tasbihTarget = p.getInt('tasbih_target') ?? 33;
     tasbihTotals = {
       for (final e in p.getStringList('tasbih_totals') ?? const [])
-        if (e.contains(':')) e.split(':')[0]: int.tryParse(e.split(':')[1]) ?? 0,
+        if (e.contains(':'))
+          e.split(':')[0]: int.tryParse(e.split(':')[1]) ?? 0,
     };
     lat = p.getDouble('lat') ?? kabulLat;
     lng = p.getDouble('lng') ?? kabulLng;
@@ -208,8 +216,9 @@ class AppState extends ChangeNotifier {
     lastReadSurah = p.getInt('lastReadSurah') ?? 1;
     lastReadAyah = p.getInt('lastReadAyah') ?? 1;
     bookmarks = (p.getStringList('bookmarks') ?? const []).toSet();
-    downloadedSurahs =
-        (p.getStringList('downloadedSurahs') ?? const []).map(int.parse).toSet();
+    downloadedSurahs = (p.getStringList('downloadedSurahs') ?? const [])
+        .map(int.parse)
+        .toSet();
     // Round 4: Yusuf Ali is the new default English translation, for
     // new installs AND existing users. One-time migration, done here
     // at the END of load (all fields are read, so _save is safe):
@@ -238,11 +247,14 @@ class AppState extends ChangeNotifier {
     await p.setBool('asrHanafi', asrHanafi);
     await p.setString('high_lat_rule', highLatRule);
     await p.setStringList(
-        'prayer_adjust', prayerAdjust.map((e) => '$e').toList());
+      'prayer_adjust',
+      prayerAdjust.map((e) => '$e').toList(),
+    );
     await p.setInt('hijri_offset', hijriOffset);
     await p.setStringList('azkar_done', azkarDone.toList());
-    await p.setStringList('azkar_counts',
-        [for (final e in azkarCounts.entries) '${e.key}=${e.value}']);
+    await p.setStringList('azkar_counts', [
+      for (final e in azkarCounts.entries) '${e.key}=${e.value}',
+    ]);
     await p.setBool('azkar_morning_notify', azkarMorningNotify);
     await p.setBool('azkar_evening_notify', azkarEveningNotify);
     await p.setInt('rate_asks', rateAsks);
@@ -258,7 +270,9 @@ class AppState extends ChangeNotifier {
     ]);
     await p.setString('verse_notes_json', jsonEncode(notes));
     await p.setStringList(
-        'reading_days', readingDays.map((d) => d.toString()).toList());
+      'reading_days',
+      readingDays.map((d) => d.toString()).toList(),
+    );
     await p.setStringList('downloaded_ayah_sets', downloadedAyahSets.toList());
     await p.setString('ui_lang', lang);
     await p.setString('mushaf_style', mushafStyle);
@@ -281,7 +295,9 @@ class AppState extends ChangeNotifier {
     await p.setInt('lastReadAyah', lastReadAyah);
     await p.setStringList('bookmarks', bookmarks.toList());
     await p.setStringList(
-        'downloadedSurahs', downloadedSurahs.map((e) => '$e').toList());
+      'downloadedSurahs',
+      downloadedSurahs.map((e) => '$e').toList(),
+    );
   }
 
   void update(VoidCallback fn) {
@@ -313,8 +329,7 @@ class AppState extends ChangeNotifier {
     update(() {
       khatmaDays = days;
       khatmaStartGlobal = startGlobal;
-      khatmaStartDay =
-          DateTime.now().difference(DateTime.utc(1970)).inDays;
+      khatmaStartDay = DateTime.now().difference(DateTime.utc(1970)).inDays;
     });
   }
 
@@ -361,14 +376,15 @@ class AppState extends ChangeNotifier {
       prayerLog[_dateKey(date)]?.contains(prayer) ?? false;
 
   /// How many of the 5 prayers were marked prayed on [date].
-  int prayedCountOn(DateTime date) =>
-      prayerLog[_dateKey(date)]?.length ?? 0;
+  int prayedCountOn(DateTime date) => prayerLog[_dateKey(date)]?.length ?? 0;
 
   /// Prayed counts for the last 7 days, oldest first.
   List<int> prayedLast7Days() {
     final now = DateTime.now();
     return List.generate(
-        7, (i) => prayedCountOn(now.subtract(Duration(days: 6 - i))));
+      7,
+      (i) => prayedCountOn(now.subtract(Duration(days: 6 - i))),
+    );
   }
 
   /// Free-text note on one verse (empty string = no note).
@@ -399,9 +415,9 @@ class AppState extends ChangeNotifier {
       if (s == null || a == null) continue;
       out.add((s, a, entry.value));
     }
-    out.sort((x, y) => x.$1 != y.$1
-        ? x.$1.compareTo(y.$1)
-        : x.$2.compareTo(y.$2));
+    out.sort(
+      (x, y) => x.$1 != y.$1 ? x.$1.compareTo(y.$1) : x.$2.compareTo(y.$2),
+    );
     return out;
   }
 
@@ -557,9 +573,9 @@ class AppState extends ChangeNotifier {
 
   /// Record that the prompt was shown; the next one waits 30 days.
   void noteRatingAsked() => update(() {
-        rateAsks++;
-        rateNextAfterDay = _epochDayNow() + 30;
-      });
+    rateAsks++;
+    rateNextAfterDay = _epochDayNow() + 30;
+  });
 
   void noteRated() => update(() => rateDone = true);
 

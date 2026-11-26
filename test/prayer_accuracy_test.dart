@@ -9,11 +9,7 @@ import 'package:quba/prayer_calc.dart';
 /// Kabul 2026-11-11, MWL + Hanafi — Fajr 04:56, Sunrise 06:22,
 /// Dhuhr 11:37, Asr 15:14, Maghrib 16:52, Isha 18:13.
 void main() {
-  List<int> calc(
-    DateTime date, {
-    String method = 'mwl',
-    bool hanafi = true,
-  }) {
+  List<int> calc(DateTime date, {String method = 'mwl', bool hanafi = true}) {
     return PrayerCalc(
       lat: 34.5553,
       lng: 69.2075,
@@ -23,14 +19,22 @@ void main() {
     ).timesForDate(date);
   }
 
-  void expectClose(List<int> times, int index, int h, int m, String label,
-      {int tolerance = 1}) {
+  void expectClose(
+    List<int> times,
+    int index,
+    int h,
+    int m,
+    String label, {
+    int tolerance = 1,
+  }) {
     final actual = times[index];
     final expected = h * 60 + m;
     final diff = (actual - expected).abs();
     // ignore: avoid_print
-    print('$label -> ${actual ~/ 60}:${(actual % 60).toString().padLeft(2, '0')} '
-        '(ref $h:${m.toString().padLeft(2, '0')}, diff ${diff}m)');
+    print(
+      '$label -> ${actual ~/ 60}:${(actual % 60).toString().padLeft(2, '0')} '
+      '(ref $h:${m.toString().padLeft(2, '0')}, diff ${diff}m)',
+    );
     expect(diff, lessThanOrEqualTo(tolerance), reason: label);
   }
 

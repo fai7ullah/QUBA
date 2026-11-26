@@ -28,8 +28,7 @@ void main() {
   List<dynamic> uthmaniSurahs() =>
       readJson('assets/quran/quran_bundle.json')['surahs'] as List<dynamic>;
 
-  test('jalalayn.json: 114 surahs, 6,236 ayahs, counts match Uthmani',
-      () {
+  test('jalalayn.json: 114 surahs, 6,236 ayahs, counts match Uthmani', () {
     final tafsir = readJson('assets/tafsir/jalalayn.json');
     final uth = uthmaniSurahs();
     final trSurahs = tafsir['surahs'] as List<dynamic>;
@@ -47,27 +46,29 @@ void main() {
       );
       for (final a in ayahs) {
         expect(a, isA<String>());
-        expect((a as String).isNotEmpty, true,
-            reason: 'surah ${i + 1} has an empty Jalalayn entry');
+        expect(
+          (a as String).isNotEmpty,
+          true,
+          reason: 'surah ${i + 1} has an empty Jalalayn entry',
+        );
       }
       total += ayahs.length;
     }
     expect(total, 6236);
   });
 
-  test('jalalayn.json spot checks: 1:1 and 2:255 exist and are non-empty',
-      () {
+  test('jalalayn.json spot checks: 1:1 and 2:255 exist and are non-empty', () {
     final tafsir = readJson('assets/tafsir/jalalayn.json');
     final trSurahs = tafsir['surahs'] as List<dynamic>;
     String text(int s, int a) =>
         ((trSurahs[s - 1] as Map<String, dynamic>)['ayahs']
-            as List<dynamic>)[a - 1] as String;
+                as List<dynamic>)[a - 1]
+            as String;
     expect(text(1, 1).isNotEmpty, true);
     expect(text(2, 255).isNotEmpty, true);
   });
 
-  test(
-      'yusufali_commentary.json, when present: 114 surahs, 6,236 ayahs, '
+  test('yusufali_commentary.json, when present: 114 surahs, 6,236 ayahs, '
       'counts match Uthmani', () {
     if (!File('assets/tafsir/yusufali_commentary.json').existsSync()) {
       markTestSkipped('optional file not present yet');
@@ -98,8 +99,11 @@ void main() {
       total += ayahs.length;
     }
     expect(total, 6236);
-    expect(nonEmpty, greaterThan(100),
-        reason: 'commentary should cover a meaningful number of ayahs');
+    expect(
+      nonEmpty,
+      greaterThan(100),
+      reason: 'commentary should cover a meaningful number of ayahs',
+    );
   });
 
   test('TafsirRepository loads the real assets via rootBundle', () async {
@@ -118,8 +122,11 @@ void main() {
     expect(repo.textFor('jalalayn', 1, 1)!.isNotEmpty, true);
     expect(repo.textFor('jalalayn', 2, 255)!.isNotEmpty, true);
 
-    expect(repo.textFor('jalalayn', 1, 8), null,
-        reason: 'surah 1 has only 7 ayahs');
+    expect(
+      repo.textFor('jalalayn', 1, 8),
+      null,
+      reason: 'surah 1 has only 7 ayahs',
+    );
     expect(repo.textFor('jalalayn', 115, 1), null);
     expect(repo.textFor('jalalayn', 0, 1), null);
     expect(repo.textFor('jalalayn', 1, 0), null);

@@ -36,10 +36,16 @@ void main() {
       test('$id: total matches parsed count; every hadith has Arabic', () {
         final json = readJson('assets/hadith/$id.json');
         expect(json['book'], id);
-        expect((json['title_en'] as String).isNotEmpty, true,
-            reason: '$id title_en');
-        expect((json['title_ar'] as String).isNotEmpty, true,
-            reason: '$id title_ar');
+        expect(
+          (json['title_en'] as String).isNotEmpty,
+          true,
+          reason: '$id title_en',
+        );
+        expect(
+          (json['title_ar'] as String).isNotEmpty,
+          true,
+          reason: '$id title_ar',
+        );
         final total = json['total'] as int;
         final chapters = json['chapters'] as List<dynamic>;
         expect(chapters.isNotEmpty, true, reason: '$id has no chapters');
@@ -49,20 +55,28 @@ void main() {
           final hadiths = cm['hadiths'] as List<dynamic>;
           for (final h in hadiths) {
             final hm = h as Map<String, dynamic>;
-            expect((hm['ar'] as String).isNotEmpty, true,
-                reason: '$id hadith ${hm['n']} has empty Arabic');
+            expect(
+              (hm['ar'] as String).isNotEmpty,
+              true,
+              reason: '$id hadith ${hm['n']} has empty Arabic',
+            );
             count++;
           }
         }
-        expect(count, total,
-            reason: '$id parsed count must match the file "total"');
+        expect(
+          count,
+          total,
+          reason: '$id parsed count must match the file "total"',
+        );
       });
 
       test('$id spot check: first hadith non-empty with a reference', () {
         final json = readJson('assets/hadith/$id.json');
         final chapters = json['chapters'] as List<dynamic>;
-        final first = ((chapters[0] as Map<String, dynamic>)['hadiths']
-            as List<dynamic>)[0] as Map<String, dynamic>;
+        final first =
+            ((chapters[0] as Map<String, dynamic>)['hadiths']
+                    as List<dynamic>)[0]
+                as Map<String, dynamic>;
         expect((first['ar'] as String).isNotEmpty, true);
         expect((first['ref'] as String).isNotEmpty, true);
       });
@@ -77,8 +91,7 @@ void main() {
         expect(repo.isLoaded(id), true, reason: '$id should load');
         expect(repo.isAvailable(id), true);
         final book = repo.book(id)!;
-        final fileTotal =
-            readJson('assets/hadith/$id.json')['total'] as int;
+        final fileTotal = readJson('assets/hadith/$id.json')['total'] as int;
         expect(book.total, fileTotal, reason: '$id total');
         expect(book.count, fileTotal, reason: '$id parsed count');
       }
@@ -93,15 +106,21 @@ void main() {
     test('search finds Arabic matches across books', () async {
       final repo = HadithRepository.instance;
       await repo.loadAll();
-      expect(repo.search('الله').isNotEmpty, true,
-          reason: 'Arabic search should find matches');
+      expect(
+        repo.search('الله').isNotEmpty,
+        true,
+        reason: 'Arabic search should find matches',
+      );
       // All six books are Arabic-only in the current data (every "en"
       // is null), so an English query correctly finds nothing. The
       // English search path itself is covered by the loadForTest test
       // below with hand-built English content. If translations ship
       // later, this expectation must be revisited.
-      expect(repo.search('Allah'), isEmpty,
-          reason: 'current data is Arabic-only');
+      expect(
+        repo.search('Allah'),
+        isEmpty,
+        reason: 'current data is Arabic-only',
+      );
       expect(repo.search(''), isEmpty);
       expect(repo.search('zzzqqqxxyy'), isEmpty);
       final limited = repo.search('الله', limit: 5);
@@ -110,8 +129,7 @@ void main() {
   });
 
   group('HadithRepository search logic (loadForTest, no assets)', () {
-    test('Arabic search ignores diacritics; English is case-insensitive',
-        () {
+    test('Arabic search ignores diacritics; English is case-insensitive', () {
       final repo = HadithRepository.instance;
       repo.loadForTest('bukhari', {
         'book': 'bukhari',
@@ -163,8 +181,7 @@ void main() {
       expect(repo.search('ا', limit: 1).length, 1);
     });
 
-    test('real bukhari file parses via loadForTest and is searchable',
-        () {
+    test('real bukhari file parses via loadForTest and is searchable', () {
       // Verifies the parse + search path on the REAL file without the
       // asset pipeline (which needs the pubspec entries the integrator
       // adds). Runs last: it replaces the small test map with the full

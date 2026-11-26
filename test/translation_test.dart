@@ -53,8 +53,11 @@ void main() {
         );
         for (final a in ayahs) {
           expect(a, isA<String>());
-          expect((a as String).isNotEmpty, true,
-              reason: 'surah ${i + 1} has an empty ayah');
+          expect(
+            (a as String).isNotEmpty,
+            true,
+            reason: 'surah ${i + 1} has an empty ayah',
+          );
         }
         total += ayahs.length;
       }
@@ -66,7 +69,8 @@ void main() {
       final trSurahs = trans['surahs'] as List<dynamic>;
       String text(int s, int a) =>
           ((trSurahs[s - 1] as Map<String, dynamic>)['ayahs']
-              as List<dynamic>)[a - 1] as String;
+                  as List<dynamic>)[a - 1]
+              as String;
       expect(text(1, 1).isNotEmpty, true);
       expect(text(2, 255).isNotEmpty, true);
     });
@@ -79,29 +83,31 @@ void main() {
     final fa =
         readJson('assets/quran/trans_fa_ghomshei.json')['surahs']
             as List<dynamic>;
-    final bundle = readJson('assets/quran/quran_bundle.json')['surahs']
-        as List<dynamic>;
+    final bundle =
+        readJson('assets/quran/quran_bundle.json')['surahs'] as List<dynamic>;
     String urText(int s, int a) =>
-        ((ur[s - 1] as Map<String, dynamic>)['ayahs']
-            as List<dynamic>)[a - 1] as String;
+        ((ur[s - 1] as Map<String, dynamic>)['ayahs'] as List<dynamic>)[a - 1]
+            as String;
     String faText(int s, int a) =>
-        ((fa[s - 1] as Map<String, dynamic>)['ayahs']
-            as List<dynamic>)[a - 1] as String;
+        ((fa[s - 1] as Map<String, dynamic>)['ayahs'] as List<dynamic>)[a - 1]
+            as String;
     String enText(int s, int a) =>
-        (((bundle[s - 1] as Map<String, dynamic>)['ayahs']
-                as List<dynamic>)[a - 1] as Map<String, dynamic>)['en']
+        (((bundle[s - 1] as Map<String, dynamic>)['ayahs'] as List<dynamic>)[a -
+                    1]
+                as Map<String, dynamic>)['en']
             as String;
     expect(urText(1, 1), isNot(faText(1, 1)));
     expect(urText(1, 1), isNot(enText(1, 1)));
     expect(faText(1, 1), isNot(enText(1, 1)));
     // Exact 1:1 wording, as downloaded from AlQuran Cloud.
-    expect(urText(1, 1),
-        'شروع الله کا نام لے کر جو بڑا مہربان نہایت رحم والا ہے');
+    expect(
+      urText(1, 1),
+      'شروع الله کا نام لے کر جو بڑا مہربان نہایت رحم والا ہے',
+    );
     expect(faText(1, 1), 'به نام خداوند بخشنده مهربان');
   });
 
-  test('TranslationRepository loads the real assets via rootBundle',
-      () async {
+  test('TranslationRepository loads the real assets via rootBundle', () async {
     // The Quran bundle must load first: 'en.pickthall' reads from it.
     final quran = QuranRepository.instance;
     await quran.load();
@@ -124,14 +130,19 @@ void main() {
       repo.textFor('en.pickthall', 1, 1),
       'In the name of Allah, the Beneficent, the Merciful.',
     );
-    expect(repo.textFor('ur.jalandhry', 1, 1),
-        'شروع الله کا نام لے کر جو بڑا مہربان نہایت رحم والا ہے');
+    expect(
+      repo.textFor('ur.jalandhry', 1, 1),
+      'شروع الله کا نام لے کر جو بڑا مہربان نہایت رحم والا ہے',
+    );
     expect(repo.textFor('fa.ghomshei', 1, 1), 'به نام خداوند بخشنده مهربان');
     expect(repo.textFor('ur.jalandhry', 2, 255)!.isNotEmpty, true);
     expect(repo.textFor('fa.ghomshei', 2, 255)!.isNotEmpty, true);
 
-    expect(repo.textFor('en.pickthall', 1, 8), null,
-        reason: 'surah 1 has only 7 ayahs');
+    expect(
+      repo.textFor('en.pickthall', 1, 8),
+      null,
+      reason: 'surah 1 has only 7 ayahs',
+    );
     expect(repo.textFor('en.pickthall', 115, 1), null);
     expect(repo.textFor('none', 1, 1), null);
   });
@@ -189,7 +200,7 @@ void main() {
       'en.pickthall',
       'ur.jalandhry',
       'fa.ghomshei',
-      'none'
+      'none',
     ]);
   });
 
@@ -223,13 +234,20 @@ void main() {
     );
 
     expect(repo.isAvailable('en.yusufali'), true);
-    expect(repo.textFor('en.yusufali', 1, 1),
-        'In the name of Allah, Most Gracious, Most Merciful.');
-    expect(repo.textFor('en.yusufali', 1, 2), null,
-        reason: 'fixture has only one ayah for surah 1');
+    expect(
+      repo.textFor('en.yusufali', 1, 1),
+      'In the name of Allah, Most Gracious, Most Merciful.',
+    );
+    expect(
+      repo.textFor('en.yusufali', 1, 2),
+      null,
+      reason: 'fixture has only one ayah for surah 1',
+    );
     expect(repo.isRtl('en.yusufali'), false);
-    expect(TranslationRepository.labelKeyFor('en.yusufali'),
-        'translation_yusufali');
+    expect(
+      TranslationRepository.labelKeyFor('en.yusufali'),
+      'translation_yusufali',
+    );
     // Yusuf Ali is first in the list, so it is the default shown.
     expect(TranslationRepository.ids.first, 'en.yusufali');
   });

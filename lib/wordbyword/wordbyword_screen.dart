@@ -33,11 +33,7 @@ class WordByWordScreen extends StatelessWidget {
               top: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                child: _WbwContent(
-                  surah: surah,
-                  ayah: ayah,
-                  inSheet: true,
-                ),
+                child: _WbwContent(surah: surah, ayah: ayah, inSheet: true),
               ),
             ),
           ),
@@ -261,14 +257,16 @@ class _WbwContentState extends State<_WbwContent> {
                         translation,
                         textDirection:
                             TranslationRepository.instance.isRtl(
-                                    appState.translationId)
-                                ? TextDirection.rtl
-                                : TextDirection.ltr,
+                              appState.translationId,
+                            )
+                            ? TextDirection.rtl
+                            : TextDirection.ltr,
                         textAlign:
                             TranslationRepository.instance.isRtl(
-                                    appState.translationId)
-                                ? TextAlign.right
-                                : TextAlign.left,
+                              appState.translationId,
+                            )
+                            ? TextAlign.right
+                            : TextAlign.left,
                         style: TextStyle(
                           fontSize: 15,
                           color: p.muted,
@@ -364,11 +362,7 @@ class _WbwContentState extends State<_WbwContent> {
               Text(
                 word.meaning,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: p.muted,
-                  height: 1.35,
-                ),
+                style: TextStyle(fontSize: 12.5, color: p.muted, height: 1.35),
               ),
             ],
           ],

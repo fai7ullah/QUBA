@@ -163,9 +163,10 @@ class CalcSettingsCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ---- Method ----
-              Text(tr('calc_method'),
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700, color: p.muted)),
+              Text(
+                tr('calc_method'),
+                style: TextStyle(fontWeight: FontWeight.w700, color: p.muted),
+              ),
               DropdownButton<String>(
                 isExpanded: true,
                 value: method.id,
@@ -174,8 +175,11 @@ class CalcSettingsCard extends StatelessWidget {
                   for (final m in PrayerMethod.all)
                     DropdownMenuItem(
                       value: m.id,
-                      child: Text(m.name,
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        m.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                 ],
                 onChanged: (v) {
@@ -184,8 +188,10 @@ class CalcSettingsCard extends StatelessWidget {
                   _changed();
                 },
               ),
-              Text(_angleText(method),
-                  style: TextStyle(fontSize: 13, color: p.muted)),
+              Text(
+                _angleText(method),
+                style: TextStyle(fontSize: 13, color: p.muted),
+              ),
               Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: TextButton.icon(
@@ -208,14 +214,16 @@ class CalcSettingsCard extends StatelessWidget {
                     RadioListTile<bool>(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
-                          "${trPrayer('Asr')} — ${tr('madhab_hanafi')}"),
+                        "${trPrayer('Asr')} — ${tr('madhab_hanafi')}",
+                      ),
                       subtitle: Text(tr('asr_hanafi_sub')),
                       value: true,
                     ),
                     RadioListTile<bool>(
                       contentPadding: EdgeInsets.zero,
                       title: Text(
-                          "${trPrayer('Asr')} — ${tr('madhab_shafii')}"),
+                        "${trPrayer('Asr')} — ${tr('madhab_shafii')}",
+                      ),
                       subtitle: Text(tr('asr_shafii_sub')),
                       value: false,
                     ),
@@ -225,9 +233,10 @@ class CalcSettingsCard extends StatelessWidget {
               const Divider(height: 1),
               // ---- High latitude ----
               const SizedBox(height: 10),
-              Text(tr('high_lat'),
-                  style: TextStyle(
-                      fontWeight: FontWeight.w700, color: p.muted)),
+              Text(
+                tr('high_lat'),
+                style: TextStyle(fontWeight: FontWeight.w700, color: p.muted),
+              ),
               DropdownButton<String>(
                 isExpanded: true,
                 value: appState.highLatRule,
@@ -236,8 +245,11 @@ class CalcSettingsCard extends StatelessWidget {
                   for (final e in _highLatKeys.entries)
                     DropdownMenuItem(
                       value: e.key,
-                      child: Text(tr(e.value),
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        tr(e.value),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                 ],
                 onChanged: (v) {
@@ -246,8 +258,10 @@ class CalcSettingsCard extends StatelessWidget {
                   _changed();
                 },
               ),
-              Text(tr('high_lat_hint'),
-                  style: TextStyle(fontSize: 12.5, color: p.muted)),
+              Text(
+                tr('high_lat_hint'),
+                style: TextStyle(fontSize: 12.5, color: p.muted),
+              ),
               const SizedBox(height: 6),
               const Divider(height: 1),
               // ---- Per-prayer minutes ----
@@ -257,11 +271,14 @@ class CalcSettingsCard extends StatelessWidget {
                 child: ExpansionTile(
                   tilePadding: EdgeInsets.zero,
                   childrenPadding: EdgeInsets.zero,
-                  title: Text(tr('adjust_minutes'),
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700, color: p.ink)),
-                  subtitle: Text(tr('adjust_hint'),
-                      style: TextStyle(fontSize: 12.5, color: p.muted)),
+                  title: Text(
+                    tr('adjust_minutes'),
+                    style: TextStyle(fontWeight: FontWeight.w700, color: p.ink),
+                  ),
+                  subtitle: Text(
+                    tr('adjust_hint'),
+                    style: TextStyle(fontSize: 12.5, color: p.muted),
+                  ),
                   children: [
                     for (var i = 0; i < _prayers.length; i++)
                       _stepper(
@@ -286,8 +303,16 @@ class CalcSettingsCard extends StatelessWidget {
                         onPressed: appState.prayerAdjust.every((e) => e == 0)
                             ? null
                             : () {
-                                appState.update(() => appState.prayerAdjust =
-                                    [0, 0, 0, 0, 0, 0]);
+                                appState.update(
+                                  () => appState.prayerAdjust = [
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                  ],
+                                );
                                 _changed();
                               },
                         child: Text(tr('reset_all')),

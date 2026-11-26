@@ -137,8 +137,9 @@ class MushafData {
 
   Future<void> _loadIndoPakFromBundle() async {
     try {
-      final raw =
-          await rootBundle.loadString('assets/quran/quran_indopak_pages.json');
+      final raw = await rootBundle.loadString(
+        'assets/quran/quran_indopak_pages.json',
+      );
       await loadIndoPakFromJsonString(raw);
     } catch (_) {
       _indopak = null;
@@ -151,9 +152,8 @@ class MushafData {
   /// anything that is not a 604-page / 30-juz / 60-hizb meta file.
   void loadFromJsonString(String raw) {
     final json = jsonDecode(raw) as Map<String, dynamic>;
-    List<int> ints(String key) => (json[key] as List<dynamic>)
-        .map((e) => (e as num).toInt())
-        .toList();
+    List<int> ints(String key) =>
+        (json[key] as List<dynamic>).map((e) => (e as num).toInt()).toList();
     final pages = ints('pages');
     final juz = ints('juz');
     final hizb = ints('hizb');
@@ -166,7 +166,8 @@ class MushafData {
         juz.first != 0 ||
         hizb.first != 0) {
       throw const FormatException(
-          'quran_meta.json must hold 604 pages, 30 juz, 60 hizb, 6236 ayahs');
+        'quran_meta.json must hold 604 pages, 30 juz, 60 hizb, 6236 ayahs',
+      );
     }
     _madani = MushafLayout(name: 'madani', pageStarts: pages);
     _juzStarts = juz;
@@ -187,7 +188,8 @@ class MushafData {
     final ranges = json['pageRanges'] as List<dynamic>? ?? const [];
     if (totalPages != indopakPages || ranges.length != indopakPages) {
       throw const FormatException(
-          'quran_indopak_pages.json must hold 610 page ranges');
+        'quran_indopak_pages.json must hold 610 page ranges',
+      );
     }
     final starts = <int>[];
     var prevEndGlobal = -1; // 0-based global of the previous range's end
@@ -196,26 +198,32 @@ class MushafData {
       final page = (m['page'] as num).toInt();
       if (page != i + 1) {
         throw const FormatException(
-            'quran_indopak_pages.json: pages must run 1..610 in order');
+          'quran_indopak_pages.json: pages must run 1..610 in order',
+        );
       }
       final from = m['from'] as List<dynamic>;
       final to = m['to'] as List<dynamic>;
-      final startGlobal = repo.globalIndexOf(
-              (from[0] as num).toInt(), (from[1] as num).toInt()) -
+      final startGlobal =
+          repo.globalIndexOf(
+            (from[0] as num).toInt(),
+            (from[1] as num).toInt(),
+          ) -
           1;
-      final endGlobal = repo.globalIndexOf(
-              (to[0] as num).toInt(), (to[1] as num).toInt()) -
+      final endGlobal =
+          repo.globalIndexOf((to[0] as num).toInt(), (to[1] as num).toInt()) -
           1;
       if (endGlobal < startGlobal || startGlobal != prevEndGlobal + 1) {
         throw FormatException(
-            'quran_indopak_pages.json: page $page breaks gapless coverage');
+          'quran_indopak_pages.json: page $page breaks gapless coverage',
+        );
       }
       starts.add(startGlobal);
       prevEndGlobal = endGlobal;
     }
     if (prevEndGlobal != totalAyahs - 1) {
       throw const FormatException(
-          'quran_indopak_pages.json: last page must end at 114:6');
+        'quran_indopak_pages.json: last page must end at 114:6',
+      );
     }
     _indopak = MushafLayout(name: 'indopak', pageStarts: starts);
   }
@@ -241,7 +249,8 @@ class MushafData {
   void _checkLoaded() {
     if (!loaded) {
       throw StateError(
-          'MushafData not loaded — await MushafData.instance.load() first');
+        'MushafData not loaded — await MushafData.instance.load() first',
+      );
     }
   }
 
@@ -258,8 +267,7 @@ class MushafData {
 
   /// The 1-based page holding [surah]:[ayah].
   int pageOf(int surah, int ayah, [MushafLayout? layout]) {
-    final global0 =
-        QuranRepository.instance.globalIndexOf(surah, ayah) - 1;
+    final global0 = QuranRepository.instance.globalIndexOf(surah, ayah) - 1;
     return pageOfGlobal(global0, layout);
   }
 
@@ -307,8 +315,9 @@ class MushafData {
 
   /// The (surah, ayah) of the first ayah on [page].
   (int, int) firstAyahOfPage(int page, [MushafLayout? layout]) {
-    final sa = QuranRepository.instance
-        .surahAyahForGlobal(_layout(layout).pageRange(page).start + 1);
+    final sa = QuranRepository.instance.surahAyahForGlobal(
+      _layout(layout).pageRange(page).start + 1,
+    );
     return (sa[0], sa[1]);
   }
 }

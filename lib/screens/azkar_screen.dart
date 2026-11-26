@@ -27,8 +27,8 @@ class _AzkarScreenState extends State<AzkarScreen> {
   @override
   void initState() {
     super.initState();
-    _set = widget.initialSet ??
-        (DateTime.now().hour < 12 ? 'morning' : 'evening');
+    _set =
+        widget.initialSet ?? (DateTime.now().hour < 12 ? 'morning' : 'evening');
   }
 
   int _doneItems(List<ResolvedAzkar> items) {
@@ -56,13 +56,12 @@ class _AzkarScreenState extends State<AzkarScreen> {
 
   Future<void> _toggleReminder(bool morning, bool on) async {
     if (on) {
-      final ok =
-          await NotificationService.instance.requestNotificationPermission();
+      final ok = await NotificationService.instance
+          .requestNotificationPermission();
       if (!mounted) return;
       if (!ok) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr('azkar_perm_denied'))),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr('azkar_perm_denied'))));
         return;
       }
     }
@@ -93,10 +92,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 primary: false,
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
                 children: [
-                  TitleRow(
-                    title: tr('azkar'),
-                    subtitle: tr('azkar_subtitle'),
-                  ),
+                  TitleRow(title: tr('azkar'), subtitle: tr('azkar_subtitle')),
                   const SizedBox(height: 16),
                   SegmentedButton<String>(
                     showSelectedIcon: false,
@@ -104,8 +100,11 @@ class _AzkarScreenState extends State<AzkarScreen> {
                       for (final s in AzkarData.sets)
                         ButtonSegment(
                           value: s.id,
-                          label: Text(tr(s.titleKey),
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                          label: Text(
+                            tr(s.titleKey),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                     ],
                     selected: {_set},
@@ -130,7 +129,11 @@ class _AzkarScreenState extends State<AzkarScreen> {
   }
 
   Widget _summaryCard(
-      QubaPalette p, List<ResolvedAzkar> items, int done, bool setDone) {
+    QubaPalette p,
+    List<ResolvedAzkar> items,
+    int done,
+    bool setDone,
+  ) {
     final streak = appState.azkarStreak;
     return GlassCard(
       child: Column(
@@ -149,8 +152,10 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 child: Text(
                   setDone
                       ? tr('azkar_done_today')
-                      : trf('azkar_progress',
-                          {'done': done, 'total': items.length}),
+                      : trf('azkar_progress', {
+                          'done': done,
+                          'total': items.length,
+                        }),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -162,13 +167,15 @@ class _AzkarScreenState extends State<AzkarScreen> {
               ),
               if (streak > 0) ...[
                 const SizedBox(width: 8),
-                Icon(Icons.local_fire_department_rounded,
-                    size: 18, color: p.gold),
+                Icon(
+                  Icons.local_fire_department_rounded,
+                  size: 18,
+                  color: p.gold,
+                ),
                 const SizedBox(width: 2),
                 Text(
                   '$streak',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w800, color: p.ink),
+                  style: TextStyle(fontWeight: FontWeight.w800, color: p.ink),
                 ),
               ],
             ],
@@ -216,8 +223,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
     );
   }
 
-  Widget _itemCard(
-      QubaPalette p, ResolvedAzkar r, List<ResolvedAzkar> items) {
+  Widget _itemCard(QubaPalette p, ResolvedAzkar r, List<ResolvedAzkar> items) {
     final taps = appState.azkarTaps(_set, r.index);
     final remaining = r.count - taps;
     final complete = remaining <= 0;
@@ -255,10 +261,7 @@ class _AzkarScreenState extends State<AzkarScreen> {
             style: TextStyle(fontSize: 13.5, height: 1.45, color: p.ink),
           ),
           const SizedBox(height: 6),
-          Text(
-            r.dua.source,
-            style: TextStyle(fontSize: 12, color: p.muted),
-          ),
+          Text(r.dua.source, style: TextStyle(fontSize: 12, color: p.muted)),
           const SizedBox(height: 12),
           AnimatedContainer(
             duration: const Duration(milliseconds: 150),
@@ -285,8 +288,10 @@ class _AzkarScreenState extends State<AzkarScreen> {
                 Text(
                   complete
                       ? tr('azkar_item_done')
-                      : trf('azkar_taps_left',
-                          {'left': remaining, 'total': r.count}),
+                      : trf('azkar_taps_left', {
+                          'left': remaining,
+                          'total': r.count,
+                        }),
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,

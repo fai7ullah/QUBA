@@ -22,16 +22,24 @@ void main() {
     // Contiguous: each juz starts exactly one verse after the previous ends.
     for (var i = 1; i < 30; i++) {
       final prevEnd = repo.globalIndexOf(
-          juzList[i - 1].endSurah, juzList[i - 1].endAyah);
-      final start =
-          repo.globalIndexOf(juzList[i].startSurah, juzList[i].startAyah);
+        juzList[i - 1].endSurah,
+        juzList[i - 1].endAyah,
+      );
+      final start = repo.globalIndexOf(
+        juzList[i].startSurah,
+        juzList[i].startAyah,
+      );
       expect(start, prevEnd + 1, reason: 'juz ${i + 1} must follow juz $i');
     }
     // Total coverage is the whole Quran.
-    final first =
-        repo.globalIndexOf(juzList.first.startSurah, juzList.first.startAyah);
+    final first = repo.globalIndexOf(
+      juzList.first.startSurah,
+      juzList.first.startAyah,
+    );
     final last = repo.globalIndexOf(
-        juzList.last.endSurah, juzList.last.endAyah);
+      juzList.last.endSurah,
+      juzList.last.endAyah,
+    );
     expect(last - first + 1, 6236);
   });
 

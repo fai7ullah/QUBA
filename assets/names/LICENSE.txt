@@ -1,0 +1,114 @@
+99 Names pronunciation audio — source and licence record
+
+Names 2-99 in QUBA (Ar-Rahman through As-Sabur, mapped by name identity;
+QUBA omits Al-Ahad and lists Allah first): Wikimedia Commons pronunciation
+recordings by Mohammed Sadiq (Sadiqmmm), produced by GraphicJunction.com.
+Licence: Creative Commons Attribution-ShareAlike 4.0 International
+(CC BY-SA 4.0), https://creativecommons.org/licenses/by-sa/4.0/
+Attribution: Mohammed Sadiq / Wikimedia Commons. Clips are bundled unmodified.
+
+Name 1 in QUBA (Allah): Wikimedia Commons file Ar-Allah.oga by Hakeem.gadi.
+Licence: Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0),
+https://creativecommons.org/licenses/by-sa/3.0/
+Attribution: Hakeem.gadi / Wikimedia Commons. Clip is bundled unmodified.
+
+QUBA asset mapping (app number -> Commons file):
+01 -> Ar-Allah.oga (CC BY-SA 3.0) https://upload.wikimedia.org/wikipedia/commons/9/98/Ar-Allah.oga
+02 -> 01-ar-rahman.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/8/8a/01-ar-rahman.ogg
+03 -> 02-ar-rahim.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/e6/02-ar-rahim.ogg
+04 -> 03-al-malik.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/6/62/03-al-malik.ogg
+05 -> 04-al-quddus.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/c/ce/04-al-quddus.ogg
+06 -> 05-as-salam.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/5/51/05-as-salam.ogg
+07 -> 06-al-mumin.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/6/68/06-al-mumin.ogg
+08 -> 07-al-muhaymin.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/ef/07-al-muhaymin.ogg
+09 -> 08-al-aziz.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/f/f9/08-al-aziz.ogg
+10 -> 09-al-jabbar.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/e5/09-al-jabbar.ogg
+11 -> 10-al-mutakabbir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/a/a9/10-al-mutakabbir.ogg
+12 -> 11-al-khaliq.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/a/a6/11-al-khaliq.ogg
+13 -> 12-al-bari.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/0/0b/12-al-bari.ogg
+14 -> 13-al-musawwir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/d/dc/13-al-musawwir.ogg
+15 -> 14-al-ghaffar.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/ea/14-al-ghaffar.ogg
+16 -> 15-al-qahhar.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/d/d1/15-al-qahhar.ogg
+17 -> 16-al-wahhab.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/c/c6/16-al-wahhab.ogg
+18 -> 17-ar-razzaq.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/4/43/17-ar-razzaq.ogg
+19 -> 18-al-fattah.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/4/4e/18-al-fattah.ogg
+20 -> 19-al-alim.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/9/96/19-al-alim.ogg
+21 -> 20-al-qabid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/27/20-al-qabid.ogg
+22 -> 21-al-basit.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/c/c0/21-al-basit.ogg
+23 -> 22-al-khafid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/f/fa/22-al-khafid.ogg
+24 -> 23-ar-rafi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/9/96/23-ar-rafi.ogg
+25 -> 24-al-muizz.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/f/f6/24-al-muizz.ogg
+26 -> 25-al-mudhill.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/b/b0/25-al-mudhill.ogg
+27 -> 26-as-sami.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/f/fe/26-as-sami.ogg
+28 -> 27-al-basir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/28/27-al-basir.ogg
+29 -> 28-al-hakam.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/eb/28-al-hakam.ogg
+30 -> 29-al-adl.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/b/bd/29-al-adl.ogg
+31 -> 30-al-latif.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/25/30-al-latif.ogg
+32 -> 31-al-khabir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/d/d2/31-al-khabir.ogg
+33 -> 32-al-halim.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/a/a1/32-al-halim.ogg
+34 -> 33-al-azim.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/5/51/33-al-azim.ogg
+35 -> 34-al-ghafur.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/ec/34-al-ghafur.ogg
+36 -> 35-ash-shakur.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/9/9b/35-ash-shakur.ogg
+37 -> 36-al-ali.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/4/44/36-al-ali.ogg
+38 -> 37_al-kabir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/c/cf/37_al-kabir.ogg
+39 -> 38-al-hafiz.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/8/88/38-al-hafiz.ogg
+40 -> 39-al-muqit.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/e6/39-al-muqit.ogg
+41 -> 40-al-hasib.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/b/b0/40-al-hasib.ogg
+42 -> 41-al-jalil.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/1/1d/41-al-jalil.ogg
+43 -> 42_al-karim.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/7/7b/42_al-karim.ogg
+44 -> 43-ar-raqib.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/27/43-ar-raqib.ogg
+45 -> 44-al-mujib.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/1/17/44-al-mujib.ogg
+46 -> 45-al-wasi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/d/d0/45-al-wasi.ogg
+47 -> 46-al-hakim.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/6/62/46-al-hakim.ogg
+48 -> 47-al-wadud.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/0/04/47-al-wadud.ogg
+49 -> 48-al-majid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/7/73/48-al-majid.ogg
+50 -> 49_al-baith.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/9/97/49_al-baith.ogg
+51 -> 50-ash-shahid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/0/08/50-ash-shahid.ogg
+52 -> 51-al-haqq.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/5/5e/51-al-haqq.ogg
+53 -> 52-al-wakil.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/b/b1/52-al-wakil.ogg
+54 -> 53-al-qawi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/4/43/53-al-qawi.ogg
+55 -> 54-al-matin.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/8/8e/54-al-matin.ogg
+56 -> 55-al-wali.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/6/6a/55-al-wali.ogg
+57 -> 56-al-hamid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/f/f3/56-al-hamid.ogg
+58 -> 57-al-muhsi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/7/72/57-al-muhsi.ogg
+59 -> 58-al-mubdi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/0/06/58-al-mubdi.ogg
+60 -> 59-al-muid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/9/9e/59-al-muid.ogg
+61 -> 60-al-muhyi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/21/60-al-muhyi.ogg
+62 -> 61-al-mumit.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/7/78/61-al-mumit.ogg
+63 -> 62-al-hayy.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/6/65/62-al-hayy.ogg
+64 -> 63-al-qayyum.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/4/42/63-al-qayyum.ogg
+65 -> 64-al-wajid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/1/16/64-al-wajid.ogg
+66 -> 65-al-majid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/e5/65-al-majid.ogg
+67 -> 66-al-wahid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/8/8c/66-al-wahid.ogg
+68 -> 68-as-samad.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/c/c5/68-as-samad.ogg
+69 -> 69-al-qadir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/d/d7/69-al-qadir.ogg
+70 -> 70-al-muqtadir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/4/49/70-al-muqtadir.ogg
+71 -> 71-al-muqaddim.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/7/77/71-al-muqaddim.ogg
+72 -> 72-al-muakhkhir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/f/fb/72-al-muakhkhir.ogg
+73 -> 73-al-awwal.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/2e/73-al-awwal.ogg
+74 -> 74-al-akhir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/8/8d/74-al-akhir.ogg
+75 -> 75-az-zahir.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/8/80/75-az-zahir.ogg
+76 -> 76-al-batin.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/4/46/76-al-batin.ogg
+77 -> 77-al-wali.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/5/53/77-al-wali.ogg
+78 -> 78-al-mutaali.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/d/da/78-al-mutaali.ogg
+79 -> 79-al-barr.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/d/d8/79-al-barr.ogg
+80 -> 80-at-tawwab.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/1/15/80-at-tawwab.ogg
+81 -> 81-al-muntaqim.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/c/cc/81-al-muntaqim.ogg
+82 -> 82-al-afuw.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/0/05/82-al-afuw.ogg
+83 -> 83-ar-rauf.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/d/d3/83-ar-rauf.ogg
+84 -> 84-malik-ul-mulk.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/0/01/84-malik-ul-mulk.ogg
+85 -> 85-dhul-jalaal-wal-ikraam.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/3/3a/85-dhul-jalaal-wal-ikraam.ogg
+86 -> 86-al-muqsit.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/29/86-al-muqsit.ogg
+87 -> 87-al-jame.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/27/87-al-jame.ogg
+88 -> 88-al-ghani.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/f/f4/88-al-ghani.ogg
+89 -> 89-al-mughni.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/b/b3/89-al-mughni.ogg
+90 -> 90-al-mani.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/a/ad/90-al-mani.ogg
+91 -> 91-ad-darr.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/8/86/91-ad-darr.ogg
+92 -> 92-an-nafi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/0/0e/92-an-nafi.ogg
+93 -> 93-an-nur.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/f/fa/93-an-nur.ogg
+94 -> 94-al-hadi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/0/07/94-al-hadi.ogg
+95 -> 95-al-badi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/2b/95-al-badi.ogg
+96 -> 96-al-baqi.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/2/29/96-al-baqi.ogg
+97 -> 97-al-warith.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/3/3f/97-al-warith.ogg
+98 -> 98-ar-rashid.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/e/e1/98-ar-rashid.ogg
+99 -> 99-as-sabur.ogg (CC BY-SA 4.0) https://upload.wikimedia.org/wikipedia/commons/5/50/99-as-sabur.ogg

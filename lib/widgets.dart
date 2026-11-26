@@ -10,39 +10,63 @@ import 'theme.dart';
 /// Shared QUBA widgets — the liquid-glass design system.
 /// Every screen is built from these so light/dark stay consistent.
 
-/// Full-screen background: plain spec background color only.
-/// (Phase 2, round 4 item 5: all code-drawn decorations removed at the
-/// owner's request — mosque skyline, crescent, birds, branch, waves,
-/// and the geometric star pattern. The background is just the colour.)
+/// Full-screen background: a soft mint "water" wash with pale-green
+/// glows in light mode; a deep emerald wash with faint glows in dark
+/// mode. (Phase 2, round 4 item 5 removed the code-drawn scene
+/// decorations — skyline, crescent, birds, waves — at the owner's
+/// request; only these colour glows remain, and the glass cards'
+/// gradients pick them up.)
 class QubaBackground extends StatelessWidget {
   const QubaBackground({super.key, required this.child});
   final Widget child;
 
   Widget _blob(Color color, double size) => IgnorePointer(
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [color, color.withValues(alpha: 0)],
-            ),
-          ),
-        ),
-      );
+    child: Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
     if (p.dark) {
-      return Container(color: p.bg, child: child);
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF063327), Color(0xFF04241C), Color(0xFF052B21)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned(
+              top: -110,
+              right: -90,
+              child: _blob(const Color(0x2434D399), 320),
+            ),
+            Positioned(
+              bottom: -130,
+              left: -110,
+              child: _blob(const Color(0x1C2E9E7B), 340),
+            ),
+            child,
+          ],
+        ),
+      );
     }
-    // Soft mint wash with a few pale-green glows: the glass cards blur
-    // these, which is what gives the frosted look.
+    // Clean white/mint wash with extremely subtle green ambient
+    // light: the glass surfaces are the attraction, not the backdrop.
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFEFF9F3), Color(0xFFE3F3EA), Color(0xFFF1FAF5)],
+          colors: [Color(0xFFFBFEFC), Color(0xFFF0F9F3), Color(0xFFFBFEFC)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -51,17 +75,25 @@ class QubaBackground extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Positioned(
-              top: -90,
-              right: -80,
-              child: _blob(const Color(0x4D6FCF97), 300)),
+            top: -90,
+            right: -80,
+            child: _blob(const Color(0x336FCF97), 300),
+          ),
           Positioned(
-              top: 330,
-              left: -140,
-              child: _blob(const Color(0x40A8E6C1), 320)),
+            top: 330,
+            left: -140,
+            child: _blob(const Color(0x2EA8E6C1), 320),
+          ),
           Positioned(
-              bottom: -110,
-              right: -60,
-              child: _blob(const Color(0x4D5CC48A), 320)),
+            bottom: -110,
+            right: -60,
+            child: _blob(const Color(0x335CC48A), 320),
+          ),
+          Positioned(
+            top: 120,
+            left: -70,
+            child: _blob(const Color(0x22BFEED4), 220),
+          ),
           child,
         ],
       ),
@@ -69,9 +101,14 @@ class QubaBackground extends StatelessWidget {
   }
 }
 
-/// A true frosted-glass card: [BackdropFilter] blur over whatever is
-/// behind the card, translucent fill, white glass border, soft shadow and
-/// a light reflection along the top edge — the reference design's glass.
+/// Liquid-glass card (Umar's 2026-11-26 brief): translucent white/
+/// mint fill, fine bright border, inner top highlight, a soft green
+/// reflection along the bottom edge, and a floating ambient shadow —
+/// glass floating in water. With [blur] > 0 the surface also gets a
+/// real backdrop blur (frosted glass); that is reserved for the big
+/// one-off surfaces (Home cards, prayer panel, player, nav) so long
+/// lists of cards never stack nested blurs and stay lag-free. The
+/// highlights sit BEHIND the content so text stays crisp.
 class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
@@ -79,7 +116,7 @@ class GlassCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(16),
     this.radius = 30,
     this.onTap,
-    this.blur = 20,
+    this.blur = 0,
   });
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -90,56 +127,104 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
+    final glass = Stack(
+      children: [
+        // Translucent layered fill + fine glass border.
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: p.dark
+                    ? [
+                        const Color(0xA6144D3A),
+                        const Color(0x8C0A3C2C),
+                        const Color(0x990D4534),
+                      ]
+                    : [
+                        Colors.white.withValues(alpha: 0.46),
+                        Colors.white.withValues(alpha: 0.26),
+                        const Color(0xFFDFF3E7).withValues(alpha: 0.36),
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(radius),
+              border: Border.all(
+                color: p.dark
+                    ? Colors.white.withValues(alpha: 0.28)
+                    : Colors.white.withValues(alpha: 0.85),
+                width: 1.2,
+              ),
+            ),
+          ),
+        ),
+        // Inner specular highlight along the top edge.
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 40,
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: p.dark ? 0.16 : 0.55),
+                    Colors.white.withValues(alpha: 0),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Soft green reflection rising from the bottom edge.
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 26,
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF2E9E7B).withValues(alpha: 0),
+                    const Color(0xFF2E9E7B)
+                        .withValues(alpha: p.dark ? 0.10 : 0.08),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Padding(padding: padding, child: child),
+      ],
+    );
     final card = Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
         boxShadow: [
           BoxShadow(
-            color: p.dark ? p.shadow : Colors.green.withValues(alpha: 0.08),
-            blurRadius: 25,
-            spreadRadius: 2,
+            color: p.dark
+                ? p.shadow
+                : const Color(0xFF146441).withValues(alpha: 0.12),
+            blurRadius: 35,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-          child: Stack(
-            children: [
-              Container(
-                padding: padding,
-                decoration: BoxDecoration(
-                  color: p.cardFill,
-                  borderRadius: BorderRadius.circular(radius),
-                  border: Border.all(color: p.cardBorder, width: 1),
-                ),
-                child: child,
-              ),
-              // Light reflection along the top edge.
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 46,
-                child: IgnorePointer(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white.withValues(alpha: p.dark ? 0.10 : 0.35),
-                          Colors.white.withValues(alpha: 0),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: blur > 0
+            ? BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                child: glass,
+              )
+            : glass,
       ),
     );
     if (onTap == null) return card;
@@ -163,17 +248,20 @@ class GoldDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
     Widget line(bool fadeStart) => Expanded(
-          child: Container(
-            height: 1,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: fadeStart
-                    ? [p.gold.withValues(alpha: 0.0), p.gold.withValues(alpha: 0.8)]
-                    : [p.gold.withValues(alpha: 0.8), p.gold.withValues(alpha: 0.0)],
-              ),
-            ),
+      child: Container(
+        height: 1,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: fadeStart
+                ? [p.gold.withValues(alpha: 0.0), p.gold.withValues(alpha: 0.8)]
+                : [
+                    p.gold.withValues(alpha: 0.8),
+                    p.gold.withValues(alpha: 0.0),
+                  ],
           ),
-        );
+        ),
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 44),
       child: Row(
@@ -298,21 +386,44 @@ class PrayerMedallion extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
+          center: const Alignment(-0.45, -0.55),
           colors: p.dark
-              ? [const Color(0x3334D399), const Color(0x1A34D399)]
-              : [Colors.white.withValues(alpha: 0.95), const Color(0xFFE2F2E8)],
+              ? [const Color(0x4034D399), const Color(0x1A34D399)]
+              : [Colors.white.withValues(alpha: 0.98), const Color(0xFFE2F2E8)],
         ),
         border: Border.all(
-          color: Colors.white.withValues(alpha: p.dark ? 0.2 : 0.9),
+          color: Colors.white.withValues(alpha: p.dark ? 0.3 : 0.95),
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withValues(alpha: 0.12),
-            blurRadius: 8,
+            color: const Color(0xFF2E9E7B).withValues(alpha: 0.16),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Icon(glyph, size: size * 0.56, color: color),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(glyph, size: size * 0.56, color: color),
+          // Glass specular dot.
+          Positioned(
+            top: size * 0.14,
+            left: size * 0.2,
+            child: IgnorePointer(
+              child: Container(
+                width: size * 0.22,
+                height: size * 0.13,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: p.dark ? 0.25 : 0.75),
+                  borderRadius: BorderRadius.circular(size),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -344,11 +455,7 @@ class NotifyIcon extends StatelessWidget {
             size: size * 0.66,
             color: const Color(0xFFB7B2A6),
           ),
-          Icon(
-            Icons.block_rounded,
-            size: size,
-            color: const Color(0xFFE5484D),
-          ),
+          Icon(Icons.block_rounded, size: size, color: const Color(0xFFE5484D)),
         ],
       ),
     );
@@ -545,10 +652,7 @@ class TitleRow extends StatelessWidget {
               ),
               if (subtitle != null) ...[
                 const SizedBox(height: 2),
-                Text(
-                  subtitle!,
-                  style: TextStyle(fontSize: 13, color: p.muted),
-                ),
+                Text(subtitle!, style: TextStyle(fontSize: 13, color: p.muted)),
               ],
             ],
           ),
@@ -578,7 +682,7 @@ class QubaSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
     return GlassCard(
-      radius: 16,
+      radius: 28,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
       child: TextField(
         controller: controller,
@@ -625,10 +729,7 @@ class _ArchFillPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawPath(
-      ArchClipper().getClip(size),
-      Paint()..color = color,
-    );
+    canvas.drawPath(ArchClipper().getClip(size), Paint()..color = color);
   }
 
   @override
@@ -654,7 +755,7 @@ class PrayerScheduleCard extends StatelessWidget {
   /// When set, the card shows a "Prayer Times  View All →" header.
   final VoidCallback? onViewAll;
 
-  static const double _rowHeight = 50;
+  static const double _rowHeight = 52;
 
   Widget _header(BuildContext context, QubaPalette p) {
     final rtl = Directionality.of(context) == TextDirection.rtl;
@@ -662,7 +763,7 @@ class PrayerScheduleCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
       child: Row(
         children: [
-          Icon(Icons.mosque_rounded, size: 34, color: p.emerald),
+          const PrayerMedallion(size: 40),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -713,7 +814,8 @@ class PrayerScheduleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
     return GlassCard(
-      radius: 30,
+      radius: 34,
+      blur: 20,
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
       child: Column(
         children: [
@@ -751,8 +853,7 @@ class PrayerScheduleCard extends StatelessWidget {
   Widget _row(BuildContext context, PrayerEntry e, bool isNext) {
     final p = QubaPalette.of(context);
     final notify = appState.prayerNotify[e.name] ?? false;
-    final textColor =
-        isNext ? (p.dark ? p.activeText : p.emerald) : p.ink;
+    final textColor = isNext ? (p.dark ? p.activeText : p.emerald) : p.ink;
     final row = Row(
       children: [
         const SizedBox(width: 10),
@@ -771,11 +872,13 @@ class PrayerScheduleCard extends StatelessWidget {
               : null,
         ),
         const SizedBox(width: 6),
-        PrayerMedallion(prayer: e.name, size: 36),
+        PrayerMedallion(prayer: e.name, size: 38),
         const SizedBox(width: 14),
         Expanded(
           child: Text(
             trPrayer(e.name),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 17.5,
               fontWeight: isNext ? FontWeight.w800 : FontWeight.w500,
@@ -783,7 +886,11 @@ class PrayerScheduleCard extends StatelessWidget {
             ),
           ),
         ),
-        Container(width: 1, height: 26, color: Colors.black.withValues(alpha: 0.08)),
+        Container(
+          width: 1,
+          height: 26,
+          color: Colors.black.withValues(alpha: 0.08),
+        ),
         SizedBox(
           width: 58,
           height: 40,
@@ -799,6 +906,8 @@ class PrayerScheduleCard extends StatelessWidget {
           child: Text(
             PrayerService.formatTime(e.time),
             textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 17,
               fontWeight: isNext ? FontWeight.w800 : FontWeight.w500,
@@ -867,10 +976,7 @@ class ArchImage extends StatelessWidget {
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.all(2.5),
-              child: ClipPath(
-                clipper: ArchClipper(),
-                child: image,
-              ),
+              child: ClipPath(clipper: ArchClipper(), child: image),
             ),
           ),
         ],

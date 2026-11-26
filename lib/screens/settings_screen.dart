@@ -29,14 +29,16 @@ class SettingsScreen extends StatelessWidget {
       if (perm == LocationPermission.denied ||
           perm == LocationPermission.deniedForever) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(tr('loc_permission_denied'))));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(tr('loc_permission_denied'))));
         }
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(accuracy: LocationAccuracy.medium),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
       ).timeout(const Duration(seconds: 20));
       appState.update(() {
         appState.lat = pos.latitude;
@@ -47,14 +49,14 @@ class SettingsScreen extends StatelessWidget {
       await NotificationService.instance.scheduleAll(appState);
       await HomeWidgetService.update(appState);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(tr('loc_updated_gps'))));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr('loc_updated_gps'))));
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(trf('loc_error', {'error': '$e'}))));
+          SnackBar(content: Text(trf('loc_error', {'error': '$e'}))),
+        );
       }
     }
   }
@@ -87,23 +89,30 @@ class SettingsScreen extends StatelessWidget {
                       children: [
                         Icon(Icons.brightness_6_rounded, color: p.emerald),
                         const SizedBox(width: 12),
-                        Text(tr('theme'),
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600, color: p.ink)),
+                        Text(
+                          tr('theme'),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: p.ink,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
                     SegmentedButton<ThemeMode>(
                       segments: [
                         ButtonSegment(
-                            value: ThemeMode.system,
-                            label: Text(tr('theme_auto'))),
+                          value: ThemeMode.system,
+                          label: Text(tr('theme_auto')),
+                        ),
                         ButtonSegment(
-                            value: ThemeMode.light,
-                            label: Text(tr('theme_light'))),
+                          value: ThemeMode.light,
+                          label: Text(tr('theme_light')),
+                        ),
                         ButtonSegment(
-                            value: ThemeMode.dark,
-                            label: Text(tr('theme_dark'))),
+                          value: ThemeMode.dark,
+                          label: Text(tr('theme_dark')),
+                        ),
                       ],
                       selected: {appState.themeMode},
                       onSelectionChanged: (s) =>
@@ -126,27 +135,34 @@ class SettingsScreen extends StatelessWidget {
                       children: [
                         Icon(Icons.menu_book_rounded, color: p.emerald),
                         const SizedBox(width: 12),
-                        Text(tr('mushaf_style'),
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600, color: p.ink)),
+                        Text(
+                          tr('mushaf_style'),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: p.ink,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
                     SegmentedButton<String>(
                       segments: [
                         ButtonSegment(
-                            value: 'madani',
-                            label: Text(tr('madani'))),
+                          value: 'madani',
+                          label: Text(tr('madani')),
+                        ),
                         ButtonSegment(
-                            value: 'indopak',
-                            label: Text(tr('indopak'))),
+                          value: 'indopak',
+                          label: Text(tr('indopak')),
+                        ),
                       ],
                       selected: {appState.mushafStyle},
                       onSelectionChanged:
                           QuranRepository.instance.indopakAvailable
-                              ? (s) => appState.update(
-                                  () => appState.mushafStyle = s.first)
-                              : null,
+                          ? (s) => appState.update(
+                              () => appState.mushafStyle = s.first,
+                            )
+                          : null,
                     ),
                     if (!QuranRepository.instance.indopakAvailable)
                       Padding(
@@ -164,11 +180,15 @@ class SettingsScreen extends StatelessWidget {
                     Icon(Icons.language_rounded, color: p.emerald),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(tr('language'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, color: p.ink)),
+                      child: Text(
+                        tr('language'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: p.ink,
+                        ),
+                      ),
                     ),
                     DropdownButton<String>(
                       value: appState.lang,
@@ -194,15 +214,23 @@ class SettingsScreen extends StatelessWidget {
                     Icon(Icons.text_fields_rounded, color: p.emerald),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(tr('arabic_text_size'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, color: p.ink)),
-                    ),
-                    Text('${appState.arabicFontSize.round()}',
+                      child: Text(
+                        tr('arabic_text_size'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontWeight: FontWeight.w700, color: p.ink)),
+                          fontWeight: FontWeight.w600,
+                          color: p.ink,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${appState.arabicFontSize.round()}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: p.ink,
+                      ),
+                    ),
                   ],
                 ),
                 Slider(
@@ -224,12 +252,15 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.record_voice_over_rounded,
-                            color: p.emerald),
+                        Icon(Icons.record_voice_over_rounded, color: p.emerald),
                         const SizedBox(width: 12),
-                        Text(tr('reciter'),
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600, color: p.ink)),
+                        Text(
+                          tr('reciter'),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: p.ink,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -259,9 +290,13 @@ class SettingsScreen extends StatelessWidget {
                       children: [
                         Icon(Icons.translate_rounded, color: p.emerald),
                         const SizedBox(width: 12),
-                        Text(tr('translation'),
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600, color: p.ink)),
+                        Text(
+                          tr('translation'),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: p.ink,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -273,8 +308,9 @@ class SettingsScreen extends StatelessWidget {
                         for (final id in TranslationRepository.ids)
                           DropdownMenuItem(
                             value: id,
-                            child: Text(tr(TranslationRepository
-                                .labelKeyFor(id))),
+                            child: Text(
+                              tr(TranslationRepository.labelKeyFor(id)),
+                            ),
                           ),
                       ],
                       onChanged: (v) {
@@ -283,8 +319,9 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (!TranslationRepository.instance
-                    .isAvailable(appState.translationId))
+                if (!TranslationRepository.instance.isAvailable(
+                  appState.translationId,
+                ))
                   Padding(
                     padding: const EdgeInsets.only(top: 4, left: 4),
                     child: Text(
@@ -310,16 +347,18 @@ class SettingsScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(trLocation(appState.locationName),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: p.ink)),
+                          Text(
+                            trLocation(appState.locationName),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: p.ink,
+                            ),
+                          ),
                           Text(
                             '${appState.lat.toStringAsFixed(4)}, ${appState.lng.toStringAsFixed(4)}',
-                            style:
-                                TextStyle(fontSize: 13, color: p.muted),
+                            style: TextStyle(fontSize: 13, color: p.muted),
                           ),
                         ],
                       ),
@@ -359,8 +398,9 @@ class SettingsScreen extends StatelessWidget {
                             appState.locationName = 'Kabul (default)';
                             appState.locationIsGps = false;
                           });
-                          await NotificationService.instance
-                              .scheduleAll(appState);
+                          await NotificationService.instance.scheduleAll(
+                            appState,
+                          );
                         },
                       ),
                     ),
@@ -392,10 +432,8 @@ class SettingsScreen extends StatelessWidget {
                     title: Text(trPrayer(name)),
                     value: appState.prayerNotify[name] ?? false,
                     onChanged: (v) async {
-                      appState.update(
-                          () => appState.prayerNotify[name] = v);
-                      await NotificationService.instance
-                          .scheduleAll(appState);
+                      appState.update(() => appState.prayerNotify[name] = v);
+                      await NotificationService.instance.scheduleAll(appState);
                     },
                   ),
                 const SizedBox(height: 6),
@@ -420,11 +458,7 @@ class SettingsScreen extends StatelessWidget {
                   (Icons.explore_rounded, tr('qibla'), 'qibla'),
                   (Icons.calendar_month_rounded, tr('calendar'), 'calendar'),
                   (Icons.flag_rounded, tr('khatma'), 'khatma'),
-                  (
-                    Icons.volunteer_activism_rounded,
-                    tr('duas'),
-                    'duas',
-                  ),
+                  (Icons.volunteer_activism_rounded, tr('duas'), 'duas'),
                   (Icons.auto_awesome_rounded, tr('names99'), 'names'),
                   (Icons.blur_circular_rounded, tr('tasbih'), 'tasbih'),
                   (Icons.search_rounded, tr('search_quran'), 'search'),
@@ -432,8 +466,7 @@ class SettingsScreen extends StatelessWidget {
                   ListTile(
                     leading: Icon(f.$1, color: p.emerald),
                     title: Text(f.$2),
-                    trailing: Icon(Icons.chevron_right_rounded,
-                        color: p.muted),
+                    trailing: Icon(Icons.chevron_right_rounded, color: p.muted),
                     onTap: () => onOpenFeature(f.$3),
                   ),
               ],
@@ -446,15 +479,15 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('QUBA v1.0 (Flutter)',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800, color: p.ink)),
+                Text(
+                  'QUBA v1.0 (Flutter)',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: p.ink),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   "${tr('about_text')}\n"
                   '9665930bd9eb8ccc2535d80b68ddd53c7c3ff55a86d19e9b50cbcf7da46a0a1f',
-                  style:
-                      TextStyle(height: 1.5, fontSize: 13, color: p.muted),
+                  style: TextStyle(height: 1.5, fontSize: 13, color: p.muted),
                 ),
               ],
             ),
@@ -495,9 +528,8 @@ class _BackupCardState extends State<_BackupCard> {
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _run(Future<BackupResult> Function() op) async {
@@ -597,25 +629,24 @@ class _NotificationStatusCardState extends State<_NotificationStatusCard> {
   }
 
   Future<void> _requestNotifications() async {
-    final ok =
-        await NotificationService.instance.requestNotificationPermission();
+    final ok = await NotificationService.instance
+        .requestNotificationPermission();
     _refresh();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(ok ? tr('notif_now_on') : tr('notif_still_off'))),
+      SnackBar(content: Text(ok ? tr('notif_now_on') : tr('notif_still_off'))),
     );
   }
 
   Future<void> _requestExactAlarms() async {
-    final ok =
-        await NotificationService.instance.requestExactAlarmPermission();
+    final ok = await NotificationService.instance.requestExactAlarmPermission();
     _refresh();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-            ok ? tr('exact_alarms_allowed') : tr('exact_alarm_denied')),
+          ok ? tr('exact_alarms_allowed') : tr('exact_alarm_denied'),
+        ),
       ),
     );
   }
@@ -625,7 +656,8 @@ class _NotificationStatusCardState extends State<_NotificationStatusCard> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-          content: Text(ok ? tr('notif_test_sent') : tr('notif_test_failed'))),
+        content: Text(ok ? tr('notif_test_sent') : tr('notif_test_failed')),
+      ),
     );
   }
 
@@ -668,17 +700,21 @@ class _NotificationStatusCardState extends State<_NotificationStatusCard> {
               const SizedBox(height: 6),
               Row(
                 children: [
-                  Icon(Icons.event_available_rounded,
-                      size: 20, color: p.emerald),
+                  Icon(
+                    Icons.event_available_rounded,
+                    size: 20,
+                    color: p.emerald,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       result.failed > 0
                           ? tr('notif_some_failed')
                           : result.scheduled > 0
-                              ? trf('notif_scheduled_n',
-                                  {'count': result.scheduled})
-                              : tr('notif_none_scheduled'),
+                          ? trf('notif_scheduled_n', {
+                              'count': result.scheduled,
+                            })
+                          : tr('notif_none_scheduled'),
                       style: TextStyle(fontSize: 13.5, color: p.muted),
                     ),
                   ),
@@ -784,9 +820,7 @@ class _NotificationStatusCardState extends State<_NotificationStatusCard> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                granted
-                    ? Icons.check_circle_rounded
-                    : Icons.cancel_rounded,
+                granted ? Icons.check_circle_rounded : Icons.cancel_rounded,
                 size: 18,
                 color: granted ? p.emerald : Colors.red.shade700,
               ),

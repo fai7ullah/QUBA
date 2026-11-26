@@ -121,8 +121,9 @@ class _RamadanScreenState extends State<RamadanScreen> {
     final today = DateTime(now.year, now.month, now.day);
     final todayHijri = HijriDate.fromDate(today);
     final inRamadan = todayHijri.month == 9;
-    final ramadanYear =
-        todayHijri.month > 9 ? todayHijri.year + 1 : todayHijri.year;
+    final ramadanYear = todayHijri.month > 9
+        ? todayHijri.year + 1
+        : todayHijri.year;
     final ramadanStart = _gregOfHijri(ramadanYear, 9, 1);
     final ramadanDays = HijriDate.daysInMonth(ramadanYear, 9);
 
@@ -155,7 +156,7 @@ class _RamadanScreenState extends State<RamadanScreen> {
                     Text(
                       inRamadan
                           ? '${_gregString(ramadanStart)} — '
-                              '${_gregString(ramadanStart.add(Duration(days: ramadanDays - 1)))}'
+                                '${_gregString(ramadanStart.add(Duration(days: ramadanDays - 1)))}'
                           : '${tr('ramadan_next')} · ${_gregString(ramadanStart)}',
                       style: TextStyle(fontSize: 13.5, color: p.muted),
                     ),
@@ -219,8 +220,7 @@ class _RamadanScreenState extends State<RamadanScreen> {
       target = PrayerService.dayList(
         today.add(const Duration(days: 1)),
         appState,
-      )[0]
-          .time;
+      )[0].time;
       targetLabel = tr('ramadan_until_suhoor');
     }
     final countdown = target.difference(now);
@@ -284,7 +284,11 @@ class _RamadanScreenState extends State<RamadanScreen> {
     );
   }
 
-  Widget _timeBox(QubaPalette p, {required String label, required String time}) {
+  Widget _timeBox(
+    QubaPalette p, {
+    required String label,
+    required String time,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
@@ -330,11 +334,7 @@ class _RamadanScreenState extends State<RamadanScreen> {
     return GlassCard(
       child: Column(
         children: [
-          Icon(
-            Icons.nightlight_round,
-            size: 44,
-            color: p.gold,
-          ),
+          Icon(Icons.nightlight_round, size: 44, color: p.gold),
           const SizedBox(height: 8),
           Text(
             tr('ramadan_starts_in'),
@@ -374,9 +374,7 @@ class _RamadanScreenState extends State<RamadanScreen> {
       children: [
         Row(
           children: [
-            Expanded(
-              child: SectionLabel(tr('ramadan_goals')),
-            ),
+            Expanded(child: SectionLabel(tr('ramadan_goals'))),
             if (_goalsLoaded)
               Text(
                 trf('ramadan_goals_done', {'done': done, 'total': total}),
@@ -443,7 +441,8 @@ class _RamadanScreenState extends State<RamadanScreen> {
     final maghrib = entries[4].time;
     final fast = maghrib.difference(fajr);
     final fastText = '${fast.inHours}h ${fast.inMinutes % 60}m';
-    final isToday = greg.year == today.year &&
+    final isToday =
+        greg.year == today.year &&
         greg.month == today.month &&
         greg.day == today.day;
     return Container(

@@ -34,11 +34,7 @@ class TafsirScreen extends StatelessWidget {
               top: false,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                child: _TafsirContent(
-                  surah: surah,
-                  ayah: ayah,
-                  inSheet: true,
-                ),
+                child: _TafsirContent(surah: surah, ayah: ayah, inSheet: true),
               ),
             ),
           ),
@@ -197,17 +193,20 @@ class _TafsirContentState extends State<_TafsirContent> {
       _surah,
       _ayah,
     );
-    final jalalayn =
-        TafsirRepository.instance.textFor('jalalayn', _surah, _ayah);
+    final jalalayn = TafsirRepository.instance.textFor(
+      'jalalayn',
+      _surah,
+      _ayah,
+    );
     final yusufali = TafsirRepository.instance.textFor(
       'yusufali_commentary',
       _surah,
       _ayah,
     );
-    final jalalaynAvailable =
-        TafsirRepository.instance.isAvailable('jalalayn');
-    final yusufaliAvailable =
-        TafsirRepository.instance.isAvailable('yusufali_commentary');
+    final jalalaynAvailable = TafsirRepository.instance.isAvailable('jalalayn');
+    final yusufaliAvailable = TafsirRepository.instance.isAvailable(
+      'yusufali_commentary',
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -271,14 +270,16 @@ class _TafsirContentState extends State<_TafsirContent> {
                         translation,
                         textDirection:
                             TranslationRepository.instance.isRtl(
-                                    appState.translationId)
-                                ? TextDirection.rtl
-                                : TextDirection.ltr,
+                              appState.translationId,
+                            )
+                            ? TextDirection.rtl
+                            : TextDirection.ltr,
                         textAlign:
                             TranslationRepository.instance.isRtl(
-                                    appState.translationId)
-                                ? TextAlign.right
-                                : TextAlign.left,
+                              appState.translationId,
+                            )
+                            ? TextAlign.right
+                            : TextAlign.left,
                         style: TextStyle(
                           fontSize: 15,
                           color: p.muted,

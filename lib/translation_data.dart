@@ -93,9 +93,9 @@ class TranslationRepository {
       for (var i = 0; i < surahsJson.length; i++) {
         final m = surahsJson[i] as Map<String, dynamic>;
         if (m['number'] as int != i + 1) return null;
-        text.add((m['ayahs'] as List<dynamic>)
-            .map((a) => a as String)
-            .toList());
+        text.add(
+          (m['ayahs'] as List<dynamic>).map((a) => a as String).toList(),
+        );
       }
       return text;
     } catch (_) {
@@ -106,8 +106,11 @@ class TranslationRepository {
   /// Test-only loader: installs small hand-built translation maps so
   /// [textFor] is unit-testable without Flutter asset loading.
   @visibleForTesting
-  void loadForTest(Map<String, dynamic> ur, Map<String, dynamic> fa,
-      [Map<String, dynamic>? yusufAli]) {
+  void loadForTest(
+    Map<String, dynamic> ur,
+    Map<String, dynamic> fa, [
+    Map<String, dynamic>? yusufAli,
+  ]) {
     _ur = _parse(ur);
     _fa = _parse(fa);
     if (yusufAli != null) _yusufAli = _parse(yusufAli);
@@ -132,10 +135,10 @@ class TranslationRepository {
     final text = id == 'en.yusufali'
         ? _yusufAli
         : id == 'ur.jalandhry'
-            ? _ur
-            : id == 'fa.ghomshei'
-                ? _fa
-                : null;
+        ? _ur
+        : id == 'fa.ghomshei'
+        ? _fa
+        : null;
     if (text == null) return null;
     if (surah < 1 || surah > text.length) return null;
     final ayahs = text[surah - 1];

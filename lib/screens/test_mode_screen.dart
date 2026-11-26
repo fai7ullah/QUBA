@@ -51,18 +51,16 @@ class _TestModeScreenState extends State<TestModeScreen> {
     final start = int.tryParse(_startController.text.trim()) ?? -1;
     var end = int.tryParse(_endController.text.trim()) ?? -1;
     if (start < 1 || end < 1 || start > count || end > count || start > end) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('test_range_error'))),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(tr('test_range_error'))));
       return;
     }
     if (_mode == TestMode.nextAyah) {
       // The last ayah of a surah has no next ayah to recall.
       end = end > count - 1 ? count - 1 : end;
       if (start > end) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr('test_no_next_ayah'))),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr('test_no_next_ayah'))));
         return;
       }
     }
@@ -181,8 +179,7 @@ class _TestModeScreenState extends State<TestModeScreen> {
             ],
             onChanged: (v) {
               if (v == null) return;
-              final count =
-                  QuranRepository.instance.surah(v).ayahCount;
+              final count = QuranRepository.instance.surah(v).ayahCount;
               setState(() {
                 _surah = v;
                 _startController.text = '1';
@@ -238,8 +235,10 @@ class _TestModeScreenState extends State<TestModeScreen> {
             backgroundColor: p.emerald,
             foregroundColor: p.onEmerald,
             padding: const EdgeInsets.symmetric(vertical: 14),
-            textStyle:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -306,10 +305,7 @@ class _TestModeScreenState extends State<TestModeScreen> {
               shape: BoxShape.circle,
               color: selected ? p.emerald : p.activeFill,
             ),
-            child: Icon(
-              icon,
-              color: selected ? p.onEmerald : p.emerald,
-            ),
+            child: Icon(icon, color: selected ? p.onEmerald : p.emerald),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -327,10 +323,7 @@ class _TestModeScreenState extends State<TestModeScreen> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  desc,
-                  style: TextStyle(fontSize: 13, color: p.muted),
-                ),
+                Text(desc, style: TextStyle(fontSize: 13, color: p.muted)),
               ],
             ),
           ),
@@ -460,8 +453,9 @@ class _TestModeScreenState extends State<TestModeScreen> {
     final arabic = _arabicOf(ayah);
     final words = TestSession.splitWords(arabic);
     final masked = session.maskedIndices(ayah, arabic);
-    final selectedMark =
-        _selectedWord >= 0 ? session.markOf(ayah, _selectedWord) : null;
+    final selectedMark = _selectedWord >= 0
+        ? session.markOf(ayah, _selectedWord)
+        : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -476,8 +470,14 @@ class _TestModeScreenState extends State<TestModeScreen> {
                   runSpacing: 10,
                   children: [
                     for (var i = 0; i < words.length; i++)
-                      _wordChip(p, session, ayah, words[i], i,
-                          masked.contains(i)),
+                      _wordChip(
+                        p,
+                        session,
+                        ayah,
+                        words[i],
+                        i,
+                        masked.contains(i),
+                      ),
                   ],
                 ),
               ),
@@ -566,9 +566,7 @@ class _TestModeScreenState extends State<TestModeScreen> {
       fg = p.ink;
     }
     return GestureDetector(
-      onTap: hidden
-          ? () => setState(() => _selectedWord = index)
-          : null,
+      onTap: hidden ? () => setState(() => _selectedWord = index) : null,
       child: Container(
         padding: EdgeInsets.symmetric(
           vertical: hidden ? 6 : 2,
@@ -578,15 +576,15 @@ class _TestModeScreenState extends State<TestModeScreen> {
             ? BoxDecoration(
                 color: bg,
                 borderRadius: BorderRadius.circular(12),
-                border: selected
-                    ? Border.all(color: p.gold, width: 2)
-                    : null,
+                border: selected ? Border.all(color: p.gold, width: 2) : null,
               )
             : null,
         child: Text(
           hidden ? '• • •' : word,
           style: TextStyle(
-            fontFamily: hidden ? null : QuranRepository.instance.arabicFontFamily,
+            fontFamily: hidden
+                ? null
+                : QuranRepository.instance.arabicFontFamily,
             fontSize: hidden ? 16 : 24,
             fontWeight: hidden ? FontWeight.w800 : FontWeight.normal,
             color: fg,
@@ -650,8 +648,7 @@ class _TestModeScreenState extends State<TestModeScreen> {
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
                   style: TextStyle(
-                    fontFamily:
-                        QuranRepository.instance.arabicFontFamily,
+                    fontFamily: QuranRepository.instance.arabicFontFamily,
                     fontSize: 26,
                     height: 1.9,
                     color: p.ink,
@@ -663,8 +660,8 @@ class _TestModeScreenState extends State<TestModeScreen> {
                     children: [
                       Expanded(
                         child: FilledButton.icon(
-                          onPressed: () => setState(
-                              () => session.markNextAyah(true)),
+                          onPressed: () =>
+                              setState(() => session.markNextAyah(true)),
                           icon: const Icon(Icons.check_rounded),
                           label: Text(
                             tr('test_correct'),
@@ -680,8 +677,8 @@ class _TestModeScreenState extends State<TestModeScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => setState(
-                              () => session.markNextAyah(false)),
+                          onPressed: () =>
+                              setState(() => session.markNextAyah(false)),
                           icon: const Icon(Icons.close_rounded),
                           label: Text(
                             tr('test_wrong'),
@@ -722,11 +719,7 @@ class _TestModeScreenState extends State<TestModeScreen> {
         GlassCard(
           child: Column(
             children: [
-              Icon(
-                Icons.emoji_events_rounded,
-                size: 56,
-                color: p.gold,
-              ),
+              Icon(Icons.emoji_events_rounded, size: 56, color: p.gold),
               const SizedBox(height: 12),
               Text(
                 tr('test_finished'),

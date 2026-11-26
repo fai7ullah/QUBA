@@ -56,8 +56,7 @@ class NotesScreen extends StatelessWidget {
                         child: Center(
                           child: Text(
                             tr('no_notes'),
-                            style:
-                                TextStyle(fontSize: 15, color: p.muted),
+                            style: TextStyle(fontSize: 15, color: p.muted),
                           ),
                         ),
                       )
@@ -78,13 +77,11 @@ class NotesScreen extends StatelessWidget {
                               return const SizedBox.shrink();
                             }
                             return Padding(
-                              padding:
-                                  const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.only(bottom: 12),
                               child: GlassCard(
                                 onTap: () => onOpenReader(s, a),
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
@@ -92,8 +89,7 @@ class NotesScreen extends StatelessWidget {
                                           child: Text(
                                             '${surah.nameEnglish} $s:$a',
                                             maxLines: 1,
-                                            overflow:
-                                                TextOverflow.ellipsis,
+                                            overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: 16.5,
                                               fontWeight: FontWeight.w800,
@@ -102,8 +98,7 @@ class NotesScreen extends StatelessWidget {
                                           ),
                                         ),
                                         IconButton(
-                                          icon: const Icon(
-                                              Icons.edit_outlined),
+                                          icon: const Icon(Icons.edit_outlined),
                                           iconSize: 22,
                                           color: p.emerald,
                                           tooltip: tr('edit_note'),
@@ -111,8 +106,9 @@ class NotesScreen extends StatelessWidget {
                                               showNoteEditor(context, s, a),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons
-                                              .delete_outline_rounded),
+                                          icon: const Icon(
+                                            Icons.delete_outline_rounded,
+                                          ),
                                           iconSize: 22,
                                           color: Theme.of(context)
                                               .colorScheme
@@ -131,8 +127,7 @@ class NotesScreen extends StatelessWidget {
                                       textDirection: TextDirection.rtl,
                                       textAlign: TextAlign.right,
                                       style: TextStyle(
-                                        fontFamily:
-                                            repo.arabicFontFamily,
+                                        fontFamily: repo.arabicFontFamily,
                                         fontSize: 20,
                                         height: 1.8,
                                         color: p.ink,

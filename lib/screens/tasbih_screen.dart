@@ -62,15 +62,12 @@ class _TasbihScreenState extends State<TasbihScreen> {
 
   Future<void> _customTargetDialog() async {
     final p = QubaPalette.of(context);
-    final controller =
-        TextEditingController(text: '${appState.tasbihTarget}');
+    final controller = TextEditingController(text: '${appState.tasbihTarget}');
     final value = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: p.bgSecondary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(tr('custom_target')),
         content: TextField(
           controller: controller,
@@ -80,8 +77,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
             hintText: tr('target_hint'),
             labelText: tr('count_label'),
           ),
-          onSubmitted: (v) =>
-              Navigator.of(context).pop(int.tryParse(v.trim())),
+          onSubmitted: (v) => Navigator.of(context).pop(int.tryParse(v.trim())),
         ),
         actions: [
           TextButton(
@@ -89,8 +85,8 @@ class _TasbihScreenState extends State<TasbihScreen> {
             child: Text(tr('cancel')),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context)
-                .pop(int.tryParse(controller.text.trim())),
+            onPressed: () =>
+                Navigator.of(context).pop(int.tryParse(controller.text.trim())),
             child: Text(tr('set')),
           ),
         ],
@@ -100,9 +96,8 @@ class _TasbihScreenState extends State<TasbihScreen> {
     if (value != null && value >= 1 && value <= 10000) {
       _setTarget(value);
     } else if (value != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('target_range_error'))),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(tr('target_range_error'))));
     }
   }
 
@@ -159,7 +154,8 @@ class _TasbihScreenState extends State<TasbihScreen> {
                               strokeWidth: 10,
                               backgroundColor: p.cardBorder,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                  reached ? p.gold : p.emerald),
+                                reached ? p.gold : p.emerald,
+                              ),
                             ),
                           ),
                           GestureDetector(
@@ -167,7 +163,9 @@ class _TasbihScreenState extends State<TasbihScreen> {
                             child: ClipOval(
                               child: BackdropFilter(
                                 filter: ImageFilter.blur(
-                                    sigmaX: 18, sigmaY: 18),
+                                  sigmaX: 18,
+                                  sigmaY: 18,
+                                ),
                                 child: Container(
                                   width: 232,
                                   height: 232,
@@ -175,7 +173,9 @@ class _TasbihScreenState extends State<TasbihScreen> {
                                     shape: BoxShape.circle,
                                     color: p.cardFill,
                                     border: Border.all(
-                                        color: p.cardBorder, width: 1.5),
+                                      color: p.cardBorder,
+                                      width: 1.5,
+                                    ),
                                     boxShadow: [
                                       BoxShadow(
                                         color: p.shadow,
@@ -189,7 +189,8 @@ class _TasbihScreenState extends State<TasbihScreen> {
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 24),
+                                          horizontal: 24,
+                                        ),
                                         child: Text(
                                           phrase.$2,
                                           textAlign: TextAlign.center,
@@ -213,8 +214,9 @@ class _TasbihScreenState extends State<TasbihScreen> {
                                       Text(
                                         reached
                                             ? tr('target_reached')
-                                            : trf('of_target_tap',
-                                                {'n': target}),
+                                            : trf('of_target_tap', {
+                                                'n': target,
+                                              }),
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -317,8 +319,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
     );
   }
 
-  Widget _chip(
-      QubaPalette p, String label, bool selected, VoidCallback onTap) {
+  Widget _chip(QubaPalette p, String label, bool selected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -326,10 +327,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: selected ? p.activeFill : p.cardFill,
-          border: Border.all(
-            color: selected ? p.gold : p.cardBorder,
-            width: 1,
-          ),
+          border: Border.all(color: selected ? p.gold : p.cardBorder, width: 1),
         ),
         child: Text(
           label,

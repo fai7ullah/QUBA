@@ -23,8 +23,8 @@ class Hadith {
     required this.ref,
     required this.bookId,
     required this.chapter,
-  })  : normalizedArabic = QuranRepository.normalizeArabic(arabic),
-        englishLower = english?.toLowerCase();
+  }) : normalizedArabic = QuranRepository.normalizeArabic(arabic),
+       englishLower = english?.toLowerCase();
 
   final int number;
   final String arabic;
@@ -156,9 +156,9 @@ class HadithRepository {
 
   /// Loaded books, in [bookIds] order.
   List<HadithBook> get books => [
-        for (final id in bookIds)
-          if (_books.containsKey(id)) _books[id]!,
-      ];
+    for (final id in bookIds)
+      if (_books.containsKey(id)) _books[id]!,
+  ];
 
   /// Searches the LOADED books for [query] (up to [limit] hits, in
   /// book/chapter order). Arabic queries match diacritic-insensitively
@@ -169,8 +169,7 @@ class HadithRepository {
     final q = query.trim();
     if (q.isEmpty) return const [];
     final isArabic = RegExp(r'[\u0600-\u06FF]').hasMatch(q);
-    final nq =
-        isArabic ? QuranRepository.normalizeArabic(q) : q.toLowerCase();
+    final nq = isArabic ? QuranRepository.normalizeArabic(q) : q.toLowerCase();
     final hits = <Hadith>[];
     for (final book in books) {
       for (final chapter in book.chapters) {
@@ -212,22 +211,26 @@ class HadithRepository {
         final hadiths = <Hadith>[];
         for (final h in cm['hadiths'] as List<dynamic>) {
           final hm = h as Map<String, dynamic>;
-          hadiths.add(Hadith(
-            number: (hm['n'] as num).toInt(),
-            arabic: hm['ar'] as String,
-            english: hm['en'] as String?,
-            grade: hm['grade'] as String?,
-            ref: (hm['ref'] as String?) ?? '',
-            bookId: id,
-            chapter: chapterNo,
-          ));
+          hadiths.add(
+            Hadith(
+              number: (hm['n'] as num).toInt(),
+              arabic: hm['ar'] as String,
+              english: hm['en'] as String?,
+              grade: hm['grade'] as String?,
+              ref: (hm['ref'] as String?) ?? '',
+              bookId: id,
+              chapter: chapterNo,
+            ),
+          );
         }
-        chapters.add(HadithChapter(
-          number: chapterNo,
-          titleEn: (cm['title_en'] as String?) ?? '',
-          titleAr: (cm['title_ar'] as String?) ?? '',
-          hadiths: hadiths,
-        ));
+        chapters.add(
+          HadithChapter(
+            number: chapterNo,
+            titleEn: (cm['title_en'] as String?) ?? '',
+            titleAr: (cm['title_ar'] as String?) ?? '',
+            hadiths: hadiths,
+          ),
+        );
       }
       if (chapters.isEmpty) return null;
       return HadithBook(

@@ -37,8 +37,7 @@ void main() {
   const noDataFile =
       'wordbyword.json not shipped: no licensed source (phase 2, 2026-11-21)';
 
-  test('wordbyword.json: 114 surahs, 6,236 ayahs, counts match Uthmani',
-      () {
+  test('wordbyword.json: 114 surahs, 6,236 ayahs, counts match Uthmani', () {
     final wbw = readJson('assets/quran/wordbyword.json');
     final uthmani = readJson('assets/quran/quran_bundle.json');
     final wbwSurahs = wbw['surahs'] as List<dynamic>;
@@ -60,8 +59,11 @@ void main() {
         final words = a as List<dynamic>;
         for (final w in words) {
           final wm = w as Map<String, dynamic>;
-          expect((wm['a'] as String).isNotEmpty, true,
-              reason: 'surah ${i + 1} has a word with empty Arabic');
+          expect(
+            (wm['a'] as String).isNotEmpty,
+            true,
+            reason: 'surah ${i + 1} has a word with empty Arabic',
+          );
           expect(wm['t'], isA<String>());
           expect(wm['m'], isA<String>());
         }
@@ -75,8 +77,9 @@ void main() {
       'بِسْمِ', () {
     final wbw = readJson('assets/quran/wordbyword.json');
     final wbwSurahs = wbw['surahs'] as List<dynamic>;
-    final ayah1 = ((wbwSurahs[0] as Map<String, dynamic>)['ayahs']
-        as List<dynamic>)[0] as List<dynamic>;
+    final ayah1 =
+        ((wbwSurahs[0] as Map<String, dynamic>)['ayahs'] as List<dynamic>)[0]
+            as List<dynamic>;
     expect(ayah1.length, 4);
     final first = ayah1[0] as Map<String, dynamic>;
     expect(first['a'], 'بِسْمِ');
@@ -84,8 +87,7 @@ void main() {
     expect((first['m'] as String).isNotEmpty, true);
   }, skip: noDataFile);
 
-  test('WordByWordRepository loads the real asset via rootBundle',
-      () async {
+  test('WordByWordRepository loads the real asset via rootBundle', () async {
     final repo = WordByWordRepository.instance;
     await repo.load();
     expect(repo.loaded, true);
@@ -98,8 +100,7 @@ void main() {
     expect(words[0].meaning.isNotEmpty, true);
     expect(repo.wordsFor(2, 255).isNotEmpty, true);
 
-    expect(repo.wordsFor(1, 8), isEmpty,
-        reason: 'surah 1 has only 7 ayahs');
+    expect(repo.wordsFor(1, 8), isEmpty, reason: 'surah 1 has only 7 ayahs');
     expect(repo.wordsFor(115, 1), isEmpty);
     expect(repo.wordsFor(0, 1), isEmpty);
     expect(repo.wordsFor(1, 0), isEmpty);

@@ -8,7 +8,11 @@ import 'app_state.dart';
 /// [arabic] is ALWAYS the Uthmani text. For the text in the user's chosen
 /// Mushaf style (Madani / IndoPak), use [QuranRepository.arabicText].
 class Ayah {
-  const Ayah({required this.number, required this.arabic, required this.english});
+  const Ayah({
+    required this.number,
+    required this.arabic,
+    required this.english,
+  });
   final int number;
   final String arabic;
   final String english;
@@ -65,8 +69,7 @@ class QuranRepository {
   bool get _useIndoPak => appState.isIndoPak && indopakAvailable;
 
   /// Font family for Quran Arabic in the active style.
-  String get arabicFontFamily =>
-      _useIndoPak ? 'IndoPakQuran' : 'AmiriQuran';
+  String get arabicFontFamily => _useIndoPak ? 'IndoPakQuran' : 'AmiriQuran';
 
   /// The verse's Arabic in the active Mushaf style.
   String arabicText(int surah, int ayah) {
@@ -84,8 +87,7 @@ class QuranRepository {
   /// The Basmala header line in the active style. Surah 1's first ayah
   /// IS the Basmala in both editions, so the IndoPak form is read from
   /// its own text rather than hard-coded.
-  String get bismillah =>
-      _useIndoPak ? _indopak![0][0] : bismillahUthmani;
+  String get bismillah => _useIndoPak ? _indopak![0][0] : bismillahUthmani;
 
   /// Cumulative verse index (1-based global position) of a surah's first verse.
   int globalStartOf(int surahNumber) {
@@ -140,19 +142,23 @@ class QuranRepository {
     final hits = <SearchHit>[];
     for (final s in surahs) {
       for (final a in s.ayahs) {
-        final hay = isArabic ? normalizeArabic(a.arabic) : a.english.toLowerCase();
+        final hay = isArabic
+            ? normalizeArabic(a.arabic)
+            : a.english.toLowerCase();
         var found = hay.contains(nq);
         if (!found && isArabic && _indopak != null) {
           found = normalizeArabic(_indopak![s.number - 1][a.number - 1])
               .contains(nq);
         }
         if (found) {
-          hits.add(SearchHit(
-            surah: s.number,
-            ayah: a.number,
-            arabic: arabicText(s.number, a.number),
-            english: a.english,
-          ));
+          hits.add(
+            SearchHit(
+              surah: s.number,
+              ayah: a.number,
+              arabic: arabicText(s.number, a.number),
+              english: a.english,
+            ),
+          );
           if (hits.length >= limit) return hits;
         }
       }
@@ -167,21 +173,23 @@ class QuranRepository {
     final list = <Surah>[];
     for (final s in json['surahs'] as List<dynamic>) {
       final m = s as Map<String, dynamic>;
-      list.add(Surah(
-        number: m['number'] as int,
-        nameArabic: m['name'] as String,
-        nameEnglish: m['englishName'] as String,
-        meaning: m['englishNameTranslation'] as String,
-        revelation: m['revelationType'] as String,
-        ayahs: [
-          for (final a in m['ayahs'] as List<dynamic>)
-            Ayah(
-              number: (a as Map<String, dynamic>)['n'] as int,
-              arabic: a['ar'] as String,
-              english: a['en'] as String,
-            ),
-        ],
-      ));
+      list.add(
+        Surah(
+          number: m['number'] as int,
+          nameArabic: m['name'] as String,
+          nameEnglish: m['englishName'] as String,
+          meaning: m['englishNameTranslation'] as String,
+          revelation: m['revelationType'] as String,
+          ayahs: [
+            for (final a in m['ayahs'] as List<dynamic>)
+              Ayah(
+                number: (a as Map<String, dynamic>)['n'] as int,
+                arabic: a['ar'] as String,
+                english: a['en'] as String,
+              ),
+          ],
+        ),
+      );
     }
     _surahs = list;
     await _loadIndoPak();
@@ -193,8 +201,9 @@ class QuranRepository {
   /// [_indopak] null so the style falls back to Madani.
   Future<void> _loadIndoPak() async {
     try {
-      final raw =
-          await rootBundle.loadString('assets/quran/quran_indopak.json');
+      final raw = await rootBundle.loadString(
+        'assets/quran/quran_indopak.json',
+      );
       final json = jsonDecode(raw) as Map<String, dynamic>;
       final surahsJson = json['surahs'] as List<dynamic>;
       if (surahsJson.length != 114) return;

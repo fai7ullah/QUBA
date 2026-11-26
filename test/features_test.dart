@@ -13,18 +13,19 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   group('prayer methods', () {
-    PrayerCalc kabul(
-            {String method = 'mwl',
-            String highLat = 'auto',
-            List<int> adjust = const [0, 0, 0, 0, 0, 0]}) =>
-        PrayerCalc(
-            lat: 34.5553,
-            lng: 69.2075,
-            tzHours: 4.5,
-            method: method,
-            hanafi: true,
-            highLat: highLat,
-            adjust: adjust);
+    PrayerCalc kabul({
+      String method = 'mwl',
+      String highLat = 'auto',
+      List<int> adjust = const [0, 0, 0, 0, 0, 0],
+    }) => PrayerCalc(
+      lat: 34.5553,
+      lng: 69.2075,
+      tzHours: 4.5,
+      method: method,
+      hanafi: true,
+      highLat: highLat,
+      adjust: adjust,
+    );
 
     test('all methods resolve and ids are unique', () {
       final ids = PrayerMethod.all.map((m) => m.id).toSet();
@@ -36,7 +37,8 @@ void main() {
 
     test('minute adjustment shifts exactly that prayer', () {
       final base = kabul().timesFor(2026, 11, 11);
-      final adj = kabul(adjust: const [0, 0, 0, 0, 3, 0]).timesFor(2026, 11, 11);
+      final adj = kabul(adjust: const [0, 0, 0, 0, 3, 0])
+          .timesFor(2026, 11, 11);
       for (var i = 0; i < 6; i++) {
         expect(adj[i] - base[i], i == 4 ? 3 : 0);
       }
@@ -45,7 +47,12 @@ void main() {
     test('polar latitude gives finite times for every rule', () {
       for (final rule in ['auto', 'midnight', 'oneseventh', 'anglebased']) {
         final c = PrayerCalc(
-            lat: 69.6, lng: 18.9, tzHours: 1, highLat: rule, hanafi: false);
+          lat: 69.6,
+          lng: 18.9,
+          tzHours: 1,
+          highLat: rule,
+          hanafi: false,
+        );
         for (final m in [(6, 21), (12, 21), (1, 1)]) {
           final t = c.timesFor(2026, m.$1, m.$2);
           expect(t.length, 6);
@@ -69,8 +76,11 @@ void main() {
   group('azkar', () {
     test('every declared item resolves', () {
       for (final s in AzkarData.sets) {
-        expect(AzkarData.resolve(s.id).length, s.items.length,
-            reason: 'unresolved dua title in ${s.id}');
+        expect(
+          AzkarData.resolve(s.id).length,
+          s.items.length,
+          reason: 'unresolved dua title in ${s.id}',
+        );
       }
     });
 
@@ -91,10 +101,15 @@ void main() {
 
     test('reminder time stays inside the window', () {
       final a = DateTime(2026, 11, 11, 5);
-      expect(NotificationService.azkarTime(a, a.add(const Duration(hours: 1)), 20),
-          a.add(const Duration(minutes: 20)));
+      expect(
+        NotificationService.azkarTime(a, a.add(const Duration(hours: 1)), 20),
+        a.add(const Duration(minutes: 20)),
+      );
       final short = NotificationService.azkarTime(
-          a, a.add(const Duration(minutes: 10)), 20);
+        a,
+        a.add(const Duration(minutes: 10)),
+        20,
+      );
       expect(short.isBefore(a.add(const Duration(minutes: 10))), isTrue);
     });
   });

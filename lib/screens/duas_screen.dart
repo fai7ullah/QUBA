@@ -83,8 +83,8 @@ class _DuasScreenState extends State<DuasScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: GlassCard(
-                          onTap: () => setState(() =>
-                              _expanded = expanded ? null : dua),
+                          onTap: () =>
+                              setState(() => _expanded = expanded ? null : dua),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -157,8 +157,11 @@ class _DuasScreenState extends State<DuasScreen> {
                                 const SizedBox(height: 12),
                                 Row(
                                   children: [
-                                    Icon(Icons.book_rounded,
-                                        size: 16, color: p.gold),
+                                    Icon(
+                                      Icons.book_rounded,
+                                      size: 16,
+                                      color: p.gold,
+                                    ),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
@@ -182,8 +185,10 @@ class _DuasScreenState extends State<DuasScreen> {
                                       fallbackText:
                                           '${duaArabic(dua)}\n\n${dua.english}\n— ${dua.source}',
                                     ),
-                                    icon: const Icon(Icons.ios_share_rounded,
-                                        size: 18),
+                                    icon: const Icon(
+                                      Icons.ios_share_rounded,
+                                      size: 18,
+                                    ),
                                     label: Text(tr('share_as_image')),
                                   ),
                                 ),
@@ -223,10 +228,7 @@ class _DuasScreenState extends State<DuasScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
           color: selected ? p.activeFill : p.cardFill,
-          border: Border.all(
-            color: selected ? p.gold : p.cardBorder,
-            width: 1,
-          ),
+          border: Border.all(color: selected ? p.gold : p.cardBorder, width: 1),
         ),
         child: Text(
           tr(label),

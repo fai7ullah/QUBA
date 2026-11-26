@@ -17,22 +17,13 @@ void main() {
     test('deterministic per ayah across sessions', () {
       final a = TestSession(surah: 2, startAyah: 1, endAyah: 5);
       final b = TestSession(surah: 2, startAyah: 1, endAyah: 5);
-      expect(
-        a.maskedIndices(3, arabic10),
-        b.maskedIndices(3, arabic10),
-      );
-      expect(
-        a.maskedIndices(3, arabic10),
-        a.maskedIndices(3, arabic10),
-      );
+      expect(a.maskedIndices(3, arabic10), b.maskedIndices(3, arabic10));
+      expect(a.maskedIndices(3, arabic10), a.maskedIndices(3, arabic10));
     });
 
     test('different ayahs mask different words', () {
       final s = TestSession(surah: 2, startAyah: 1, endAyah: 5);
-      expect(
-        s.maskedIndices(1, arabic10),
-        isNot(s.maskedIndices(2, arabic10)),
-      );
+      expect(s.maskedIndices(1, arabic10), isNot(s.maskedIndices(2, arabic10)));
     });
 
     test('masks ~40% by default and always leaves a word visible', () {

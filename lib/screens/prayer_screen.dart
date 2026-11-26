@@ -7,8 +7,9 @@ import '../prayer_service.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
-/// Prayer tab: browse any day's times, toggle Athan reminders,
-/// see how times are calculated.
+/// Prayer screen: browse any day's times, toggle Athan reminders,
+/// see how times are calculated. Opened from Home (Next Prayer card
+/// and Prayer Times "View All"); it has no bottom tab.
 class PrayerScreen extends StatefulWidget {
   const PrayerScreen({super.key});
 
@@ -27,7 +28,10 @@ class _PrayerScreenState extends State<PrayerScreen> {
   /// Today's 5 prayers with tap-to-toggle checks, a prayed count, and
   /// a 7-day strip (oldest first) of daily prayed counts.
   Widget _prayerLogCard(
-      BuildContext context, QubaPalette p, List<PrayerEntry> entries) {
+    BuildContext context,
+    QubaPalette p,
+    List<PrayerEntry> entries,
+  ) {
     final today = DateTime.now();
     const five = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
     final last7 = appState.prayedLast7Days();
@@ -57,8 +61,9 @@ class _PrayerScreenState extends State<PrayerScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                trf('prayers_prayed_count',
-                    {'count': appState.prayedCountOn(today)}),
+                trf('prayers_prayed_count', {
+                  'count': appState.prayedCountOn(today),
+                }),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -70,8 +75,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
             ],
           ),
           const SizedBox(height: 6),
-          for (final name in five)
-            _logRow(context, p, name, today, entries),
+          for (final name in five) _logRow(context, p, name, today, entries),
           const SizedBox(height: 12),
           Text(
             tr('this_week'),
@@ -85,8 +89,12 @@ class _PrayerScreenState extends State<PrayerScreen> {
           Row(
             children: [
               for (var i = 0; i < 7; i++)
-                _weekColumn(p, last7[i],
-                    today.subtract(Duration(days: 6 - i)), i == 6),
+                _weekColumn(
+                  p,
+                  last7[i],
+                  today.subtract(Duration(days: 6 - i)),
+                  i == 6,
+                ),
             ],
           ),
         ],
@@ -94,8 +102,13 @@ class _PrayerScreenState extends State<PrayerScreen> {
     );
   }
 
-  Widget _logRow(BuildContext context, QubaPalette p, String name,
-      DateTime today, List<PrayerEntry> entries) {
+  Widget _logRow(
+    BuildContext context,
+    QubaPalette p,
+    String name,
+    DateTime today,
+    List<PrayerEntry> entries,
+  ) {
     final prayed = appState.isPrayed(today, name);
     PrayerEntry? entry;
     for (final e in entries) {
@@ -111,9 +124,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
           child: Row(
             children: [
               Icon(
-                prayed
-                    ? Icons.check_circle_rounded
-                    : Icons.circle_outlined,
+                prayed ? Icons.check_circle_rounded : Icons.circle_outlined,
                 size: 26,
                 color: prayed ? p.emerald : p.muted,
               ),
@@ -125,8 +136,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight:
-                        prayed ? FontWeight.w800 : FontWeight.w600,
+                    fontWeight: prayed ? FontWeight.w800 : FontWeight.w600,
                     color: p.ink,
                   ),
                 ),
@@ -156,8 +166,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
 
   /// One day of the week strip: count number, a bar sized by the
   /// count (0–5), and a one-letter weekday label.
-  Widget _weekColumn(
-      QubaPalette p, int count, DateTime day, bool isToday) {
+  Widget _weekColumn(QubaPalette p, int count, DateTime day, bool isToday) {
     final label = tr('weekday_abbr_${day.weekday}');
     return Expanded(
       child: Column(
@@ -178,8 +187,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
               borderRadius: BorderRadius.circular(4),
               color: count == 0
                   ? p.cardBorder
-                  : p.emerald
-                      .withValues(alpha: 0.35 + 0.13 * count),
+                  : p.emerald.withValues(alpha: 0.35 + 0.13 * count),
             ),
           ),
           const SizedBox(height: 4),
@@ -187,8 +195,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
             label.isEmpty ? '' : label[0],
             style: TextStyle(
               fontSize: 12,
-              fontWeight:
-                  isToday ? FontWeight.w800 : FontWeight.w600,
+              fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
               color: isToday ? p.emerald : p.muted,
             ),
           ),
@@ -210,12 +217,43 @@ class _PrayerScreenState extends State<PrayerScreen> {
             ? PrayerService.nextPrayer(now, appState)
             : null;
         return ListView(
-          // NOT primary: see home_screen.dart — each tab owns its
-          // scroll state instead of sharing the route's single
-          // PrimaryScrollController across the IndexedStack.
+          // NOT primary: each screen owns its scroll state instead of
+          // sharing the route's single PrimaryScrollController.
           primary: false,
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 120),
           children: [
+            // Back row when pushed from Home (absent when this screen
+            // is pumped standalone in tests).
+            if (Navigator.of(context).canPop()) ...[
+              Row(
+                children: [
+                  GlassCard(
+                    radius: 20,
+                    padding: const EdgeInsets.all(8),
+                    onTap: () => Navigator.of(context).maybePop(),
+                    child: Icon(
+                      Icons.arrow_back_rounded,
+                      size: 18,
+                      color: p.emerald,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      tr('prayer_times'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: p.ink,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+            ],
             Row(
               children: [
                 GlassCard(
@@ -267,10 +305,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
               Center(
                 child: TextButton(
                   onPressed: () => setState(() => _dayOffset = 0),
-                  child: Text(
-                    tr('today'),
-                    style: TextStyle(color: p.emerald),
-                  ),
+                  child: Text(tr('today'), style: TextStyle(color: p.emerald)),
                 ),
               ),
             const SizedBox(height: 12),
@@ -292,8 +327,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.calculate_outlined,
-                          color: p.gold, size: 20),
+                      Icon(Icons.calculate_outlined, color: p.gold, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         tr('calculation'),
@@ -314,11 +348,7 @@ class _PrayerScreenState extends State<PrayerScreen> {
                       'coords':
                           '${appState.lat.toStringAsFixed(3)}, ${appState.lng.toStringAsFixed(3)}',
                     }),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: p.muted,
-                      height: 1.5,
-                    ),
+                    style: TextStyle(fontSize: 14, color: p.muted, height: 1.5),
                   ),
                 ],
               ),

@@ -37,7 +37,8 @@ class _QiblaScreenState extends State<QiblaScreen> {
     final lat2 = QiblaMath.kaabaLat * math.pi / 180;
     final dLat = lat2 - lat1;
     final dLng = (QiblaMath.kaabaLng - appState.lng) * math.pi / 180;
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(lat1) *
             math.cos(lat2) *
             math.sin(dLng / 2) *
@@ -147,11 +148,16 @@ class _QiblaScreenState extends State<QiblaScreen> {
                   if (aligned)
                     GlassCard(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 16),
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
                       child: Row(
                         children: [
-                          Icon(Icons.check_circle_rounded,
-                              color: p.emerald, size: 26),
+                          Icon(
+                            Icons.check_circle_rounded,
+                            color: p.emerald,
+                            size: 26,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -169,11 +175,12 @@ class _QiblaScreenState extends State<QiblaScreen> {
                   else if (live)
                     GlassCard(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 16),
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
                       child: Row(
                         children: [
-                          Icon(Icons.explore_rounded,
-                              color: p.gold, size: 26),
+                          Icon(Icons.explore_rounded, color: p.gold, size: 26),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -191,11 +198,16 @@ class _QiblaScreenState extends State<QiblaScreen> {
                   else
                     GlassCard(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 16),
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
                       child: Row(
                         children: [
-                          Icon(Icons.compass_calibration_rounded,
-                              color: p.gold, size: 26),
+                          Icon(
+                            Icons.compass_calibration_rounded,
+                            color: p.gold,
+                            size: 26,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -339,9 +351,7 @@ class _CompassRosePainter extends CustomPainter {
         Offset(c.dx + r1 * math.cos(a), c.dy + r1 * math.sin(a)),
         Offset(c.dx + r2 * math.cos(a), c.dy + r2 * math.sin(a)),
         Paint()
-          ..color = major
-              ? palette.gold
-              : palette.muted.withValues(alpha: 0.5)
+          ..color = major ? palette.gold : palette.muted.withValues(alpha: 0.5)
           ..strokeWidth = major ? 2 : 1,
       );
     }

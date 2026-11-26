@@ -33,10 +33,15 @@ class ShareCard {
   }) async {
     try {
       final recorder = ui.PictureRecorder();
-      final canvas =
-          Canvas(recorder, const Rect.fromLTWH(0, 0, width, height));
-      _paint(canvas, arabic.trim(), body.trim(), reference.trim(), bodyRtl,
-          arabicFont);
+      final canvas = Canvas(recorder, const Rect.fromLTWH(0, 0, width, height));
+      _paint(
+        canvas,
+        arabic.trim(),
+        body.trim(),
+        reference.trim(),
+        bodyRtl,
+        arabicFont,
+      );
       final picture = recorder.endRecording();
       final image = await picture.toImage(width.toInt(), height.toInt());
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -88,12 +93,23 @@ class ShareCard {
         ? min * 1.5
         : probe.computeLineMetrics().first.height;
     final lines = math.max(1, (maxHeight / lineHeight).floor());
-    return _layout(text, style(min),
-        maxWidth: maxWidth, dir: dir, maxLines: lines);
+    return _layout(
+      text,
+      style(min),
+      maxWidth: maxWidth,
+      dir: dir,
+      maxLines: lines,
+    );
   }
 
-  static void _paint(Canvas canvas, String arabic, String body,
-      String reference, bool bodyRtl, String arabicFont) {
+  static void _paint(
+    Canvas canvas,
+    String arabic,
+    String body,
+    String reference,
+    bool bodyRtl,
+    String arabicFont,
+  ) {
     const full = Rect.fromLTWH(0, 0, width, height);
 
     // Background.
@@ -109,8 +125,9 @@ class ShareCard {
 
     // Gold frame.
     final outer = RRect.fromRectAndRadius(
-        const Rect.fromLTWH(36, 36, width - 72, height - 72),
-        const Radius.circular(44));
+      const Rect.fromLTWH(36, 36, width - 72, height - 72),
+      const Radius.circular(44),
+    );
     canvas.drawRRect(
       outer,
       Paint()
@@ -119,8 +136,9 @@ class ShareCard {
         ..strokeWidth = 5,
     );
     final inner = RRect.fromRectAndRadius(
-        const Rect.fromLTWH(58, 58, width - 116, height - 116),
-        const Radius.circular(30));
+      const Rect.fromLTWH(58, 58, width - 116, height - 116),
+      const Radius.circular(30),
+    );
     canvas.drawRRect(
       inner,
       Paint()
@@ -135,8 +153,16 @@ class ShareCard {
     final line = Paint()
       ..color = _gold
       ..strokeWidth = 2;
-    canvas.drawLine(const Offset(cx - 230, topY), const Offset(cx - 44, topY), line);
-    canvas.drawLine(const Offset(cx + 44, topY), const Offset(cx + 230, topY), line);
+    canvas.drawLine(
+      const Offset(cx - 230, topY),
+      const Offset(cx - 44, topY),
+      line,
+    );
+    canvas.drawLine(
+      const Offset(cx + 44, topY),
+      const Offset(cx + 230, topY),
+      line,
+    );
     final star = Path();
     for (final rot in const [0.0, math.pi / 4]) {
       for (var i = 0; i < 4; i++) {
@@ -184,16 +210,13 @@ class ShareCard {
     }
     final refTp = _layout(
       reference,
-      const TextStyle(
-        fontSize: 34,
-        fontWeight: FontWeight.w700,
-        color: _gold,
-      ),
+      const TextStyle(fontSize: 34, fontWeight: FontWeight.w700, color: _gold),
       maxWidth: textWidth,
       dir: TextDirection.ltr,
       maxLines: 2,
     );
-    final used = (arabicTp == null ? 0 : arabicTp.height + gap) +
+    final used =
+        (arabicTp == null ? 0 : arabicTp.height + gap) +
         refTp.height +
         (body.isEmpty ? 0 : gap);
     final bodyMax = math.max(120.0, areaBottom - areaTop - used);
@@ -209,7 +232,8 @@ class ShareCard {
         style: (s) => TextStyle(fontSize: s, height: 1.5, color: _muted),
       );
     }
-    final total = (arabicTp == null ? 0 : arabicTp.height + gap) +
+    final total =
+        (arabicTp == null ? 0 : arabicTp.height + gap) +
         (bodyTp == null ? 0 : bodyTp.height + gap) +
         refTp.height;
     var y = areaTop + math.max(0, (areaBottom - areaTop - total) / 2);
@@ -237,10 +261,13 @@ class ShareCard {
       dir: TextDirection.ltr,
     );
     brand.paint(canvas, Offset((width - brand.width) / 2, 1160));
-    canvas.drawLine(const Offset(cx - 160, 1240), const Offset(cx + 160, 1240),
-        Paint()
-          ..color = _gold.withValues(alpha: 0.6)
-          ..strokeWidth = 1.5);
+    canvas.drawLine(
+      const Offset(cx - 160, 1240),
+      const Offset(cx + 160, 1240),
+      Paint()
+        ..color = _gold.withValues(alpha: 0.6)
+        ..strokeWidth = 1.5,
+    );
   }
 
   /// Renders and shares the card as an image, with [fallbackText] as the

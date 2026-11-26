@@ -70,7 +70,8 @@ const Map<String, Map<String, String>> extraStrings = {
     "weekday_abbr_7": "M",
     "calc_method": "Metode perhitungan",
     "calc_suggest": "Sarankan untuk lokasi saya",
-    "calc_suggest_body": "Disarankan untuk lokasi Anda: {method}. Ini saran perkiraan. Gunakan?",
+    "calc_suggest_body":
+        "Disarankan untuk lokasi Anda: {method}. Ini saran perkiraan. Gunakan?",
     "calc_suggest_same": "{method} sudah sesuai dengan lokasi Anda.",
     "use_it": "Gunakan",
     "reset_all": "Setel ulang semua",
@@ -85,7 +86,8 @@ const Map<String, Map<String, String>> extraStrings = {
     "adjust_minutes": "Sesuaikan menit tiap salat",
     "adjust_hint": "Sesuaikan agar cocok dengan jadwal masjid setempat.",
     "hijri_adjust": "Koreksi tanggal Hijriah",
-    "hijri_adjust_hint": "Geser hingga 2 hari agar sesuai dengan rukyat setempat.",
+    "hijri_adjust_hint":
+        "Geser hingga 2 hari agar sesuai dengan rukyat setempat.",
     "isha_minutes_after": "Isya {min} menit setelah Magrib",
     "azkar": "Dzikir",
     "azkar_desc": "Dzikir pagi, petang, dan setelah salat",
@@ -209,9 +211,11 @@ const Map<String, Map<String, String>> extraStrings = {
     "high_lat_angle": "Açıya dayalı",
     "high_lat_hint": "Yazın sabah veya yatsı vaktinin hesaplanamadığı çok kuzey ya da güney yerler için.",
     "adjust_minutes": "Her namaz için dakikayı ayarla",
-    "adjust_hint": "Yerel cami vakit çizelgesine uydurmak için ince ayar yapın.",
+    "adjust_hint":
+        "Yerel cami vakit çizelgesine uydurmak için ince ayar yapın.",
     "hijri_adjust": "Hicri tarih düzeltmesi",
-    "hijri_adjust_hint": "Yerel hilal gözlemine uymak için en fazla 2 gün kaydırın.",
+    "hijri_adjust_hint":
+        "Yerel hilal gözlemine uymak için en fazla 2 gün kaydırın.",
     "isha_minutes_after": "Yatsı, akşamdan {min} dk sonra",
     "azkar": "Zikirler",
     "azkar_desc": "Sabah, akşam ve namaz sonrası zikirler",
@@ -335,7 +339,8 @@ const Map<String, Map<String, String>> extraStrings = {
     "high_lat_angle": "কোণ-ভিত্তিক",
     "high_lat_hint": "অতি উত্তর বা দক্ষিণের এমন জায়গার জন্য যেখানে গ্রীষ্মে ফজর বা ইশা গণনা করা যায় না।",
     "adjust_minutes": "প্রতি নামাজের মিনিট সমন্বয় করুন",
-    "adjust_hint": "স্থানীয় মসজিদের সময়সূচির সাথে মেলাতে সূক্ষ্ম সমন্বয় করুন।",
+    "adjust_hint":
+        "স্থানীয় মসজিদের সময়সূচির সাথে মেলাতে সূক্ষ্ম সমন্বয় করুন।",
     "hijri_adjust": "হিজরি তারিখ সংশোধন",
     "hijri_adjust_hint": "স্থানীয় চাঁদ দেখার সাথে মেলাতে ২ দিন পর্যন্ত সরান।",
     "isha_minutes_after": "মাগরিবের {min} মিনিট পর ইশা",
@@ -354,7 +359,8 @@ const Map<String, Map<String, String>> extraStrings = {
     "azkar_taps_left": "গুনতে ট্যাপ করুন — {total}-এর মধ্যে {left} বাকি",
     "azkar_reminders": "দৈনিক অনুস্মারক",
     "azkar_reminders_hint": "ফজর ও আসরের পর একটি মৃদু অনুস্মারক।",
-    "azkar_perm_denied": "নোটিফিকেশন বন্ধ আছে। অনুস্মারক পেতে সিস্টেম সেটিংসে অনুমতি দিন।",
+    "azkar_perm_denied":
+        "নোটিফিকেশন বন্ধ আছে। অনুস্মারক পেতে সিস্টেম সেটিংসে অনুমতি দিন।",
     "azkar_channel": "যিকিরের অনুস্মারক",
     "azkar_channel_desc": "সকাল ও সন্ধ্যার যিকিরের অনুস্মারক",
     "azkar_morning_notif_title": "সকালের যিকির",
@@ -463,7 +469,8 @@ const Map<String, Map<String, String>> extraStrings = {
     "adjust_minutes": "Ajuster les minutes par prière",
     "adjust_hint": "Affinez pour correspondre à l'horaire de votre mosquée.",
     "hijri_adjust": "Correction de la date hégirienne",
-    "hijri_adjust_hint": "Décalez jusqu'à 2 jours pour suivre l'observation locale de la lune.",
+    "hijri_adjust_hint":
+        "Décalez jusqu'à 2 jours pour suivre l'observation locale de la lune.",
     "isha_minutes_after": "Isha {min} min après Maghrib",
     "azkar": "Adhkar",
     "azkar_desc": "Invocations du matin, du soir et après la prière",
@@ -574,7 +581,8 @@ const Map<String, Map<String, String>> extraStrings = {
     "weekday_abbr_7": "A",
     "calc_method": "Kaedah pengiraan",
     "calc_suggest": "Cadangkan untuk lokasi saya",
-    "calc_suggest_body": "Dicadangkan untuk lokasi anda: {method}. Ini cadangan anggaran. Guna?",
+    "calc_suggest_body":
+        "Dicadangkan untuk lokasi anda: {method}. Ini cadangan anggaran. Guna?",
     "calc_suggest_same": "{method} sudah sesuai dengan lokasi anda.",
     "use_it": "Guna",
     "reset_all": "Set semula semua",

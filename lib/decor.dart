@@ -30,27 +30,48 @@ class QubaHeader extends StatelessWidget {
 
   static const double _pill = 76;
 
-  static BoxDecoration _glass(QubaPalette p, {bool circle = false, double radius = 38}) =>
-      BoxDecoration(
-        shape: circle ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: circle ? null : BorderRadius.circular(radius),
-        color: p.dark ? p.cardFill : Colors.white.withValues(alpha: 0.55),
-        border: Border.all(color: p.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: p.dark ? p.shadow : Colors.green.withValues(alpha: 0.08),
-            blurRadius: 25,
-            spreadRadius: 2,
-          ),
-        ],
-      );
+  static BoxDecoration _glass(
+    QubaPalette p, {
+    bool circle = false,
+    double radius = 38,
+  }) => BoxDecoration(
+    shape: circle ? BoxShape.circle : BoxShape.rectangle,
+    borderRadius: circle ? null : BorderRadius.circular(radius),
+    // Translucent layered glass over the backdrop blur: white/mint
+    // gradient, fine bright border, soft green ambient shadow.
+    gradient: LinearGradient(
+      colors: p.dark
+          ? [const Color(0xA6144D3A), const Color(0x8C0A3C2C)]
+          : [
+              Colors.white.withValues(alpha: 0.46),
+              const Color(0xFFDFF3E7).withValues(alpha: 0.34),
+            ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    border: Border.all(
+      color: p.dark
+          ? Colors.white.withValues(alpha: 0.28)
+          : Colors.white.withValues(alpha: 0.85),
+      width: 1.2,
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: p.dark
+            ? p.shadow
+            : const Color(0xFF146441).withValues(alpha: 0.12),
+        blurRadius: 35,
+        offset: const Offset(0, 12),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
     final ink = p.dark ? p.ink : p.emerald;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(13, 10, 13, 12),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
       child: SizedBox(
         height: _pill,
         child: Row(
@@ -80,7 +101,8 @@ class QubaHeader extends StatelessWidget {
                               end: Alignment.bottomRight,
                             ),
                             border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.9)),
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
                           ),
                           child: CustomPaint(
                             painter: ArchLogoPainter(
@@ -203,6 +225,24 @@ class ArchLogoPainter extends CustomPainter {
       ..cubicTo(w * 0.26, h * 0.34, w * 0.74, h * 0.34, w * 0.74, h * 0.64)
       ..close();
     canvas.drawPath(domePath, Paint()..color = dome);
+    // Crescent above the dome.
+    final crescentR = w * 0.085;
+    final crescent = Path.combine(
+      PathOperation.difference,
+      Path()..addOval(
+        Rect.fromCircle(center: Offset(w * 0.5, h * 0.235), radius: crescentR),
+      ),
+      Path()..addOval(
+        Rect.fromCircle(
+          center: Offset(
+            w * 0.5 + crescentR * 0.45,
+            h * 0.235 - crescentR * 0.25,
+          ),
+          radius: crescentR * 0.82,
+        ),
+      ),
+    );
+    canvas.drawPath(crescent, Paint()..color = outline);
     canvas.drawLine(
       Offset(w * 0.5, h * 0.42),
       Offset(w * 0.5, h * 0.33),
@@ -331,17 +371,29 @@ class PrayerGlyphPainter extends CustomPainter {
     if (kind == 'fajr') {
       final center = Offset(c.dx, c.dy + w * 0.14);
       final r = w * 0.24;
-      canvas.drawArc(Rect.fromCircle(center: center, radius: r), math.pi,
-          math.pi, true, fill);
-      canvas.drawLine(Offset(c.dx - w * 0.40, center.dy),
-          Offset(c.dx + w * 0.40, center.dy), stroke);
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: r),
+        math.pi,
+        math.pi,
+        true,
+        fill,
+      );
+      canvas.drawLine(
+        Offset(c.dx - w * 0.40, center.dy),
+        Offset(c.dx + w * 0.40, center.dy),
+        stroke,
+      );
       for (var i = 0; i < 5; i++) {
         final a = math.pi + i * math.pi / 4;
         canvas.drawLine(
-          Offset(center.dx + math.cos(a) * r * 1.35,
-              center.dy + math.sin(a) * r * 1.35),
-          Offset(center.dx + math.cos(a) * r * 1.8,
-              center.dy + math.sin(a) * r * 1.8),
+          Offset(
+            center.dx + math.cos(a) * r * 1.35,
+            center.dy + math.sin(a) * r * 1.35,
+          ),
+          Offset(
+            center.dx + math.cos(a) * r * 1.8,
+            center.dy + math.sin(a) * r * 1.8,
+          ),
           stroke,
         );
       }
@@ -351,12 +403,23 @@ class PrayerGlyphPainter extends CustomPainter {
     // Ring with a little rising sun inside.
     canvas.drawCircle(c, w * 0.38, stroke);
     final inner = Offset(c.dx, c.dy + w * 0.08);
-    canvas.drawArc(Rect.fromCircle(center: inner, radius: w * 0.17), math.pi,
-        math.pi, true, fill);
-    canvas.drawLine(Offset(c.dx - w * 0.2, inner.dy),
-        Offset(c.dx + w * 0.2, inner.dy), stroke..strokeWidth = w * 0.06);
-    canvas.drawLine(Offset(c.dx, c.dy - w * 0.26),
-        Offset(c.dx, c.dy - w * 0.17), stroke);
+    canvas.drawArc(
+      Rect.fromCircle(center: inner, radius: w * 0.17),
+      math.pi,
+      math.pi,
+      true,
+      fill,
+    );
+    canvas.drawLine(
+      Offset(c.dx - w * 0.2, inner.dy),
+      Offset(c.dx + w * 0.2, inner.dy),
+      stroke..strokeWidth = w * 0.06,
+    );
+    canvas.drawLine(
+      Offset(c.dx, c.dy - w * 0.26),
+      Offset(c.dx, c.dy - w * 0.17),
+      stroke,
+    );
   }
 
   @override

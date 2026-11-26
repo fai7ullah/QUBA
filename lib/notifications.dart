@@ -98,8 +98,10 @@ class NotificationService {
       const InitializationSettings(android: androidInit),
     );
 
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android != null) {
       // Drop the legacy chime channel (best-effort).
       try {
@@ -123,12 +125,16 @@ class NotificationService {
   /// Live permission state, queried from the platform each time.
   Future<NotificationPermissionState> permissionState() async {
     if (!_initialized) await init();
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android == null) {
       // Non-Android: no runtime permission model for notifications.
       return const NotificationPermissionState(
-          notificationsEnabled: true, exactAlarmsEnabled: true);
+        notificationsEnabled: true,
+        exactAlarmsEnabled: true,
+      );
     }
     var notif = true;
     var exact = false;
@@ -139,7 +145,9 @@ class NotificationService {
       exact = await android.canScheduleExactNotifications() ?? false;
     } catch (_) {}
     return NotificationPermissionState(
-        notificationsEnabled: notif, exactAlarmsEnabled: exact);
+      notificationsEnabled: notif,
+      exactAlarmsEnabled: exact,
+    );
   }
 
   /// Ask Android for the notification permission. Returns true when
@@ -148,8 +156,10 @@ class NotificationService {
   /// it in the system settings (Settings offers that button).
   Future<bool> requestNotificationPermission() async {
     if (!_initialized) await init();
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android == null) return true;
     try {
       return await android.requestNotificationsPermission() ?? false;
@@ -163,8 +173,10 @@ class NotificationService {
   /// On Android 12+ this opens the system "Alarms & reminders" page.
   Future<bool> requestExactAlarmPermission() async {
     if (!_initialized) await init();
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android == null) return true;
     try {
       return await android.requestExactAlarmsPermission() ?? true;
@@ -174,8 +186,10 @@ class NotificationService {
   }
 
   Future<bool> _canScheduleExact() async {
-    final android = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     if (android == null) return true;
     try {
       return await android.canScheduleExactNotifications() ?? false;
@@ -277,10 +291,15 @@ class NotificationService {
     // follow the (possibly adjusted) prayer times.
     await scheduleAzkar(state);
     final result = ScheduleResult(
-        scheduled: scheduled, failed: failed, exactAlarms: exactUsed);
+      scheduled: scheduled,
+      failed: failed,
+      exactAlarms: exactUsed,
+    );
     lastResult = result;
-    debugPrint('QUBA: scheduled ${result.scheduled} prayer notifications '
-        '(${result.failed} failed, exact=${result.exactAlarms})');
+    debugPrint(
+      'QUBA: scheduled ${result.scheduled} prayer notifications '
+      '(${result.failed} failed, exact=${result.exactAlarms})',
+    );
     return result;
   }
 
@@ -350,8 +369,16 @@ class NotificationService {
           try {
             await _plugin.zonedSchedule(
               _azkarId(day, morning),
-              tr(morning ? 'azkar_morning_notif_title' : 'azkar_evening_notif_title'),
-              tr(morning ? 'azkar_morning_notif_body' : 'azkar_evening_notif_body'),
+              tr(
+                morning
+                    ? 'azkar_morning_notif_title'
+                    : 'azkar_evening_notif_title',
+              ),
+              tr(
+                morning
+                    ? 'azkar_morning_notif_body'
+                    : 'azkar_evening_notif_body',
+              ),
               tz.TZDateTime.from(at, tz.local),
               _azkarDetails(),
               androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,

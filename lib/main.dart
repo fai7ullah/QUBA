@@ -35,6 +35,7 @@ import 'screens/test_mode_screen.dart';
 import 'screens/widget_screen.dart';
 import 'theme.dart';
 import 'widgets.dart';
+import 'widgets/global_player.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,9 +45,9 @@ Future<void> main() async {
   // Translations are best-effort: if the asset load ever stalls, the
   // app must still open (translations just become unavailable).
   try {
-    await TranslationRepository.instance
-        .load()
-        .timeout(const Duration(seconds: 10));
+    await TranslationRepository.instance.load().timeout(
+      const Duration(seconds: 10),
+    );
   } catch (_) {
     // Translation assets unavailable on this run; the app opens anyway.
   }
@@ -64,6 +65,10 @@ Future<void> main() async {
 class QubaApp extends StatelessWidget {
   const QubaApp({super.key});
 
+  static final QubaRouteObserver routeObserver = QubaRouteObserver();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -71,6 +76,15 @@ class QubaApp extends StatelessWidget {
       builder: (context, _) => MaterialApp(
         title: 'QUBA',
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
+        navigatorObservers: [routeObserver],
+        // App-wide bottom player: floats above every route while a
+        // recitation session is active (hidden under dialogs/sheets).
+        builder: (context, child) => QubaPlayerOverlay(
+          routeObserver: routeObserver,
+          navigatorKey: navigatorKey,
+          child: child ?? const SizedBox.shrink(),
+        ),
         theme: qubaLightTheme(),
         darkTheme: qubaDarkTheme(),
         themeMode: appState.themeMode,
@@ -126,16 +140,26 @@ class _ShellState extends State<Shell> {
   void _openMushaf(int juz) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => MushafScreen(
-          initialPage: MushafData.instance.pageOfJuz(juz),
-        ),
+        builder: (_) =>
+            MushafScreen(initialPage: MushafData.instance.pageOfJuz(juz)),
       ),
     );
   }
 
   void _openFeature(Widget screen) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => screen),
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
+  }
+
+  /// The full Prayer screen. Prayer has no bottom tab in the
+  /// four-tab bar (Umar's liquid-glass brief); Home's Next Prayer
+  /// card and Prayer Times "View All" open it as a pushed screen.
+  void _openPrayer() {
+    _openFeature(
+      const Scaffold(
+        body: QubaBackground(
+          child: SafeArea(top: true, bottom: false, child: PrayerScreen()),
+        ),
+      ),
     );
   }
 
@@ -154,7 +178,7 @@ class _ShellState extends State<Shell> {
       case 'tasbih':
         return const TasbihScreen();
       case 'search':
-        return SearchScreen(onOpenReader: _openReader);
+        return SearchScreen(onOpenReader: _openReader, onOpenJuz: _openMushaf);
       // Phase 2 (round 4): all new features live in the Extras tab.
       case 'hadith':
         return const HadithScreen();
@@ -186,14 +210,14 @@ class _ShellState extends State<Shell> {
         onGoTab: (t) => setState(() => _tab = t),
         onOpenReader: _openReader,
         onOpenFeature: _openFeatureKey,
+        onOpenPrayer: _openPrayer,
       ),
-      const PrayerScreen(),
       QuranScreen(
         onOpenSurah: (s) => _openReader(s, 1),
         onOpenSearch: () => _openFeatureKey('search'),
         onOpenReader: _openReader,
         onOpenJuz: _openMushaf,
-        onOpenSettings: () => setState(() => _tab = 4),
+        onOpenSettings: () => setState(() => _tab = 3),
       ),
       ExtrasScreen(onOpenFeature: _openFeatureKey),
       SettingsScreen(onOpenFeature: _openFeatureKey),
@@ -218,9 +242,10 @@ class _ShellState extends State<Shell> {
   }
 }
 
-/// Floating liquid-glass bottom navigation: one wide pill, thin gold
-/// separators and a frosted highlight with an emerald underline on the
-/// active tab, as in the reference design.
+/// Floating liquid-glass bottom navigation (Umar's brief): four tabs
+/// — Home, Quran, Extras, Settings — in one wide frosted pill; the
+/// active tab gets a soft emerald glass highlight and a green
+/// underline. (Prayer opens from Home; it has no tab.)
 class _GlassNavBar extends StatelessWidget {
   const _GlassNavBar({required this.tab, required this.onTab});
   final int tab;
@@ -228,9 +253,8 @@ class _GlassNavBar extends StatelessWidget {
 
   static const _items = [
     (Icons.home_rounded, 'home'),
-    (Icons.menu_book_rounded, 'prayer'),
-    (Icons.mosque_rounded, 'quran'),
-    (Icons.apps_rounded, 'extras'),
+    (Icons.menu_book_rounded, 'quran'),
+    (Icons.star_rounded, 'extras'),
     (Icons.settings_rounded, 'settings'),
   ];
 
@@ -240,54 +264,100 @@ class _GlassNavBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(34),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Container(
-              height: 59,
+              height: 68,
               decoration: BoxDecoration(
-                color: p.dark
-                    ? p.cardFill
-                    : Colors.white.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: p.cardBorder, width: 1),
+                gradient: LinearGradient(
+                  colors: p.dark
+                      ? [const Color(0xD90E4A38), const Color(0xC9083528)]
+                      : [
+                          Colors.white.withValues(alpha: 0.52),
+                          const Color(0xFFE6F6EC).withValues(alpha: 0.40),
+                        ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(34),
+                border: Border.all(
+                  color: p.dark
+                      ? Colors.white.withValues(alpha: 0.28)
+                      : Colors.white.withValues(alpha: 0.85),
+                  width: 1.2,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: p.shadow,
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    color: p.dark
+                        ? p.shadow
+                        : const Color(0xFF146441).withValues(alpha: 0.12),
+                    blurRadius: 35,
+                    offset: const Offset(0, 12),
                   ),
                 ],
               ),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final itemW = constraints.maxWidth / _items.length;
-                  final isRtl =
-                      Directionality.of(context) == TextDirection.rtl;
+                  final isRtl = Directionality.of(context) == TextDirection.rtl;
                   // In RTL the visual order mirrors: index 0 is on the right.
                   final visualTab = isRtl ? _items.length - 1 - tab : tab;
                   return Stack(
                     children: [
+                      // Specular highlight along the top glass edge.
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 26,
+                        child: IgnorePointer(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withValues(
+                                    alpha: p.dark ? 0.14 : 0.5,
+                                  ),
+                                  Colors.white.withValues(alpha: 0),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       // Active tab highlight with its underline.
                       AnimatedPositioned(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeOutCubic,
-                        left: visualTab * itemW + 2,
-                        top: 2,
-                        width: itemW - 4,
-                        height: 55,
+                        left: visualTab * itemW + 3,
+                        top: 3,
+                        width: itemW - 6,
+                        height: 62,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: p.dark
-                                ? p.activeFill
-                                : Colors.white.withValues(alpha: 0.62),
-                            borderRadius: BorderRadius.circular(28),
+                            gradient: LinearGradient(
+                              colors: p.dark
+                                  ? [p.activeFill, p.activeFill]
+                                  : [
+                                      const Color(0xFFD9F2E2)
+                                          .withValues(alpha: 0.85),
+                                      const Color(0xFFBFE8CF)
+                                          .withValues(alpha: 0.70),
+                                    ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(31),
                             border: Border.all(
                               color: p.dark
                                   ? p.activeText.withValues(alpha: 0.25)
                                   : Colors.white.withValues(alpha: 0.9),
+                              width: 1.2,
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -362,26 +432,61 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = QubaPalette.of(context);
-    final iconColor = p.dark ? p.activeText : p.emeraldDeep;
+    final iconColor = active
+        ? (p.dark ? p.activeText : p.emerald)
+        : (p.dark ? p.muted : const Color(0xFF1F2A23));
     final labelColor = active
         ? (p.dark ? p.activeText : p.emerald)
         : (p.dark ? p.muted : const Color(0xFF4A4D45));
     return InkWell(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(31),
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.only(bottom: 5),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 27, color: iconColor),
-            const SizedBox(height: 1),
+            // Glass bubble icon holder on every tab (the reference's
+            // floating pill nav); the active bubble glows mint.
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  center: const Alignment(-0.4, -0.5),
+                  colors: p.dark
+                      ? [const Color(0x4034D399), const Color(0x1A34D399)]
+                      : active
+                      ? [
+                          Colors.white.withValues(alpha: 0.98),
+                          const Color(0xFFDFF3E7),
+                        ]
+                      : [
+                          Colors.white.withValues(alpha: 0.85),
+                          Colors.white.withValues(alpha: 0.45),
+                        ],
+                ),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: p.dark ? 0.3 : 0.9),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF146441).withValues(alpha: 0.10),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(icon, size: 22, color: iconColor),
+            ),
+            const SizedBox(height: 2),
             Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 13.5,
+                fontSize: 12.5,
                 height: 1.1,
                 fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                 color: labelColor,

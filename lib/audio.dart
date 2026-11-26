@@ -28,20 +28,29 @@ enum VerseRepeatMode {
   loop,
 }
 
-/// Audio: seventeen reciters via the Islamic Network CDN (EveryAyah mirror).
+/// Audio: eighteen reciters via the Islamic Network CDN (EveryAyah
+/// mirror), plus the bundled 99 Names pronunciation clips.
 /// See [Reciter] for the per-edition bitrates and which editions have
 /// whole-surah files.
 ///
-/// Two modes share one player:
+/// Quran modes share one player:
 /// - Per-ayah: one mp3 per verse
 ///   (audio/{bitrate}/{edition}/{global ayah number}.mp3), auto-advancing
 ///   through the surah. [currentAyah] is set while it plays. Every
-///   reciter supports this; for reciters without whole-surah files this
-///   is also how "play surah" and downloads work (verse by verse).
-/// - Whole-surah file (Alafasy only):
-///   audio-surah/128/ar.alafasy/{surah}.mp3, streamed when online, or
-///   played from the app documents folder when downloaded once.
-///   [currentAyah] is null in this mode.
+///   reciter except Yasser Al-Dosari supports this; for reciters
+///   without whole-surah files this is also how "play surah" and
+///   downloads work (verse by verse).
+/// - Whole-surah file (Alafasy and Yasser Al-Dosari):
+///   audio-surah/{bitrate}/{edition}/{surah}.mp3, streamed when online,
+///   or played from the app documents folder when downloaded once.
+///   [currentAyah] is null in this mode. Al-Dosari has no per-ayah
+///   files, so a verse tap with him starts the whole surah.
+///
+/// Name mode: one bundled human pronunciation clip per name
+/// (assets/names/name_NN.ogg — see assets/names/LICENSE.txt for the
+/// source and CC BY-SA licences). [currentName] is set while it plays;
+/// the clip is a few seconds, then the session ends and the player
+/// hides. Name and Quran sessions replace each other.
 ///
 /// Streams need the internet; a downloaded surah plays fully offline.
 ///
@@ -54,12 +63,23 @@ enum VerseRepeatMode {
 /// his explicit word.
 class AudioService {
   AudioService._() {
+    sessionListenable = Listenable.merge([
+      currentSurah,
+      currentAyah,
+      currentName,
+      currentReciter,
+    ]);
     // Auto-advance: when a verse finishes, honour the repeat settings
     // first (repeat mode, then range), then advance to the next verse
     // of the surah; at the last verse (or when a whole-surah file ends)
-    // clear the now-playing state so the mini-player disappears.
+    // clear the now-playing state so the player disappears. A name
+    // clip simply ends its session.
     player.playerStateStream.listen((state) {
       if (state.processingState != ProcessingState.completed) return;
+      if (currentName.value != null) {
+        stop();
+        return;
+      }
       final surah = currentSurah.value;
       final ayah = currentAyah.value;
       if (surah != null && ayah != null) {
@@ -106,6 +126,7 @@ class AudioService {
       if (id == _lastReciterId) return;
       _lastReciterId = id;
       currentReciter.value = reciterById(id);
+      if (currentName.value != null) return;
       final surah = currentSurah.value;
       final ayah = currentAyah.value;
       if (surah == null) return;
@@ -124,16 +145,30 @@ class AudioService {
   /// The verse currently playing in per-ayah mode, or null when a
   /// whole-surah file is playing (or nothing is playing).
   final ValueNotifier<int?> currentAyah = ValueNotifier(null);
+
+  /// The 99 Names entry (1–99) currently reciting, or null.
+  final ValueNotifier<int?> currentName = ValueNotifier(null);
+
+  /// Fires whenever the visible player session changes.
+  late final Listenable sessionListenable;
+
+  /// True while a Quran or name recitation session is active
+  /// (playing or paused) — the app-wide player shows then.
+  bool get hasActiveSession =>
+      currentSurah.value != null || currentName.value != null;
+
   final ValueNotifier<int?> downloadingSurah = ValueNotifier(null);
   final ValueNotifier<double> downloadProgress = ValueNotifier(0);
 
   /// The active reciter (follows appState.reciterId).
-  final ValueNotifier<Reciter> currentReciter =
-      ValueNotifier(reciterById(appState.reciterId));
+  final ValueNotifier<Reciter> currentReciter = ValueNotifier(
+    reciterById(appState.reciterId),
+  );
 
   /// Memorisation: how the current verse repeats.
-  final ValueNotifier<VerseRepeatMode> repeatMode =
-      ValueNotifier(VerseRepeatMode.off);
+  final ValueNotifier<VerseRepeatMode> repeatMode = ValueNotifier(
+    VerseRepeatMode.off,
+  );
 
   /// Memorisation: a verse range (start, end) within the current surah
   /// to loop, or null for no range.
@@ -164,10 +199,19 @@ class AudioService {
     return audioDir;
   }
 
-  /// Whole-surah file (Alafasy only).
+  /// Whole-surah file for the current reciter. Alafasy keeps the
+  /// legacy path (audio/surah_N.mp3) so downloads from earlier builds
+  /// keep working; other whole-surah reciters get their own folder.
   Future<File> _localFile(int surah) async {
     final dir = await _audioDir();
-    return File('${dir.path}/surah_$surah.mp3');
+    if (_reciter.id == 'ar.alafasy') {
+      return File('${dir.path}/surah_$surah.mp3');
+    }
+    final reciterDir = Directory('${dir.path}/${_reciter.id}');
+    if (!await reciterDir.exists()) {
+      await reciterDir.create(recursive: true);
+    }
+    return File('${reciterDir.path}/surah_$surah.mp3');
   }
 
   /// One verse file for one reciter: audio/{edition}/a{global}.mp3.
@@ -190,8 +234,7 @@ class AudioService {
     final repo = QuranRepository.instance;
     final count = repo.surah(surah).ayahCount;
     for (var a = 1; a <= count; a++) {
-      final f =
-          await _localAyahFile(_reciter.id, repo.globalIndexOf(surah, a));
+      final f = await _localAyahFile(_reciter.id, repo.globalIndexOf(surah, a));
       if (!await f.exists()) return false;
     }
     return true;
@@ -199,7 +242,7 @@ class AudioService {
 
   /// Synchronous version for UI icons (trusts the stored flags).
   bool isDownloadedSync(int surah) {
-    if (_reciter.hasWholeSurahFiles) {
+    if (_reciter.id == 'ar.alafasy') {
       return appState.downloadedSurahs.contains(surah);
     }
     return appState.isSurahDownloadedFor(_reciter.id, surah);
@@ -210,13 +253,14 @@ class AudioService {
   // ------------------------------------------------------------------
 
   Future<void> playSurah(int surah) async {
-    // Only Alafasy has whole-surah files; other reciters play the surah
-    // verse by verse from ayah 1.
+    // Reciters without whole-surah files play the surah verse by
+    // verse from ayah 1.
     if (!_reciter.hasWholeSurahFiles) {
       await playAyah(surah, 1);
       return;
     }
     try {
+      currentName.value = null;
       currentSurah.value = surah;
       currentAyah.value = null;
       final f = await _localFile(surah);
@@ -238,7 +282,14 @@ class AudioService {
   /// Plays one verse (downloaded file first, else streamed) and
   /// auto-advances through the surah, honouring the repeat settings.
   Future<void> playAyah(int surah, int ayah) async {
+    // Yasser Al-Dosari has no per-ayah files: a verse tap starts the
+    // whole surah instead of requesting a URL the CDN rejects.
+    if (!_reciter.supportsAyahFiles) {
+      await playSurah(surah);
+      return;
+    }
     try {
+      currentName.value = null;
       currentSurah.value = surah;
       currentAyah.value = ayah;
       _resetRepeatLeft();
@@ -257,6 +308,27 @@ class AudioService {
       debugPrint('QUBA audio error: $e');
       currentSurah.value = null;
       currentAyah.value = null;
+    }
+  }
+
+  /// Bundled pronunciation clip for 99 Names entry [number] (1–99).
+  static String nameAssetPath(int number) =>
+      'assets/names/name_${number.toString().padLeft(2, '0')}.ogg';
+
+  /// Recites one of the 99 Names (bundled human pronunciation; see
+  /// assets/names/LICENSE.txt). Replaces any Quran session.
+  Future<void> playName(int number) async {
+    try {
+      currentSurah.value = null;
+      currentAyah.value = null;
+      currentName.value = number;
+      await player.setAudioSource(AudioSource.asset(nameAssetPath(number)));
+      await player.play();
+    } catch (e) {
+      debugPrint('QUBA audio error: $e');
+      currentSurah.value = null;
+      currentAyah.value = null;
+      currentName.value = null;
     }
   }
 
@@ -301,9 +373,16 @@ class AudioService {
   Future<void> stop() async {
     cancelSleepTimer();
     _repeatLeft = 0;
-    await player.stop();
+    // Clear the session first: close must hide the player at once,
+    // even if the platform player's stop is slow to answer.
     currentSurah.value = null;
     currentAyah.value = null;
+    currentName.value = null;
+    try {
+      await player.stop();
+    } catch (_) {
+      // The session is already cleared; nothing else to do.
+    }
   }
 
   // ------------------------------------------------------------------
@@ -404,7 +483,11 @@ class AudioService {
         if (total > 0) downloadProgress.value = received / total;
       }
       await sink.close();
-      appState.markDownloaded(surah);
+      if (_reciter.id == 'ar.alafasy') {
+        appState.markDownloaded(surah);
+      } else {
+        appState.markSurahDownloadedFor(_reciter.id, surah);
+      }
       return true;
     } catch (e) {
       debugPrint('QUBA download error: $e');
@@ -459,14 +542,17 @@ class AudioService {
     if (_reciter.hasWholeSurahFiles) {
       final f = await _localFile(surah);
       if (await f.exists()) await f.delete();
-      appState.unmarkDownloaded(surah);
+      if (_reciter.id == 'ar.alafasy') {
+        appState.unmarkDownloaded(surah);
+      } else {
+        appState.unmarkSurahDownloadedFor(_reciter.id, surah);
+      }
       return;
     }
     final repo = QuranRepository.instance;
     final count = repo.surah(surah).ayahCount;
     for (var a = 1; a <= count; a++) {
-      final f =
-          await _localAyahFile(_reciter.id, repo.globalIndexOf(surah, a));
+      final f = await _localAyahFile(_reciter.id, repo.globalIndexOf(surah, a));
       if (await f.exists()) await f.delete();
     }
     appState.unmarkSurahDownloadedFor(_reciter.id, surah);

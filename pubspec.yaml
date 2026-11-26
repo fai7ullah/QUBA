@@ -1,7 +1,7 @@
 name: quba
 description: "QUBA — Quran, prayer times and Athan. Offline-first Islamic companion."
 publish_to: 'none'
-version: 1.0.0+12
+version: 1.0.0+13
 
 environment:
   sdk: ^3.13.7
@@ -54,6 +54,7 @@ flutter:
     - assets/fonts/OFL-ScheherazadeNew.txt
     - assets/images/mosque_arch.webp
     - assets/images/quran_rehal.webp
+    - assets/names/
   fonts:
     - family: AmiriQuran
       fonts:

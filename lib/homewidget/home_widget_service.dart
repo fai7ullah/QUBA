@@ -78,9 +78,7 @@ class HomeWidgetService {
         keyHijri,
         PrayerService.hijriString(now),
       );
-      await HomeWidget.updateWidget(
-        qualifiedAndroidName: qualifiedAndroidName,
-      );
+      await HomeWidget.updateWidget(qualifiedAndroidName: qualifiedAndroidName);
     } catch (_) {
       // Widget updates are best-effort: never crash the app over them.
     }

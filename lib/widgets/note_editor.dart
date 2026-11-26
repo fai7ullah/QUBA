@@ -18,9 +18,7 @@ Future<void> showNoteEditor(BuildContext context, int surah, int ayah) async {
     context: context,
     builder: (context) => AlertDialog(
       backgroundColor: p.bgSecondary,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       title: Text(hasNote ? tr('edit_note') : tr('add_note')),
       content: TextField(
         controller: controller,
@@ -42,8 +40,7 @@ Future<void> showNoteEditor(BuildContext context, int surah, int ayah) async {
             },
             child: Text(
               tr('delete_note'),
-              style:
-                  TextStyle(color: Theme.of(context).colorScheme.error),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
         TextButton(

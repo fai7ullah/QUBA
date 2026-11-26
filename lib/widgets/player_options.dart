@@ -61,7 +61,11 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-            20, 4, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+          20,
+          4,
+          20,
+          20 + MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: SingleChildScrollView(
           child: AnimatedBuilder(
             animation: appState,
@@ -69,20 +73,25 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _heading(context, p, Icons.record_voice_over_rounded,
-                    tr('reciter')),
-                ...reciters.map((r) => RadioListTile<String>(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(tr(r.nameKey)),
-                      value: r.id,
-                      groupValue: appState.reciterId,
-                      onChanged: (v) {
-                        if (v != null) appState.setReciter(v);
-                      },
-                    )),
+                _heading(
+                  context,
+                  p,
+                  Icons.record_voice_over_rounded,
+                  tr('reciter'),
+                ),
+                ...reciters.map(
+                  (r) => RadioListTile<String>(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(tr(r.nameKey)),
+                    value: r.id,
+                    groupValue: appState.reciterId,
+                    onChanged: (v) {
+                      if (v != null) appState.setReciter(v);
+                    },
+                  ),
+                ),
                 const Divider(height: 20),
-                _heading(context, p, Icons.repeat_rounded,
-                    tr('repeat_verse')),
+                _heading(context, p, Icons.repeat_rounded, tr('repeat_verse')),
                 const SizedBox(height: 8),
                 ValueListenableBuilder<VerseRepeatMode>(
                   valueListenable: audio.repeatMode,
@@ -90,28 +99,52 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _chip(context, p, tr('repeat_off'),
-                          mode == VerseRepeatMode.off,
-                          () => audio.setVerseRepeatMode(VerseRepeatMode.off)),
-                      _chip(context, p, tr('repeat_1x'),
-                          mode == VerseRepeatMode.once,
-                          () => audio.setVerseRepeatMode(VerseRepeatMode.once)),
-                      _chip(context, p, tr('repeat_3x'),
-                          mode == VerseRepeatMode.three,
-                          () => audio.setVerseRepeatMode(VerseRepeatMode.three)),
-                      _chip(context, p, tr('repeat_5x'),
-                          mode == VerseRepeatMode.five,
-                          () => audio.setVerseRepeatMode(VerseRepeatMode.five)),
-                      _chip(context, p, tr('repeat_loop'),
-                          mode == VerseRepeatMode.loop,
-                          () => audio.setVerseRepeatMode(VerseRepeatMode.loop)),
+                      _chip(
+                        context,
+                        p,
+                        tr('repeat_off'),
+                        mode == VerseRepeatMode.off,
+                        () => audio.setVerseRepeatMode(VerseRepeatMode.off),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('repeat_1x'),
+                        mode == VerseRepeatMode.once,
+                        () => audio.setVerseRepeatMode(VerseRepeatMode.once),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('repeat_3x'),
+                        mode == VerseRepeatMode.three,
+                        () => audio.setVerseRepeatMode(VerseRepeatMode.three),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('repeat_5x'),
+                        mode == VerseRepeatMode.five,
+                        () => audio.setVerseRepeatMode(VerseRepeatMode.five),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('repeat_loop'),
+                        mode == VerseRepeatMode.loop,
+                        () => audio.setVerseRepeatMode(VerseRepeatMode.loop),
+                      ),
                     ],
                   ),
                 ),
                 if (surah != null) ...[
                   const SizedBox(height: 16),
-                  _heading(context, p, Icons.repeat_on_rounded,
-                      tr('repeat_range')),
+                  _heading(
+                    context,
+                    p,
+                    Icons.repeat_on_rounded,
+                    tr('repeat_range'),
+                  ),
                   const SizedBox(height: 8),
                   ValueListenableBuilder<(int, int)?>(
                     valueListenable: audio.repeatRange,
@@ -133,8 +166,7 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
                               value: _rangeFrom,
                               min: 1,
                               max: ayahCount,
-                              onChanged: (v) =>
-                                  setState(() => _rangeFrom = v),
+                              onChanged: (v) => setState(() => _rangeFrom = v),
                             ),
                             const SizedBox(width: 12),
                             _stepper(
@@ -144,8 +176,7 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
                               value: _rangeTo,
                               min: 1,
                               max: ayahCount,
-                              onChanged: (v) =>
-                                  setState(() => _rangeTo = v),
+                              onChanged: (v) => setState(() => _rangeTo = v),
                             ),
                           ],
                         ),
@@ -174,8 +205,7 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
                     ),
                 ],
                 const Divider(height: 20),
-                _heading(
-                    context, p, Icons.bedtime_rounded, tr('sleep_timer')),
+                _heading(context, p, Icons.bedtime_rounded, tr('sleep_timer')),
                 const SizedBox(height: 8),
                 ValueListenableBuilder<int>(
                   valueListenable: audio.sleepSecondsLeft,
@@ -183,23 +213,48 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _chip(context, p, tr('sleep_off'), left == 0,
-                          () => audio.cancelSleepTimer()),
-                      _chip(context, p, tr('sleep_5'), false,
-                          () => audio.setSleepTimer(
-                              const Duration(minutes: 5))),
-                      _chip(context, p, tr('sleep_10'), false,
-                          () => audio.setSleepTimer(
-                              const Duration(minutes: 10))),
-                      _chip(context, p, tr('sleep_15'), false,
-                          () => audio.setSleepTimer(
-                              const Duration(minutes: 15))),
-                      _chip(context, p, tr('sleep_30'), false,
-                          () => audio.setSleepTimer(
-                              const Duration(minutes: 30))),
-                      _chip(context, p, tr('sleep_60'), false,
-                          () => audio.setSleepTimer(
-                              const Duration(minutes: 60))),
+                      _chip(
+                        context,
+                        p,
+                        tr('sleep_off'),
+                        left == 0,
+                        () => audio.cancelSleepTimer(),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('sleep_5'),
+                        false,
+                        () => audio.setSleepTimer(const Duration(minutes: 5)),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('sleep_10'),
+                        false,
+                        () => audio.setSleepTimer(const Duration(minutes: 10)),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('sleep_15'),
+                        false,
+                        () => audio.setSleepTimer(const Duration(minutes: 15)),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('sleep_30'),
+                        false,
+                        () => audio.setSleepTimer(const Duration(minutes: 30)),
+                      ),
+                      _chip(
+                        context,
+                        p,
+                        tr('sleep_60'),
+                        false,
+                        () => audio.setSleepTimer(const Duration(minutes: 60)),
+                      ),
                     ],
                   ),
                 ),
@@ -238,7 +293,11 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
   }
 
   Widget _heading(
-      BuildContext context, QubaPalette p, IconData icon, String text) {
+    BuildContext context,
+    QubaPalette p,
+    IconData icon,
+    String text,
+  ) {
     return Row(
       children: [
         Icon(icon, size: 20, color: p.emerald),
@@ -255,8 +314,13 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
     );
   }
 
-  Widget _chip(BuildContext context, QubaPalette p, String label,
-      bool selected, VoidCallback onTap) {
+  Widget _chip(
+    BuildContext context,
+    QubaPalette p,
+    String label,
+    bool selected,
+    VoidCallback onTap,
+  ) {
     return ChoiceChip(
       label: Text(label),
       selected: selected,
@@ -300,8 +364,7 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
               IconButton(
                 icon: const Icon(Icons.remove_rounded, size: 18),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                    minWidth: 40, minHeight: 40),
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                 style: IconButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -313,14 +376,15 @@ class _PlayerOptionsSheetState extends State<_PlayerOptionsSheet> {
                   '$value',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w700),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.add_rounded, size: 18),
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                    minWidth: 40, minHeight: 40),
+                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                 style: IconButton.styleFrom(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

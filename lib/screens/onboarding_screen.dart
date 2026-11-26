@@ -69,8 +69,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(accuracy: LocationAccuracy.medium),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
       ).timeout(const Duration(seconds: 20));
       appState.update(() {
         appState.lat = pos.latitude;
@@ -140,9 +141,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               height: 9,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: i == _step
-                                    ? p.emerald
-                                    : p.cardBorder,
+                                color: i == _step ? p.emerald : p.cardBorder,
                               ),
                             ),
                         ],
@@ -227,10 +226,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          body,
-          style: TextStyle(fontSize: 15, color: p.muted, height: 1.5),
-        ),
+        Text(body, style: TextStyle(fontSize: 15, color: p.muted, height: 1.5)),
         const SizedBox(height: 20),
       ],
     );
@@ -250,8 +246,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: GlassCard(
         onTap: onTap,
-        padding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         child: Row(
           children: [
             Icon(icon, size: 24, color: p.emerald),
@@ -281,8 +276,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             if (trailing != null)
               trailing
             else if (selected)
-              Icon(Icons.check_circle_rounded,
-                  size: 24, color: p.emerald),
+              Icon(Icons.check_circle_rounded, size: 24, color: p.emerald),
           ],
         ),
       ),
@@ -388,12 +382,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       _stepTitle(p, tr('onboard_athan'), tr('onboard_athan_body')),
       GlassCard(
         onTap: () => _setAthan(!_athanOn),
-        padding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         child: Row(
           children: [
-            Icon(Icons.notifications_active_rounded,
-                size: 24, color: p.emerald),
+            Icon(
+              Icons.notifications_active_rounded,
+              size: 24,
+              color: p.emerald,
+            ),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
@@ -405,10 +401,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             ),
-            Switch(
-              value: _athanOn,
-              onChanged: _setAthan,
-            ),
+            Switch(value: _athanOn, onChanged: _setAthan),
           ],
         ),
       ),

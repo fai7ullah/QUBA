@@ -36,6 +36,7 @@ import 'package:quba/tafsir/tafsir_screen.dart';
 import 'package:quba/theme.dart';
 import 'package:quba/translation_data.dart';
 import 'package:quba/wordbyword/wordbyword_screen.dart';
+import 'package:quba/widgets/global_player.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Phase 2 squeeze / vertical-text audit (the user's #1 quality bar:
@@ -51,7 +52,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// The tightest screens (Home, Prayer, Quran, Settings, Extras) are
 /// additionally pumped at 320px in all five UI languages, and the
-/// stateful spots get their own tests: the reader mini-player (with
+/// stateful spots get their own tests: the app-wide bottom player (with
 /// the longest reciter short name), the player-options sheet with a
 /// repeat range, the text-settings sheet, the surah picker, the
 /// mushaf jump dialog, the Juz list, the test-mode quiz + summary,
@@ -75,21 +76,20 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   Future<void> loadTestFonts() async {
-    final regular =
-        File('/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf');
+    final regular = File('/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf');
     final bold = File('/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf');
     if (regular.existsSync() && bold.existsSync()) {
       final roboto = FontLoader('Roboto')
-        ..addFont(Future.value(
-            ByteData.sublistView(regular.readAsBytesSync())))
-        ..addFont(
-            Future.value(ByteData.sublistView(bold.readAsBytesSync())));
+        ..addFont(Future.value(ByteData.sublistView(regular.readAsBytesSync())))
+        ..addFont(Future.value(ByteData.sublistView(bold.readAsBytesSync())));
       await roboto.load();
     } else {
       // No system sans available: measurements fall back to Ahem and
       // tight rows may false-fail (see the fonts note above).
-      debugPrint('QUBA squeeze audit: Noto Sans not found; '
-          'measuring with the Ahem test font.');
+      debugPrint(
+        'QUBA squeeze audit: Noto Sans not found; '
+        'measuring with the Ahem test font.',
+      );
     }
     final amiri = FontLoader('AmiriQuran')
       ..addFont(rootBundle.load('assets/fonts/AmiriQuran-Regular.ttf'));
@@ -128,6 +128,12 @@ void main() {
   /// invisible on glass). That pattern ships in builds 1–12 and is not
   /// a layout defect; this audit fails on overflows, not on it.
   final errors = <FlutterErrorDetails>[];
+
+  /// Navigator key for the app-wide bottom player (same wiring as
+  /// the real app's MaterialApp). The route observer is created
+  /// fresh in pumpScreen: reusing one across pumps would carry
+  /// stale routes from the previous test's Navigator.
+  final navigatorKey = GlobalKey<NavigatorState>();
 
   /// Pumps [count] frames, advancing fake time by [step] each: enough
   /// for asset loads, futures and animations to land, without waiting
@@ -168,9 +174,19 @@ void main() {
       previousOnError?.call(details);
     };
     addTearDown(() => FlutterError.onError = previousOnError);
+    final routeObserver = QubaRouteObserver();
     await tester.pumpWidget(
       MaterialApp(
         theme: qubaLightTheme(),
+        // Same app-wide bottom player wiring as the real app, so the
+        // player bar is audited on every screen while audio plays.
+        navigatorKey: navigatorKey,
+        navigatorObservers: [routeObserver],
+        builder: (context, child) => QubaPlayerOverlay(
+          routeObserver: routeObserver,
+          navigatorKey: navigatorKey,
+          child: child ?? const SizedBox.shrink(),
+        ),
         // Tab pages (Home, Prayer, Quran, Extras, Settings) have no
         // Scaffold of their own — in the app the Shell provides it.
         // The outer Scaffold here stands in for the Shell; screens
@@ -193,14 +209,12 @@ void main() {
       // field's internal one) have no draggable area; a missed drag
       // is expected there, not a defect, and the warning is noise.
       for (var n = 0; n < 6; n++) {
-        await tester.drag(target, const Offset(0, -400),
-            warnIfMissed: false);
+        await tester.drag(target, const Offset(0, -400), warnIfMissed: false);
         await tester.pump();
       }
       // Back to the top for the next scrollable.
       for (var n = 0; n < 6; n++) {
-        await tester.drag(target, const Offset(0, 400),
-            warnIfMissed: false);
+        await tester.drag(target, const Offset(0, 400), warnIfMissed: false);
         await tester.pump();
       }
     }
@@ -218,20 +232,23 @@ void main() {
 
   void noopReader(int surah, int ayah) {}
 
+  void noopJuz(int juz) {}
+
   final screens = <String, Widget Function()>{
     'Home': () => HomeScreen(
-          onGoTab: (_) {},
-          onOpenReader: noopReader,
-          onOpenFeature: (_) {},
-        ),
+      onGoTab: (_) {},
+      onOpenReader: noopReader,
+      onOpenFeature: (_) {},
+      onOpenPrayer: () {},
+    ),
     'Prayer': () => const PrayerScreen(),
     'Quran': () => QuranScreen(
-          onOpenSurah: (_) {},
-          onOpenSearch: () {},
-          onOpenReader: noopReader,
-          onOpenJuz: (_) {},
-          onOpenSettings: () {},
-        ),
+      onOpenSurah: (_) {},
+      onOpenSearch: () {},
+      onOpenReader: noopReader,
+      onOpenJuz: (_) {},
+      onOpenSettings: () {},
+    ),
     'Reader': () => const ReaderScreen(surahNumber: 2),
     'Mushaf': () => const MushafScreen(initialPage: 2),
     'Extras': () => ExtrasScreen(onOpenFeature: (_) {}),
@@ -249,27 +266,22 @@ void main() {
     'Qibla': () => const QiblaScreen(),
     'Tasbih': () => const TasbihScreen(),
     'Notes': () => NotesScreen(onOpenReader: noopReader),
-    'Search': () => SearchScreen(onOpenReader: noopReader),
+    'Search': () => SearchScreen(onOpenReader: noopReader, onOpenJuz: noopJuz),
     'Onboarding': () => OnboardingScreen(onDone: () {}),
   };
 
   for (final entry in screens.entries) {
     for (final lang in ['en', 'ar']) {
-      for (final size in [
-        const Size(360, 640),
-        const Size(320, 568),
-      ]) {
-        testWidgets(
-          '${entry.key} fits at ${size.width.toInt()}px in $lang',
-          (tester) async {
-            await pumpScreen(tester, entry.value(),
-                size: size, lang: lang);
-            await scrollThrough(tester);
-            // Any overflow raises a FlutterError, recorded in errors.
-            // An empty list means the screen fits at this size.
-            expectNoErrors();
-          },
-        );
+      for (final size in [const Size(360, 640), const Size(320, 568)]) {
+        testWidgets('${entry.key} fits at ${size.width.toInt()}px in $lang', (
+          tester,
+        ) async {
+          await pumpScreen(tester, entry.value(), size: size, lang: lang);
+          await scrollThrough(tester);
+          // Any overflow raises a FlutterError, recorded in errors.
+          // An empty list means the screen fits at this size.
+          expectNoErrors();
+        });
       }
     }
   }
@@ -279,15 +291,16 @@ void main() {
   // location", Pashto/Urdu "Sunrise", Urdu weekday abbreviations).
   for (final name in ['Home', 'Prayer', 'Quran', 'Settings', 'Extras']) {
     for (final lang in ['ps', 'fa', 'ur']) {
-      testWidgets(
-        '$name fits at 320px in $lang',
-        (tester) async {
-          await pumpScreen(tester, screens[name]!(),
-              size: const Size(320, 568), lang: lang);
-          await scrollThrough(tester);
-          expectNoErrors();
-        },
-      );
+      testWidgets('$name fits at 320px in $lang', (tester) async {
+        await pumpScreen(
+          tester,
+          screens[name]!(),
+          size: const Size(320, 568),
+          lang: lang,
+        );
+        await scrollThrough(tester);
+        expectNoErrors();
+      });
     }
   }
 
@@ -295,10 +308,10 @@ void main() {
   // Stateful spots: states the plain pump never reaches.
   // ------------------------------------------------------------------
 
-  /// Fakes "verse 5 of surah 2 is playing" so the mini-player (and the
-  /// mushaf audio controls) render. Pure Dart state — no audio is
-  /// actually played. The longest reciter short name ("Abdul Basit")
-  /// is the worst case for the mini-player's squeezed column.
+  /// Fakes "verse 5 of surah 2 is playing" so the app-wide bottom
+  /// player renders. Pure Dart state — no audio is actually played.
+  /// The longest reciter short name ("Abdul Basit") is the worst case
+  /// for the player's squeezed column.
   void fakePlaying() {
     final audio = AudioService.instance;
     audio.currentSurah.value = 2;
@@ -307,153 +320,85 @@ void main() {
     addTearDown(() {
       audio.currentSurah.value = null;
       audio.currentAyah.value = null;
+      audio.currentName.value = null;
       audio.currentReciter.value = reciterById(appState.reciterId);
     });
   }
 
-  // At a normal phone width the mini-player title must show in FULL —
-  // not just fit without overflowing. Surah 2 ("Al-Baqara: 5") with the
+  // At a normal phone width the player title must show in FULL — not
+  // just fit without overflowing. Surah 2 ("Al-Baqara: 5") with the
   // longest reciter short name ("Abdul Basit") is the worst case.
-  testWidgets(
-    'Reader mini-player shows full title at 390px',
-    (tester) async {
-      fakePlaying();
-      await pumpScreen(tester, const ReaderScreen(surahNumber: 2),
-          size: const Size(390, 844), lang: 'en');
-      final title = tester.renderObject<RenderParagraph>(
-          find.text('Al-Baqara: 5'));
-      expect(title.didExceedMaxLines, isFalse,
-          reason: 'mini-player title is truncated at 390px');
-      final reciter = tester.renderObject<RenderParagraph>(
-          find.text('Abdul Basit'));
-      expect(reciter.didExceedMaxLines, isFalse,
-          reason: 'mini-player reciter name is truncated at 390px');
-      expectNoErrors();
-    },
-  );
+  testWidgets('Bottom player shows full title at 390px', (tester) async {
+    fakePlaying();
+    await pumpScreen(
+      tester,
+      const ReaderScreen(surahNumber: 2),
+      size: const Size(390, 844),
+      lang: 'en',
+    );
+    final title = tester.renderObject<RenderParagraph>(
+      find.text('Al-Baqara: 5'),
+    );
+    expect(
+      title.didExceedMaxLines,
+      isFalse,
+      reason: 'player title is truncated at 390px',
+    );
+    final reciter = tester.renderObject<RenderParagraph>(
+      find.text('Abdul Basit'),
+    );
+    expect(
+      reciter.didExceedMaxLines,
+      isFalse,
+      reason: 'player reciter name is truncated at 390px',
+    );
+    expectNoErrors();
+  });
 
   for (final lang in ['en', 'ar']) {
-    testWidgets(
-      'Reader mini-player fits at 320px in $lang',
-      (tester) async {
-        fakePlaying();
-        await pumpScreen(tester, const ReaderScreen(surahNumber: 2),
-            size: const Size(320, 568), lang: lang);
-        await scrollThrough(tester);
-        expectNoErrors();
-      },
-    );
-
-    testWidgets(
-      'Player options sheet fits at 320px in $lang',
-      (tester) async {
-        fakePlaying();
-        await pumpScreen(tester, const ReaderScreen(surahNumber: 2),
-            size: const Size(320, 568), lang: lang);
-        // The tune button lives in the mini-player; the sheet shows
-        // the repeat-range steppers only while a surah is playing.
-        await tester.tap(find.byIcon(Icons.tune_rounded));
-        await pumpFrames(tester);
-        await scrollThrough(tester);
-        expectNoErrors();
-      },
-    );
-
-    testWidgets(
-      'Mushaf audio controls fit at 320px in $lang',
-      (tester) async {
-        fakePlaying();
-        await pumpScreen(tester, const MushafScreen(initialPage: 2),
-            size: const Size(320, 568), lang: lang, frames: 20);
-        expectNoErrors();
-      },
-    );
-
-    testWidgets(
-      'Quran Juz list fits at 320px in $lang',
-      (tester) async {
-        await pumpScreen(
-          tester,
-          QuranScreen(
-            onOpenSurah: (_) {},
-            onOpenSearch: () {},
-            onOpenReader: noopReader,
-            onOpenJuz: (_) {},
-            onOpenSettings: () {},
-          ),
-          size: const Size(320, 568),
-          lang: lang,
-        );
-        await tester.tap(find.text(tr('juz').toUpperCase()));
-        await pumpFrames(tester);
-        await scrollThrough(tester);
-        expectNoErrors();
-      },
-    );
-  }
-
-  testWidgets(
-    'Reader text-settings sheet fits at 320px',
-    (tester) async {
-      await pumpScreen(tester, const ReaderScreen(surahNumber: 2),
-          size: const Size(320, 568), lang: 'en');
-      await tester.tap(find.byIcon(Icons.settings_outlined));
-      await pumpFrames(tester);
-      expectNoErrors();
-    },
-  );
-
-  testWidgets(
-    'Reader surah picker fits at 320px',
-    (tester) async {
-      await pumpScreen(tester, const ReaderScreen(surahNumber: 2),
-          size: const Size(320, 568), lang: 'en');
-      // The surah name comes from the data (Al-Baqara), not a guess.
-      await tester.tap(
-          find.text(QuranRepository.instance.surah(2).nameEnglish));
-      await pumpFrames(tester);
-      await scrollThrough(tester);
-      expectNoErrors();
-    },
-  );
-
-  testWidgets(
-    'Reader verse-note row fits at 320px',
-    (tester) async {
-      appState.setNote(2, 1, 'A note on the first verse of Al-Baqarah.');
-      addTearDown(() => appState.deleteNote(2, 1));
+    testWidgets('Bottom player fits at 320px in $lang', (tester) async {
+      fakePlaying();
       await pumpScreen(
         tester,
-        const ReaderScreen(surahNumber: 2, initialAyah: 1),
+        const ReaderScreen(surahNumber: 2),
         size: const Size(320, 568),
-        lang: 'en',
+        lang: lang,
       );
       await scrollThrough(tester);
       expectNoErrors();
-    },
-  );
+    });
 
-  testWidgets(
-    'Mushaf jump dialog fits at 320px',
-    (tester) async {
-      await pumpScreen(tester, const MushafScreen(initialPage: 2),
-          size: const Size(320, 568), lang: 'en', frames: 20);
-      // Page 2 is even: the page number sits at the bottom-left.
-      // Bottom bar centre: y = 568 - 12 (page padding) - 18.
-      await tester.tapAt(const Offset(41, 538));
+    testWidgets('Player options sheet fits at 320px in $lang', (tester) async {
+      fakePlaying();
+      await pumpScreen(
+        tester,
+        const ReaderScreen(surahNumber: 2),
+        size: const Size(320, 568),
+        lang: lang,
+      );
+      // The tune button lives in the bottom player; the sheet shows
+      // the repeat-range steppers only while a surah is playing.
+      await tester.tap(find.byIcon(Icons.tune_rounded));
       await pumpFrames(tester);
-      expect(find.text(tr('go_to')), findsOneWidget);
-      // An out-of-range page shows the error line under the field.
-      await tester.enterText(find.byType(TextField), '999');
-      await tester.tap(find.text(tr('go')));
-      await pumpFrames(tester);
+      await scrollThrough(tester);
       expectNoErrors();
-    },
-  );
+    });
 
-  testWidgets(
-    'Quran bookmarks sheet fits at 320px',
-    (tester) async {
+    testWidgets('Mushaf with bottom player fits at 320px in $lang', (
+      tester,
+    ) async {
+      fakePlaying();
+      await pumpScreen(
+        tester,
+        const MushafScreen(initialPage: 2),
+        size: const Size(320, 568),
+        lang: lang,
+        frames: 20,
+      );
+      expectNoErrors();
+    });
+
+    testWidgets('Quran Juz list fits at 320px in $lang', (tester) async {
       await pumpScreen(
         tester,
         QuranScreen(
@@ -464,174 +409,262 @@ void main() {
           onOpenSettings: () {},
         ),
         size: const Size(320, 568),
-        lang: 'en',
+        lang: lang,
       );
-      // The header button's tooltip is 'bookmarks'; the row buttons
-      // use 'bookmark'/'remove_bookmark', so the tooltip is unique.
-      await tester.tap(find.byTooltip(tr('bookmarks')));
+      await tester.tap(find.text(tr('juz').toUpperCase()));
       await pumpFrames(tester);
+      await scrollThrough(tester);
       expectNoErrors();
-    },
-  );
+    });
+  }
 
-  testWidgets(
-    'Prayer log with prayed prayers fits at 320px',
-    (tester) async {
-      final today = DateTime.now();
+  testWidgets('Reader text-settings sheet fits at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      const ReaderScreen(surahNumber: 2),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await pumpFrames(tester);
+    expectNoErrors();
+  });
+
+  testWidgets('Reader surah picker fits at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      const ReaderScreen(surahNumber: 2),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    // The surah name comes from the data (Al-Baqara), not a guess.
+    await tester.tap(find.text(QuranRepository.instance.surah(2).nameEnglish));
+    await pumpFrames(tester);
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
+
+  testWidgets('Reader verse-note row fits at 320px', (tester) async {
+    appState.setNote(2, 1, 'A note on the first verse of Al-Baqarah.');
+    addTearDown(() => appState.deleteNote(2, 1));
+    await pumpScreen(
+      tester,
+      const ReaderScreen(surahNumber: 2, initialAyah: 1),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
+
+  testWidgets('Mushaf jump dialog fits at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      const MushafScreen(initialPage: 2),
+      size: const Size(320, 568),
+      lang: 'en',
+      frames: 20,
+    );
+    // Page 2 is even: the page number sits at the bottom-left.
+    // Bottom bar centre: y = 568 - 12 (page padding) - 18.
+    await tester.tapAt(const Offset(41, 538));
+    await pumpFrames(tester);
+    expect(find.text(tr('go_to')), findsOneWidget);
+    // An out-of-range page shows the error line under the field.
+    await tester.enterText(find.byType(TextField), '999');
+    await tester.tap(find.text(tr('go')));
+    await pumpFrames(tester);
+    expectNoErrors();
+  });
+
+  testWidgets('Quran bookmarks sheet fits at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      QuranScreen(
+        onOpenSurah: (_) {},
+        onOpenSearch: () {},
+        onOpenReader: noopReader,
+        onOpenJuz: (_) {},
+        onOpenSettings: () {},
+      ),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    // The header button's tooltip is 'bookmarks'; the row buttons
+    // use 'bookmark'/'remove_bookmark', so the tooltip is unique.
+    await tester.tap(find.byTooltip(tr('bookmarks')));
+    await pumpFrames(tester);
+    expectNoErrors();
+  });
+
+  testWidgets('Prayer log with prayed prayers fits at 320px', (tester) async {
+    final today = DateTime.now();
+    appState.togglePrayed(today, 'Fajr');
+    appState.togglePrayed(today, 'Dhuhr');
+    addTearDown(() {
       appState.togglePrayed(today, 'Fajr');
       appState.togglePrayed(today, 'Dhuhr');
-      addTearDown(() {
-        appState.togglePrayed(today, 'Fajr');
-        appState.togglePrayed(today, 'Dhuhr');
-      });
-      await pumpScreen(tester, const PrayerScreen(),
-          size: const Size(320, 568), lang: 'ar');
-      await scrollThrough(tester);
-      expectNoErrors();
-    },
-  );
+    });
+    await pumpScreen(
+      tester,
+      const PrayerScreen(),
+      size: const Size(320, 568),
+      lang: 'ar',
+    );
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
 
-  testWidgets(
-    'Duas expanded card fits at 320px',
-    (tester) async {
-      await pumpScreen(tester, const DuasScreen(),
-          size: const Size(320, 568), lang: 'en');
-      await tester.tap(find.text(tr(duas.first.title)));
-      await pumpFrames(tester);
-      await scrollThrough(tester);
-      expectNoErrors();
-    },
-  );
+  testWidgets('Duas expanded card fits at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      const DuasScreen(),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    await tester.tap(find.text(tr(duas.first.title)));
+    await pumpFrames(tester);
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
 
-  testWidgets(
-    'Notes with a note fits at 320px',
-    (tester) async {
-      appState.setNote(2, 255, 'The Throne Verse — read after every prayer.');
-      addTearDown(() => appState.deleteNote(2, 255));
-      await pumpScreen(tester, NotesScreen(onOpenReader: noopReader),
-          size: const Size(320, 568), lang: 'en');
-      await scrollThrough(tester);
-      expectNoErrors();
-    },
-  );
+  testWidgets('Notes with a note fits at 320px', (tester) async {
+    appState.setNote(2, 255, 'The Throne Verse — read after every prayer.');
+    addTearDown(() => appState.deleteNote(2, 255));
+    await pumpScreen(
+      tester,
+      NotesScreen(onOpenReader: noopReader),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
 
-  testWidgets(
-    'Search results fit at 320px',
-    (tester) async {
-      await pumpScreen(tester, SearchScreen(onOpenReader: noopReader),
-          size: const Size(320, 568), lang: 'en');
-      await tester.enterText(find.byType(TextField), 'mercy');
-      await pumpFrames(tester);
-      await scrollThrough(tester);
-      expectNoErrors();
-    },
-  );
+  testWidgets('Search results fit at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      SearchScreen(onOpenReader: noopReader, onOpenJuz: noopJuz),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    await tester.enterText(find.byType(TextField), 'mercy');
+    await pumpFrames(tester);
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
 
-  testWidgets(
-    'Search results fit at 320px in Arabic',
-    (tester) async {
-      await pumpScreen(tester, SearchScreen(onOpenReader: noopReader),
-          size: const Size(320, 568), lang: 'ar');
-      await tester.enterText(find.byType(TextField), 'الرحمن');
-      await pumpFrames(tester);
-      await scrollThrough(tester);
-      expectNoErrors();
-    },
-  );
+  testWidgets('Search results fit at 320px in Arabic', (tester) async {
+    await pumpScreen(
+      tester,
+      SearchScreen(onOpenReader: noopReader, onOpenJuz: noopJuz),
+      size: const Size(320, 568),
+      lang: 'ar',
+    );
+    await tester.enterText(find.byType(TextField), 'الرحمن');
+    await pumpFrames(tester);
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
 
-  testWidgets(
-    'Khatma plan fits at 320px',
-    (tester) async {
-      appState.setKhatma(30, 0);
-      addTearDown(appState.clearKhatma);
-      await pumpScreen(tester, KhatmaScreen(onOpenReader: noopReader),
-          size: const Size(320, 568), lang: 'ar');
-      await scrollThrough(tester);
-      expectNoErrors();
-    },
-  );
+  testWidgets('Khatma plan fits at 320px', (tester) async {
+    appState.setKhatma(30, 0);
+    addTearDown(appState.clearKhatma);
+    await pumpScreen(
+      tester,
+      KhatmaScreen(onOpenReader: noopReader),
+      size: const Size(320, 568),
+      lang: 'ar',
+    );
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
 
-  testWidgets(
-    'Onboarding all four steps fit at 320px',
-    (tester) async {
-      await pumpScreen(tester, OnboardingScreen(onDone: () {}),
-          size: const Size(320, 568), lang: 'ar');
-      for (var i = 0; i < 3; i++) {
-        await tester.drag(find.byType(PageView), const Offset(-300, 0));
-        await pumpFrames(tester, count: 8);
-      }
-      expect(find.text(tr('onboard_done')), findsOneWidget);
-      expectNoErrors();
-    },
-  );
+  testWidgets('Onboarding all four steps fit at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      OnboardingScreen(onDone: () {}),
+      size: const Size(320, 568),
+      lang: 'ar',
+    );
+    for (var i = 0; i < 3; i++) {
+      await tester.drag(find.byType(PageView), const Offset(-300, 0));
+      await pumpFrames(tester, count: 8);
+    }
+    expect(find.text(tr('onboard_done')), findsOneWidget);
+    expectNoErrors();
+  });
 
-  testWidgets(
-    'TestMode quiz and summary fit at 320px',
-    (tester) async {
-      await pumpScreen(tester, const TestModeScreen(),
-          size: const Size(320, 568), lang: 'en');
-      await tester.tap(find.text(tr('test_start')));
-      await pumpFrames(tester);
-      // Tap a masked word, then "Knew it" — the two-button row.
-      final hidden = find.text('• • •');
-      if (hidden.evaluate().isNotEmpty) {
-        await tester.tap(hidden.first);
-        await pumpFrames(tester, count: 4);
-        await tester.tap(find.text(tr('test_knew_it')));
-        await pumpFrames(tester, count: 4);
-      }
-      // Step through all 7 ayahs of Al-Fatiha to the summary.
-      for (var i = 0; i < 7; i++) {
-        final next = find.text(tr('test_next'));
-        if (next.evaluate().isEmpty) break;
-        await tester.tap(next);
-        await pumpFrames(tester, count: 4);
-      }
-      expect(find.text(tr('test_finished')), findsOneWidget);
-      expectNoErrors();
-    },
-  );
-
-  testWidgets(
-    'TestMode next-ayah flow fits at 320px',
-    (tester) async {
-      await pumpScreen(tester, const TestModeScreen(),
-          size: const Size(320, 568), lang: 'en');
-      await tester.tap(find.text(tr('test_mode_next_ayah')));
+  testWidgets('TestMode quiz and summary fit at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      const TestModeScreen(),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    await tester.tap(find.text(tr('test_start')));
+    await pumpFrames(tester);
+    // Tap a masked word, then "Knew it" — the two-button row.
+    final hidden = find.text('• • •');
+    if (hidden.evaluate().isNotEmpty) {
+      await tester.tap(hidden.first);
       await pumpFrames(tester, count: 4);
-      await tester.tap(find.text(tr('test_start')));
-      await pumpFrames(tester);
-      await tester.tap(find.text(tr('test_show_answer')));
+      await tester.tap(find.text(tr('test_knew_it')));
       await pumpFrames(tester, count: 4);
-      await tester.tap(find.text(tr('test_correct')));
+    }
+    // Step through all 7 ayahs of Al-Fatiha to the summary.
+    for (var i = 0; i < 7; i++) {
+      final next = find.text(tr('test_next'));
+      if (next.evaluate().isEmpty) break;
+      await tester.tap(next);
       await pumpFrames(tester, count: 4);
-      expectNoErrors();
-    },
-  );
+    }
+    expect(find.text(tr('test_finished')), findsOneWidget);
+    expectNoErrors();
+  });
 
-  testWidgets(
-    'Hadith chapters and hadith list fit at 320px',
-    (tester) async {
-      final repo = HadithRepository.instance;
-      // runAsync is REQUIRED here: loadBook awaits a platform-channel
-      // asset load, and a bare await inside testWidgets never
-      // completes — the fake-async zone only advances on pump, so the
-      // test hung for the full 10-minute timeout (caught 2026-11-21).
-      await tester.runAsync(() => repo.loadBook('bukhari'));
-      await pumpScreen(tester, const HadithScreen(),
-          size: const Size(320, 568), lang: 'en');
-      final book = repo.book('bukhari')!;
-      await tester.tap(find.text(book.titleEn));
-      await pumpFrames(tester);
-      await scrollThrough(tester);
-      final chapter = book.chapters.first;
-      final chapterTitle = chapter.titleEn.isNotEmpty
-          ? chapter.titleEn
-          : trf('hadith_chapter_n', {'n': chapter.number});
-      await tester.tap(find.text(chapterTitle));
-      await pumpFrames(tester);
-      await scrollThrough(tester);
-      expectNoErrors();
-    },
-  );
+  testWidgets('TestMode next-ayah flow fits at 320px', (tester) async {
+    await pumpScreen(
+      tester,
+      const TestModeScreen(),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    await tester.tap(find.text(tr('test_mode_next_ayah')));
+    await pumpFrames(tester, count: 4);
+    await tester.tap(find.text(tr('test_start')));
+    await pumpFrames(tester);
+    await tester.tap(find.text(tr('test_show_answer')));
+    await pumpFrames(tester, count: 4);
+    await tester.tap(find.text(tr('test_correct')));
+    await pumpFrames(tester, count: 4);
+    expectNoErrors();
+  });
+
+  testWidgets('Hadith chapters and hadith list fit at 320px', (tester) async {
+    final repo = HadithRepository.instance;
+    // runAsync is REQUIRED here: loadBook awaits a platform-channel
+    // asset load, and a bare await inside testWidgets never
+    // completes — the fake-async zone only advances on pump, so the
+    // test hung for the full 10-minute timeout (caught 2026-11-21).
+    await tester.runAsync(() => repo.loadBook('bukhari'));
+    await pumpScreen(
+      tester,
+      const HadithScreen(),
+      size: const Size(320, 568),
+      lang: 'en',
+    );
+    final book = repo.book('bukhari')!;
+    await tester.tap(find.text(book.titleEn));
+    await pumpFrames(tester);
+    await scrollThrough(tester);
+    final chapter = book.chapters.first;
+    final chapterTitle = chapter.titleEn.isNotEmpty
+        ? chapter.titleEn
+        : trf('hadith_chapter_n', {'n': chapter.number});
+    await tester.tap(find.text(chapterTitle));
+    await pumpFrames(tester);
+    await scrollThrough(tester);
+    expectNoErrors();
+  });
 }

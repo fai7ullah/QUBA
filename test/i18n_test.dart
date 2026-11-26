@@ -9,10 +9,16 @@ void main() {
     test('every key has all 5 languages present and non-empty', () {
       for (final e in QubaStrings.all.entries) {
         for (final lang in QubaStrings.langs) {
-          expect(e.value[lang], isNotNull,
-              reason: 'key ${e.key} missing $lang');
-          expect(e.value[lang]!.trim(), isNotEmpty,
-              reason: 'key ${e.key} empty for $lang');
+          expect(
+            e.value[lang],
+            isNotNull,
+            reason: 'key ${e.key} missing $lang',
+          );
+          expect(
+            e.value[lang]!.trim(),
+            isNotEmpty,
+            reason: 'key ${e.key} empty for $lang',
+          );
         }
       }
     });
@@ -47,12 +53,14 @@ void main() {
 
     test('dua title and category keys all exist', () {
       for (final d in duas) {
-        expect(QubaStrings.all.containsKey(d.title), isTrue,
-            reason: 'dua title ${d.title}');
+        expect(
+          QubaStrings.all.containsKey(d.title),
+          isTrue,
+          reason: 'dua title ${d.title}',
+        );
       }
       for (final c in duaCategories) {
-        expect(QubaStrings.all.containsKey(c), isTrue,
-            reason: 'category $c');
+        expect(QubaStrings.all.containsKey(c), isTrue, reason: 'category $c');
       }
     });
 
@@ -61,8 +69,7 @@ void main() {
       for (final e in QubaStrings.all.entries) {
         final en = ph.allMatches(e.value['en']!).map((m) => m[1]).toSet();
         for (final lang in ['ps', 'fa', 'ur', 'ar']) {
-          final other =
-              ph.allMatches(e.value[lang]!).map((m) => m[1]).toSet();
+          final other = ph.allMatches(e.value[lang]!).map((m) => m[1]).toSet();
           expect(other, en, reason: 'key ${e.key} in $lang');
         }
       }
@@ -81,8 +88,10 @@ void main() {
 
     test('a missing arg leaves the placeholder as-is', () {
       expect(trf('verses_count'), '{n} verses');
-      expect(trf('verses_read_in_plan', {'read': 10}),
-          '10 of {remaining} verses read in this plan');
+      expect(
+        trf('verses_read_in_plan', {'read': 10}),
+        '10 of {remaining} verses read in this plan',
+      );
     });
 
     test('an unknown key falls back to the key itself', () {

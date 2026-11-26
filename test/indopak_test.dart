@@ -25,8 +25,7 @@ void main() {
   Map<String, dynamic> readJson(String path) =>
       jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
 
-  test('IndoPak bundle: 114 surahs, 6,236 ayahs, counts match Uthmani',
-      () {
+  test('IndoPak bundle: 114 surahs, 6,236 ayahs, counts match Uthmani', () {
     final indopak = readJson('assets/quran/quran_indopak.json');
     final uthmani = readJson('assets/quran/quran_bundle.json');
     final indSurahs = indopak['surahs'] as List<dynamic>;
@@ -40,9 +39,11 @@ void main() {
       final name = s['name'] as String;
       expect(name.isNotEmpty, true, reason: 'surah ${i + 1} has a name');
       final ayahs = s['ayahs'] as List<dynamic>;
-      expect(ayahs.length, (uthSurahs[i] as Map<String, dynamic>)['ayahs']
-          .length,
-          reason: 'surah ${i + 1} ayah count must match the Uthmani bundle');
+      expect(
+        ayahs.length,
+        (uthSurahs[i] as Map<String, dynamic>)['ayahs'].length,
+        reason: 'surah ${i + 1} ayah count must match the Uthmani bundle',
+      );
       for (final a in ayahs) {
         expect(a, isA<String>());
         expect((a as String).isNotEmpty, true);
@@ -52,51 +53,122 @@ void main() {
     expect(total, 6236);
   });
 
-  test('IndoPak spot checks: Basmala, 2:3, 2:255 in IndoPak spelling',
-      () {
+  test('IndoPak spot checks: Basmala, 2:3, 2:255 in IndoPak spelling', () {
     final indopak = readJson('assets/quran/quran_indopak.json');
     final uthmani = readJson('assets/quran/quran_bundle.json');
     final indSurahs = indopak['surahs'] as List<dynamic>;
     final uthSurahs = uthmani['surahs'] as List<dynamic>;
     String ind(int s, int a) =>
         ((indSurahs[s - 1] as Map<String, dynamic>)['ayahs']
-            as List<dynamic>)[a - 1] as String;
+                as List<dynamic>)[a - 1]
+            as String;
     String uth(int s, int a) =>
         (((uthSurahs[s - 1] as Map<String, dynamic>)['ayahs']
-            as List<dynamic>)[a - 1] as Map<String, dynamic>)['ar'] as String;
+                    as List<dynamic>)[a - 1]
+                as Map<String, dynamic>)['ar']
+            as String;
 
     // 1:1 — the Basmala in IndoPak spelling: dotless head of khah
     // (U+06E1) as sukun, Farsi yeh (U+06CC) in al-raheem.
     final basmala = String.fromCharCodes(const [
-      0x628, 0x650, 0x633, 0x6e1, 0x645, 0x650, 0x20, 0x671, 0x644, 0x644,
-      0x651, 0x64e, 0x647, 0x650, 0x20, 0x671, 0x644, 0x631, 0x651, 0x64e,
-      0x62d, 0x6e1, 0x645, 0x64e, 0x640, 0x670, 0x646, 0x650, 0x20, 0x671,
-      0x644, 0x631, 0x651, 0x64e, 0x62d, 0x650, 0x6cc, 0x645, 0x650
+      0x628,
+      0x650,
+      0x633,
+      0x6e1,
+      0x645,
+      0x650,
+      0x20,
+      0x671,
+      0x644,
+      0x644,
+      0x651,
+      0x64e,
+      0x647,
+      0x650,
+      0x20,
+      0x671,
+      0x644,
+      0x631,
+      0x651,
+      0x64e,
+      0x62d,
+      0x6e1,
+      0x645,
+      0x64e,
+      0x640,
+      0x670,
+      0x646,
+      0x650,
+      0x20,
+      0x671,
+      0x644,
+      0x631,
+      0x651,
+      0x64e,
+      0x62d,
+      0x650,
+      0x6cc,
+      0x645,
+      0x650,
     ]);
     expect(ind(1, 1), basmala);
-    expect(ind(1, 1), isNot(uth(1, 1)),
-        reason: 'IndoPak Basmala must differ from the Uthmani one');
+    expect(
+      ind(1, 1),
+      isNot(uth(1, 1)),
+      reason: 'IndoPak Basmala must differ from the Uthmani one',
+    );
 
     // 2:3 — contains the IndoPak spelling of the prayer word:
     // al-salah with waw + superscript alef + teh marbuta (U+0670),
     // and the verse uses Farsi yeh (U+06CC) + dotless khah sukun
     // (U+06E1) where Uthmani has Arabic yeh + plain sukun.
     final salah = String.fromCharCodes(const [
-      0x671, 0x644, 0x635, 0x651, 0x64e, 0x644, 0x64e, 0x648, 0x670, 0x629
+      0x671,
+      0x644,
+      0x635,
+      0x651,
+      0x64e,
+      0x644,
+      0x64e,
+      0x648,
+      0x670,
+      0x629,
     ]);
     expect(ind(2, 3), contains(salah));
     final yuminoon = String.fromCharCodes(const [
-      0x6cc, 0x64f, 0x624, 0x6e1, 0x645, 0x650, 0x646, 0x64f, 0x648, 0x646
+      0x6cc,
+      0x64f,
+      0x624,
+      0x6e1,
+      0x645,
+      0x650,
+      0x646,
+      0x64f,
+      0x648,
+      0x646,
     ]);
-    expect(ind(2, 3), contains(yuminoon),
-        reason: '2:3 must use Farsi yeh + dotless-khah sukun');
-    expect(ind(2, 3).contains('\u064a'), false,
-        reason: 'IndoPak text must not contain Arabic yeh U+064A');
+    expect(
+      ind(2, 3),
+      contains(yuminoon),
+      reason: '2:3 must use Farsi yeh + dotless-khah sukun',
+    );
+    expect(
+      ind(2, 3).contains('\u064a'),
+      false,
+      reason: 'IndoPak text must not contain Arabic yeh U+064A',
+    );
     expect(ind(2, 3), isNot(uth(2, 3)));
 
     // 2:255 (Ayat al-Kursi) — al-hayy with Farsi yeh: U+06CC.
     final hayy = String.fromCharCodes(const [
-      0x671, 0x644, 0x6e1, 0x62d, 0x64e, 0x6cc, 0x651, 0x64f
+      0x671,
+      0x644,
+      0x6e1,
+      0x62d,
+      0x64e,
+      0x6cc,
+      0x651,
+      0x64f,
     ]);
     expect(ind(2, 255), contains(hayy));
     expect(ind(2, 255), isNot(uth(2, 255)));
@@ -108,7 +180,7 @@ void main() {
     final uthSurahs = uthmani['surahs'] as List<dynamic>;
     final counts = [
       for (final s in uthSurahs)
-        ((s as Map<String, dynamic>)['ayahs'] as List<dynamic>).length
+        ((s as Map<String, dynamic>)['ayahs'] as List<dynamic>).length,
     ];
     final ranges = pages['pageRanges'] as List<dynamic>;
     expect(pages['totalPages'], 610);
@@ -147,8 +219,7 @@ void main() {
         final m = r as Map<String, dynamic>;
         final from = (m['from'] as List<dynamic>).cast<int>();
         final to = (m['to'] as List<dynamic>).cast<int>();
-        final afterStart =
-            s > from[0] || (s == from[0] && a >= from[1]);
+        final afterStart = s > from[0] || (s == from[0] && a >= from[1]);
         final beforeEnd = s < to[0] || (s == to[0] && a <= to[1]);
         if (afterStart && beforeEnd) return m['page'].toString();
       }
@@ -160,35 +231,44 @@ void main() {
     expect(pageOf(78, 1), '586');
   });
 
-  test('QuranRepository loads IndoPak and the style switch changes text',
-      () async {
-    final repo = QuranRepository.instance;
-    await repo.load();
-    if (!repo.indopakAvailable) {
-      markTestSkipped(
+  test(
+    'QuranRepository loads IndoPak and the style switch changes text',
+    () async {
+      final repo = QuranRepository.instance;
+      await repo.load();
+      if (!repo.indopakAvailable) {
+        markTestSkipped(
           'assets/quran/quran_indopak.json is not declared in pubspec.yaml '
           'yet, so rootBundle cannot see it and the repository falls back '
-          'to Madani. Add the asset entry, then this test runs for real.');
-      return;
-    }
-    expect(repo.indopakAvailable, true);
-    expect(repo.surahNameArabic(1).isNotEmpty, true);
+          'to Madani. Add the asset entry, then this test runs for real.',
+        );
+        return;
+      }
+      expect(repo.indopakAvailable, true);
+      expect(repo.surahNameArabic(1).isNotEmpty, true);
 
-    // Madani (default) vs IndoPak text for 2:3 must differ, and the
-    // IndoPak form must be the one from the bundled file.
-    appState.mushafStyle = 'madani';
-    final madani = repo.arabicText(2, 3);
-    appState.mushafStyle = 'indopak';
-    try {
-      final indopakText = repo.arabicText(2, 3);
-      expect(indopakText, isNot(madani));
-      expect(indopakText.contains('\u06cc'), true,
-          reason: 'IndoPak 2:3 must contain Farsi yeh U+06CC');
-      expect(repo.arabicFontFamily, 'IndoPakQuran');
-      expect(repo.bismillah.contains('\u06e1'), true,
-          reason: 'IndoPak Basmala uses the dotless-khah sukun');
-    } finally {
+      // Madani (default) vs IndoPak text for 2:3 must differ, and the
+      // IndoPak form must be the one from the bundled file.
       appState.mushafStyle = 'madani';
-    }
-  });
+      final madani = repo.arabicText(2, 3);
+      appState.mushafStyle = 'indopak';
+      try {
+        final indopakText = repo.arabicText(2, 3);
+        expect(indopakText, isNot(madani));
+        expect(
+          indopakText.contains('\u06cc'),
+          true,
+          reason: 'IndoPak 2:3 must contain Farsi yeh U+06CC',
+        );
+        expect(repo.arabicFontFamily, 'IndoPakQuran');
+        expect(
+          repo.bismillah.contains('\u06e1'),
+          true,
+          reason: 'IndoPak Basmala uses the dotless-khah sukun',
+        );
+      } finally {
+        appState.mushafStyle = 'madani';
+      }
+    },
+  );
 }

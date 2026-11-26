@@ -84,7 +84,8 @@ class BackupService {
       final s = state ?? appState;
       final dir = await getTemporaryDirectory();
       final now = DateTime.now();
-      final stamp = '${now.year.toString().padLeft(4, '0')}'
+      final stamp =
+          '${now.year.toString().padLeft(4, '0')}'
           '${now.month.toString().padLeft(2, '0')}'
           '${now.day.toString().padLeft(2, '0')}-'
           '${now.hour.toString().padLeft(2, '0')}'
@@ -92,10 +93,7 @@ class BackupService {
       final file = File('${dir.path}/quba-backup-$stamp.json');
       await file.writeAsString(buildBackupJson(s));
       await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(file.path)],
-          subject: 'QUBA backup',
-        ),
+        ShareParams(files: [XFile(file.path)], subject: 'QUBA backup'),
       );
       return BackupResult(true, tr('backup_exported'));
     } catch (_) {

@@ -33,15 +33,63 @@ List<BadgeDef> computeBadges(AppState s) {
   final total = s.totalPrayed;
   final tasbih = s.tasbihLifetime;
   return [
-    BadgeDef('prayer7', Icons.verified_rounded, 'badge_prayer_streak', 7, prayer),
-    BadgeDef('prayer30', Icons.verified_rounded, 'badge_prayer_streak', 30, prayer),
+    BadgeDef(
+      'prayer7',
+      Icons.verified_rounded,
+      'badge_prayer_streak',
+      7,
+      prayer,
+    ),
+    BadgeDef(
+      'prayer30',
+      Icons.verified_rounded,
+      'badge_prayer_streak',
+      30,
+      prayer,
+    ),
     BadgeDef('read7', Icons.menu_book_rounded, 'badge_read_streak', 7, reading),
-    BadgeDef('read30', Icons.menu_book_rounded, 'badge_read_streak', 30, reading),
-    BadgeDef('azkar7', Icons.wb_twilight_rounded, 'badge_azkar_streak', 7, azkar),
-    BadgeDef('total100', Icons.mosque_rounded, 'badge_total_prayers', 100, total),
-    BadgeDef('total500', Icons.mosque_rounded, 'badge_total_prayers', 500, total),
-    BadgeDef('tasbih1k', Icons.blur_circular_rounded, 'badge_tasbih', 1000, tasbih),
-    BadgeDef('tasbih10k', Icons.blur_circular_rounded, 'badge_tasbih', 10000, tasbih),
+    BadgeDef(
+      'read30',
+      Icons.menu_book_rounded,
+      'badge_read_streak',
+      30,
+      reading,
+    ),
+    BadgeDef(
+      'azkar7',
+      Icons.wb_twilight_rounded,
+      'badge_azkar_streak',
+      7,
+      azkar,
+    ),
+    BadgeDef(
+      'total100',
+      Icons.mosque_rounded,
+      'badge_total_prayers',
+      100,
+      total,
+    ),
+    BadgeDef(
+      'total500',
+      Icons.mosque_rounded,
+      'badge_total_prayers',
+      500,
+      total,
+    ),
+    BadgeDef(
+      'tasbih1k',
+      Icons.blur_circular_rounded,
+      'badge_tasbih',
+      1000,
+      tasbih,
+    ),
+    BadgeDef(
+      'tasbih10k',
+      Icons.blur_circular_rounded,
+      'badge_tasbih',
+      10000,
+      tasbih,
+    ),
   ];
 }
 
@@ -67,21 +115,35 @@ class ProgressScreen extends StatelessWidget {
                 children: [
                   TitleRow(
                     title: tr('progress'),
-                    subtitle: trf('badges_earned',
-                        {'n': earned, 'total': badges.length}),
+                    subtitle: trf('badges_earned', {
+                      'n': earned,
+                      'total': badges.length,
+                    }),
                   ),
                   const SizedBox(height: 16),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _statCard(p, Icons.verified_rounded,
-                          appState.prayerStreak, tr('prayer_streak_label')),
+                      _statCard(
+                        p,
+                        Icons.verified_rounded,
+                        appState.prayerStreak,
+                        tr('prayer_streak_label'),
+                      ),
                       const SizedBox(width: 10),
-                      _statCard(p, Icons.local_fire_department_rounded,
-                          appState.readingStreak, tr('reading_streak_label')),
+                      _statCard(
+                        p,
+                        Icons.local_fire_department_rounded,
+                        appState.readingStreak,
+                        tr('reading_streak_label'),
+                      ),
                       const SizedBox(width: 10),
-                      _statCard(p, Icons.wb_twilight_rounded,
-                          appState.azkarStreak, tr('azkar_streak_label')),
+                      _statCard(
+                        p,
+                        Icons.wb_twilight_rounded,
+                        appState.azkarStreak,
+                        tr('azkar_streak_label'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -90,7 +152,8 @@ class ProgressScreen extends StatelessWidget {
                   GlassCard(
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                          builder: (_) => const AzkarScreen()),
+                        builder: (_) => const AzkarScreen(),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -123,7 +186,9 @@ class ProgressScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   GlassCard(
                     padding: const EdgeInsets.symmetric(
-                        vertical: 6, horizontal: 14),
+                      vertical: 6,
+                      horizontal: 14,
+                    ),
                     child: Column(
                       children: [
                         for (var i = 0; i < badges.length; i++) ...[
@@ -244,7 +309,9 @@ class ProgressScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(5),
             color: count == 0
                 ? p.cardBorder
-                : p.emerald.withValues(alpha: count >= 5 ? 1 : 0.35 + 0.12 * count),
+                : p.emerald.withValues(
+                    alpha: count >= 5 ? 1 : 0.35 + 0.12 * count,
+                  ),
           ),
         ),
         const SizedBox(height: 3),

@@ -79,9 +79,9 @@ class TafsirRepository {
       for (var i = 0; i < surahsJson.length; i++) {
         final m = surahsJson[i] as Map<String, dynamic>;
         if (m['number'] as int != i + 1) return null;
-        text.add((m['ayahs'] as List<dynamic>)
-            .map((a) => a as String)
-            .toList());
+        text.add(
+          (m['ayahs'] as List<dynamic>).map((a) => a as String).toList(),
+        );
       }
       return text;
     } catch (_) {

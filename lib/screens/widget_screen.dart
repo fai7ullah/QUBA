@@ -49,9 +49,8 @@ class _WidgetScreenState extends State<WidgetScreen> {
     await HomeWidgetService.update(appState);
     if (!mounted) return;
     setState(() => _refreshing = false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(tr('widget_refreshed'))),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(tr('widget_refreshed'))));
   }
 
   @override
@@ -73,8 +72,11 @@ class _WidgetScreenState extends State<WidgetScreen> {
                   children: [
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      secondary: Icon(Icons.widgets_rounded,
-                          size: 28, color: p.emerald),
+                      secondary: Icon(
+                        Icons.widgets_rounded,
+                        size: 28,
+                        color: p.emerald,
+                      ),
                       title: Text(
                         tr('widget_enable'),
                         maxLines: 1,
@@ -93,7 +95,9 @@ class _WidgetScreenState extends State<WidgetScreen> {
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white),
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
                               )
                             : const Icon(Icons.refresh_rounded),
                         label: Text(

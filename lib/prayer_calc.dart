@@ -6,8 +6,13 @@ import 'i18n.dart';
 /// angle or "Isha = N minutes after Maghrib" (Umm al-Qura, Qatar).
 /// Values follow the published standards used by PrayTimes / Aladhan.
 class PrayerMethod {
-  const PrayerMethod(this.id, this.name, this.fajr, this.isha,
-      {this.ishaMinutes = 0});
+  const PrayerMethod(
+    this.id,
+    this.name,
+    this.fajr,
+    this.isha, {
+    this.ishaMinutes = 0,
+  });
   final String id;
 
   /// Proper name of the authority (not translated, like the other names).
@@ -89,10 +94,10 @@ class PrayerCalc {
     this.hanafi = true,
     this.highLat = 'auto',
     this.adjust = const [0, 0, 0, 0, 0, 0],
-  })  : fajrAngle = PrayerMethod.byId(method).fajr,
-        ishaAngle = PrayerMethod.byId(method).isha,
-        ishaMinutes = PrayerMethod.byId(method).ishaMinutes,
-        asrFactor = hanafi ? 2 : 1;
+  }) : fajrAngle = PrayerMethod.byId(method).fajr,
+       ishaAngle = PrayerMethod.byId(method).isha,
+       ishaMinutes = PrayerMethod.byId(method).ishaMinutes,
+       asrFactor = hanafi ? 2 : 1;
 
   final double lat;
   final double lng;
@@ -159,8 +164,8 @@ class PrayerCalc {
   double _sunAngleTime(double jd, double angleDeg, bool ccw) {
     final decl = _sunPosition(jd)[0];
     final z = _midDay(jd);
-    final arg = (-_sin(angleDeg) - _sin(decl) * _sin(lat)) /
-        (_cos(decl) * _cos(lat));
+    final arg =
+        (-_sin(angleDeg) - _sin(decl) * _sin(lat)) / (_cos(decl) * _cos(lat));
     if (arg < -1 || arg > 1) return double.nan;
     final v = _arccos(arg) / 15.0;
     return z + (ccw ? -v : v);
@@ -271,15 +276,23 @@ class HijriDate {
     final y = gy + 4800 - a;
     final m = gm + 12 * a - 3;
     final jd =
-        gd + (153 * m + 2) ~/ 5 + 365 * y + y ~/ 4 - y ~/ 100 + y ~/ 400 - 32045;
+        gd +
+        (153 * m + 2) ~/ 5 +
+        365 * y +
+        y ~/ 4 -
+        y ~/ 100 +
+        y ~/ 400 -
+        32045;
 
     // Kuwaiti algorithm
     var l = jd - 1948440 + 10632;
     final n = (l - 1) ~/ 10631;
     l = l - 10631 * n + 354;
-    final j = ((10985 - l) ~/ 5316) * ((50 * l) ~/ 17719) +
+    final j =
+        ((10985 - l) ~/ 5316) * ((50 * l) ~/ 17719) +
         (l ~/ 5670) * ((43 * l) ~/ 15238);
-    l = l -
+    l =
+        l -
         ((30 - j) ~/ 15) * ((17719 * j) ~/ 50) -
         (j ~/ 16) * ((15238 * j) ~/ 43) +
         29;
@@ -316,10 +329,10 @@ class HijriDate {
   /// Display form in the current UI language (translated month name and
   /// era suffix). [toString] stays English — tests pin it.
   String localizedString() => trf('hijri_date', {
-        'day': day,
-        'month': tr('hijri_month_$month'),
-        'year': year,
-      });
+    'day': day,
+    'month': tr('hijri_month_$month'),
+    'year': year,
+  });
 }
 
 /// Great-circle initial bearing from a point to the Kaaba in Makkah.
@@ -335,7 +348,8 @@ class QiblaMath {
     final lat2 = kaabaLat * math.pi / 180.0;
     final dLng = (kaabaLng - lngDeg) * math.pi / 180.0;
     final y = math.sin(dLng) * math.cos(lat2);
-    final x = math.cos(lat1) * math.sin(lat2) -
+    final x =
+        math.cos(lat1) * math.sin(lat2) -
         math.sin(lat1) * math.cos(lat2) * math.cos(dLng);
     return (math.atan2(y, x) * 180.0 / math.pi + 360.0) % 360.0;
   }
@@ -343,8 +357,22 @@ class QiblaMath {
   /// 16-wind compass point for a bearing.
   static String compassPoint(double bearing) {
     const pts = [
-      'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
-      'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW',
+      'N',
+      'NNE',
+      'NE',
+      'ENE',
+      'E',
+      'ESE',
+      'SE',
+      'SSE',
+      'S',
+      'SSW',
+      'SW',
+      'WSW',
+      'W',
+      'WNW',
+      'NW',
+      'NNW',
     ];
     return pts[(bearing / 22.5).round() % 16];
   }

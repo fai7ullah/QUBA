@@ -38,10 +38,7 @@ class PrayerService {
     final day = DateTime(date.year, date.month, date.day);
     return [
       for (var i = 0; i < 6; i++)
-        PrayerEntry(
-          prayerNames[i],
-          day.add(Duration(minutes: minutes[i])),
-        ),
+        PrayerEntry(prayerNames[i], day.add(Duration(minutes: minutes[i]))),
     ];
   }
 
@@ -54,8 +51,7 @@ class PrayerService {
     return tomorrow.first;
   }
 
-  static String methodLabel(AppState s) =>
-      PrayerMethod.byId(s.calcMethod).name;
+  static String methodLabel(AppState s) => PrayerMethod.byId(s.calcMethod).name;
 
   static String madhabLabel(AppState s) =>
       s.asrHanafi ? tr('madhab_hanafi') : tr('madhab_shafii');

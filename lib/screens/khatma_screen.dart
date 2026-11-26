@@ -22,8 +22,7 @@ class KhatmaScreen extends StatefulWidget {
 class _KhatmaScreenState extends State<KhatmaScreen> {
   static const int _totalAyahs = 6236;
 
-  int _epochDayNow() =>
-      DateTime.now().difference(DateTime.utc(1970)).inDays;
+  int _epochDayNow() => DateTime.now().difference(DateTime.utc(1970)).inDays;
 
   /// "Surah name S:A" label for a global 1-based ayah index.
   String _positionLabel(QuranRepository repo, int global) {
@@ -44,9 +43,7 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: p.bgSecondary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(tr('end_plan_title')),
         content: Text(tr('end_plan_body')),
         actions: [
@@ -110,14 +107,14 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
   }
 
   Widget _buildNoPlan(
-      BuildContext context, QubaPalette p, QuranRepository repo) {
+    BuildContext context,
+    QubaPalette p,
+    QuranRepository repo,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TitleRow(
-          title: tr('khatma'),
-          subtitle: tr('khatma_subtitle'),
-        ),
+        TitleRow(title: tr('khatma'), subtitle: tr('khatma_subtitle')),
         const SizedBox(height: 24),
         if (appState.readingStreak > 0) ...[
           _streakCard(p),
@@ -141,9 +138,12 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
               Text(
                 trf('khatma_explainer', {
                   'position': _positionLabel(
-                      repo,
-                      repo.globalIndexOf(appState.lastReadSurah,
-                          appState.lastReadAyah)),
+                    repo,
+                    repo.globalIndexOf(
+                      appState.lastReadSurah,
+                      appState.lastReadAyah,
+                    ),
+                  ),
                 }),
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14.5, color: p.muted, height: 1.5),
@@ -178,24 +178,33 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
         const SizedBox(height: 16),
         Text(
           trf('plan_rates', {
-            'v7': ((_totalAyahs -
-                        (repo.globalIndexOf(appState.lastReadSurah,
-                                appState.lastReadAyah) -
-                            1)) /
-                    7)
-                .ceil(),
-            'v30': ((_totalAyahs -
-                        (repo.globalIndexOf(appState.lastReadSurah,
-                                appState.lastReadAyah) -
-                            1)) /
-                    30)
-                .ceil(),
-            'v90': ((_totalAyahs -
-                        (repo.globalIndexOf(appState.lastReadSurah,
-                                appState.lastReadAyah) -
-                            1)) /
-                    90)
-                .ceil(),
+            'v7':
+                ((_totalAyahs -
+                            (repo.globalIndexOf(
+                                  appState.lastReadSurah,
+                                  appState.lastReadAyah,
+                                ) -
+                                1)) /
+                        7)
+                    .ceil(),
+            'v30':
+                ((_totalAyahs -
+                            (repo.globalIndexOf(
+                                  appState.lastReadSurah,
+                                  appState.lastReadAyah,
+                                ) -
+                                1)) /
+                        30)
+                    .ceil(),
+            'v90':
+                ((_totalAyahs -
+                            (repo.globalIndexOf(
+                                  appState.lastReadSurah,
+                                  appState.lastReadAyah,
+                                ) -
+                                1)) /
+                        90)
+                    .ceil(),
           }),
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13, color: p.muted, height: 1.5),
@@ -204,8 +213,7 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
     );
   }
 
-  Widget _buildPlan(
-      BuildContext context, QubaPalette p, QuranRepository repo) {
+  Widget _buildPlan(BuildContext context, QubaPalette p, QuranRepository repo) {
     final start = appState.khatmaStartGlobal;
     final days = appState.khatmaDays;
     final remaining = math.max(0, _totalAyahs - start);
@@ -226,15 +234,14 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
     // Today's target range (global 1-based).
     final rangeStart = start + daily * planDay + 1;
     final rangeEnd = math.min(start + daily * (planDay + 1), _totalAyahs);
-    final rangeStartSa = repo.surahAyahForGlobal(rangeStart.clamp(1, _totalAyahs));
+    final rangeStartSa = repo.surahAyahForGlobal(
+      rangeStart.clamp(1, _totalAyahs),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TitleRow(
-          title: tr('khatma'),
-          subtitle: trf('day_plan', {'n': days}),
-        ),
+        TitleRow(title: tr('khatma'), subtitle: trf('day_plan', {'n': days})),
         const SizedBox(height: 24),
         if (appState.readingStreak > 0) ...[
           _streakCard(p),
@@ -253,8 +260,7 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
                       value: progress,
                       strokeWidth: 11,
                       backgroundColor: p.cardBorder,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(p.emerald),
+                      valueColor: AlwaysStoppedAnimation<Color>(p.emerald),
                     ),
                   ),
                   Column(
@@ -280,8 +286,8 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
                 complete
                     ? tr('plan_complete')
                     : onTrack
-                        ? tr('on_track')
-                        : trf('behind_by', {'n': expected - actual}),
+                    ? tr('on_track')
+                    : trf('behind_by', {'n': expected - actual}),
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
@@ -290,8 +296,10 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                trf('verses_read_in_plan',
-                    {'read': readInPlan, 'remaining': remaining}),
+                trf('verses_read_in_plan', {
+                  'read': readInPlan,
+                  'remaining': remaining,
+                }),
                 style: TextStyle(fontSize: 14, color: p.muted),
               ),
             ],
@@ -302,17 +310,28 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
           child: Column(
             children: [
               _statRow(
-                  p,
-                  Icons.calendar_today_rounded,
-                  tr('stat_day'),
-                  trf('stat_of_days',
-                      {'n': math.min(elapsed + 1, days), 'total': days})),
+                p,
+                Icons.calendar_today_rounded,
+                tr('stat_day'),
+                trf('stat_of_days', {
+                  'n': math.min(elapsed + 1, days),
+                  'total': days,
+                }),
+              ),
               const SizedBox(height: 12),
-              _statRow(p, Icons.menu_book_rounded, tr('stat_daily_portion'),
-                  trf('verses_count', {'n': daily})),
+              _statRow(
+                p,
+                Icons.menu_book_rounded,
+                tr('stat_daily_portion'),
+                trf('verses_count', {'n': daily}),
+              ),
               const SizedBox(height: 12),
-              _statRow(p, Icons.hourglass_bottom_rounded,
-                  tr('stat_days_remaining'), '$daysLeft'),
+              _statRow(
+                p,
+                Icons.hourglass_bottom_rounded,
+                tr('stat_days_remaining'),
+                '$daysLeft',
+              ),
             ],
           ),
         ),
@@ -339,8 +358,8 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
                     GlassButton(
                       icon: Icons.play_arrow_rounded,
                       label: tr('read_todays_portion'),
-                      onTap: () => widget.onOpenReader(
-                          rangeStartSa[0], rangeStartSa[1]),
+                      onTap: () =>
+                          widget.onOpenReader(rangeStartSa[0], rangeStartSa[1]),
                     ),
                   ],
                 ),
@@ -391,8 +410,7 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  trf('streak_days',
-                      {'count': appState.readingStreak}),
+                  trf('streak_days', {'count': appState.readingStreak}),
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
@@ -403,8 +421,7 @@ class _KhatmaScreenState extends State<KhatmaScreen> {
             ),
           ),
           if (appState.readToday)
-            Icon(Icons.check_circle_rounded,
-                size: 22, color: p.emerald),
+            Icon(Icons.check_circle_rounded, size: 22, color: p.emerald),
         ],
       ),
     );

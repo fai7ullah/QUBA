@@ -23,10 +23,16 @@ class HomeScreen extends StatefulWidget {
     required this.onGoTab,
     required this.onOpenReader,
     required this.onOpenFeature,
+    required this.onOpenPrayer,
   });
   final void Function(int tab) onGoTab;
   final void Function(int surah, int ayah) onOpenReader;
   final void Function(String key) onOpenFeature;
+
+  /// Opens the full Prayer screen (the Next Prayer card and the
+  /// Prayer Times "View All" both lead there; Prayer has no tab in
+  /// the four-tab bar).
+  final VoidCallback onOpenPrayer;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -93,109 +99,114 @@ class _HomeScreenState extends State<HomeScreen> {
         final now = DateTime.now();
         final next = PrayerService.nextPrayer(now, appState);
         final today = PrayerService.dayList(now, appState);
-        final isTodayNext = next.time.day == now.day &&
+        final isTodayNext =
+            next.time.day == now.day &&
             next.time.month == now.month &&
             next.time.year == now.year;
         final bottomInset = MediaQuery.of(context).padding.bottom;
         return ListView(
-              // NOT primary: all five tab ListViews live in one
-              // IndexedStack in the Shell, and primary ListViews all
-              // attach to the route's single PrimaryScrollController.
-              // Each tab owns its scroll state instead (2026-11-21:
-              // Settings scrolled down and would not scroll back up
-              // on the owner's phone — the shared controller is the
-              // one structural anomaly in the scroll path, so every
-              // tab gets its own controller now).
-              primary: false,
-              padding: EdgeInsets.zero,
-              children: [
-                QubaHeader(onSettings: () => widget.onGoTab(4)),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(13, 0, 13, 120 + bottomInset),
-                  child: Column(
-                    children: [
-                      _nextPrayerCard(context, next, now, today),
-                      const SizedBox(height: 14),
-                      PrayerScheduleCard(
-                        entries: today,
-                        nextName: isTodayNext ? next.name : null,
-                        onToggle: _toggleNotify,
-                        onViewAll: () => widget.onGoTab(1),
-                      ),
-                      const SizedBox(height: 14),
-                      _continueReadingCard(context),
-                      if (appState.readingStreak > 0) ...[
-                        const SizedBox(height: 12),
-                        _streakChip(context),
-                      ],
-                      if (appState.prayerStreak > 0) ...[
-                        const SizedBox(height: 12),
-                        _prayerStreakChip(context),
-                      ],
-                      // Below the fold: shortcuts and the daily card.
-                      const SizedBox(height: 120),
-                      Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            FeatureChip(
-                              icon: Icons.explore_rounded,
-                              label: tr('qibla'),
-                              onTap: () => widget.onOpenFeature('qibla'),
-                            ),
-                            FeatureChip(
-                              icon: Icons.blur_circular_rounded,
-                              label: tr('tasbih'),
-                              onTap: () => widget.onOpenFeature('tasbih'),
-                            ),
-                            FeatureChip(
-                              icon: Icons.volunteer_activism_rounded,
-                              label: tr('duas'),
-                              onTap: () => widget.onOpenFeature('duas'),
-                            ),
-                            FeatureChip(
-                              icon: Icons.auto_awesome_rounded,
-                              label: tr('names99'),
-                              onTap: () => widget.onOpenFeature('names'),
-                            ),
-                            FeatureChip(
-                              icon: Icons.flag_rounded,
-                              label: tr('khatma'),
-                              onTap: () => widget.onOpenFeature('khatma'),
-                            ),
-                            FeatureChip(
-                              icon: Icons.calendar_month_rounded,
-                              label: tr('calendar'),
-                              onTap: () => widget.onOpenFeature('calendar'),
-                            ),
-                            FeatureChip(
-                              icon: Icons.wb_twilight_rounded,
-                              label: tr('azkar'),
-                              onTap: () => widget.onOpenFeature('azkar'),
-                            ),
-                            FeatureChip(
-                              icon: Icons.emoji_events_rounded,
-                              label: tr('progress'),
-                              onTap: () => widget.onOpenFeature('progress'),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _todayCard(context),
-                    ],
+          // NOT primary: all four tab ListViews live in one
+          // IndexedStack in the Shell, and primary ListViews all
+          // attach to the route's single PrimaryScrollController.
+          // Each tab owns its scroll state instead (2026-11-21:
+          // Settings scrolled down and would not scroll back up
+          // on the owner's phone — the shared controller is the
+          // one structural anomaly in the scroll path, so every
+          // tab gets its own controller now).
+          primary: false,
+          padding: EdgeInsets.zero,
+          children: [
+            QubaHeader(onSettings: () => widget.onGoTab(3)),
+            Padding(
+              padding: EdgeInsets.fromLTRB(16, 0, 16, 120 + bottomInset),
+              child: Column(
+                children: [
+                  _nextPrayerCard(context, next, now, today),
+                  const SizedBox(height: 16),
+                  PrayerScheduleCard(
+                    entries: today,
+                    nextName: isTodayNext ? next.name : null,
+                    onToggle: _toggleNotify,
+                    onViewAll: widget.onOpenPrayer,
                   ),
-                ),
-              ],
-            );
+                  const SizedBox(height: 16),
+                  _continueReadingCard(context),
+                  if (appState.readingStreak > 0) ...[
+                    const SizedBox(height: 12),
+                    _streakChip(context),
+                  ],
+                  if (appState.prayerStreak > 0) ...[
+                    const SizedBox(height: 12),
+                    _prayerStreakChip(context),
+                  ],
+                  // Below the fold: shortcuts and the daily card.
+                  const SizedBox(height: 120),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        FeatureChip(
+                          icon: Icons.explore_rounded,
+                          label: tr('qibla'),
+                          onTap: () => widget.onOpenFeature('qibla'),
+                        ),
+                        FeatureChip(
+                          icon: Icons.blur_circular_rounded,
+                          label: tr('tasbih'),
+                          onTap: () => widget.onOpenFeature('tasbih'),
+                        ),
+                        FeatureChip(
+                          icon: Icons.volunteer_activism_rounded,
+                          label: tr('duas'),
+                          onTap: () => widget.onOpenFeature('duas'),
+                        ),
+                        FeatureChip(
+                          icon: Icons.auto_awesome_rounded,
+                          label: tr('names99'),
+                          onTap: () => widget.onOpenFeature('names'),
+                        ),
+                        FeatureChip(
+                          icon: Icons.flag_rounded,
+                          label: tr('khatma'),
+                          onTap: () => widget.onOpenFeature('khatma'),
+                        ),
+                        FeatureChip(
+                          icon: Icons.calendar_month_rounded,
+                          label: tr('calendar'),
+                          onTap: () => widget.onOpenFeature('calendar'),
+                        ),
+                        FeatureChip(
+                          icon: Icons.wb_twilight_rounded,
+                          label: tr('azkar'),
+                          onTap: () => widget.onOpenFeature('azkar'),
+                        ),
+                        FeatureChip(
+                          icon: Icons.emoji_events_rounded,
+                          label: tr('progress'),
+                          onTap: () => widget.onOpenFeature('progress'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _todayCard(context),
+                ],
+              ),
+            ),
+          ],
+        );
       },
     );
   }
 
-  Widget _nextPrayerCard(BuildContext context, PrayerEntry next,
-      DateTime now, List<PrayerEntry> today) {
+  Widget _nextPrayerCard(
+    BuildContext context,
+    PrayerEntry next,
+    DateTime now,
+    List<PrayerEntry> today,
+  ) {
     final p = QubaPalette.of(context);
     var countdown = next.time.difference(now);
     if (countdown.isNegative) countdown = Duration.zero;
@@ -212,8 +223,10 @@ class _HomeScreenState extends State<HomeScreen> {
         : (countdown.inSeconds / gap.inSeconds).clamp(0.0, 1.0).toDouble();
     final ink = p.dark ? p.ink : const Color(0xFF111713);
     return GlassCard(
-      radius: 36,
+      radius: 38,
+      blur: 22,
       padding: const EdgeInsets.fromLTRB(20, 18, 16, 18),
+      onTap: widget.onOpenPrayer,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -223,8 +236,10 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     gradient: const LinearGradient(
@@ -327,8 +342,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final repo = QuranRepository.instance;
     final hasPlace =
         appState.lastReadSurah >= 1 && appState.lastReadSurah <= 114;
-    final surah =
-        repo.loaded && hasPlace ? repo.surah(appState.lastReadSurah) : null;
+    final surah = repo.loaded && hasPlace
+        ? repo.surah(appState.lastReadSurah)
+        : null;
     final globalPos = repo.loaded && hasPlace
         ? repo.globalIndexOf(appState.lastReadSurah, appState.lastReadAyah)
         : 1;
@@ -337,12 +353,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final String? surahName = surah?.nameEnglish;
     final verseLine = surah == null
         ? null
-        : trf('verse_of',
-            {'n': appState.lastReadAyah, 'total': surah.ayahCount});
+        : trf('verse_of', {
+            'n': appState.lastReadAyah,
+            'total': surah.ayahCount,
+          });
     final ink = p.dark ? p.ink : const Color(0xFF111713);
     final soft = p.dark ? p.muted : const Color(0xFF2F3A33);
     return GlassCard(
-      radius: 36,
+      radius: 38,
+      blur: 22,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       onTap: () => widget.onOpenReader(
         hasPlace ? appState.lastReadSurah : 1,
@@ -452,10 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              Text(
-                '$pct%',
-                style: TextStyle(fontSize: 18, color: ink),
-              ),
+              Text('$pct%', style: TextStyle(fontSize: 18, color: ink)),
             ],
           ),
         ],
@@ -505,8 +521,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final readToday = appState.readToday;
     return GlassCard(
       radius: 22,
-      padding:
-          const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
       child: Row(
         children: [
           Icon(
@@ -533,8 +548,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle_rounded,
-                    size: 18, color: p.emerald),
+                Icon(Icons.check_circle_rounded, size: 18, color: p.emerald),
                 const SizedBox(width: 5),
                 Text(
                   tr('read_today'),
@@ -561,6 +575,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ? repo.surah(verseRef[0]).ayahs[verseRef[1] - 1]
         : null;
     return GlassCard(
+      blur: 18,
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -662,8 +677,11 @@ class _HomeScreenState extends State<HomeScreen> {
 /// Circular countdown ring: a pale track with a green arc for the share
 /// of the wait that is still left (drawn clockwise from the top).
 class _RingPainter extends CustomPainter {
-  const _RingPainter(
-      {required this.fraction, required this.track, required this.color});
+  const _RingPainter({
+    required this.fraction,
+    required this.track,
+    required this.color,
+  });
   final double fraction;
   final Color track;
   final Color color;
@@ -693,6 +711,18 @@ class _RingPainter extends CustomPainter {
         base..color = color,
       );
     }
+    // Glass specular arc on the disc's upper-left rim.
+    canvas.drawArc(
+      Rect.fromCircle(center: c, radius: r - stroke / 2 - 2),
+      -math.pi * 0.85,
+      math.pi * 0.5,
+      false,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..color = Colors.white.withValues(alpha: 0.75),
+    );
   }
 
   @override

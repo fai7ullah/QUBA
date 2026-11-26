@@ -111,8 +111,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
         _year--;
       }
       final days = HijriDate.daysInMonth(_year, _month);
-      _selectedDay =
-          _isCurrentMonth ? _todayHijri.day : _selectedDay.clamp(1, days);
+      _selectedDay = _isCurrentMonth
+          ? _todayHijri.day
+          : _selectedDay.clamp(1, days);
     });
   }
 
@@ -192,8 +193,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     endIndent: 16,
                     color: p.gold.withValues(alpha: 0.25),
                   ),
-                _ramadanRow(
-                    p, n, start.add(Duration(days: n - 1)), today),
+                _ramadanRow(p, n, start.add(Duration(days: n - 1)), today),
               ],
             ],
           ),
@@ -202,14 +202,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _ramadanRow(
-      QubaPalette p, int day, DateTime greg, DateTime today) {
+  Widget _ramadanRow(QubaPalette p, int day, DateTime greg, DateTime today) {
     final entries = PrayerService.dayList(greg, appState);
     final fajr = entries[0].time;
     final maghrib = entries[4].time;
     final fast = maghrib.difference(fajr);
     final fastText = '${fast.inHours}h ${fast.inMinutes % 60}m';
-    final isToday = greg.year == today.year &&
+    final isToday =
+        greg.year == today.year &&
         greg.month == today.month &&
         greg.day == today.day;
     return Container(
@@ -240,10 +240,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           trf('ramadan_day', {'day': day}),
           style: TextStyle(fontWeight: FontWeight.w700, color: p.ink),
         ),
-        subtitle: Text(
-          _gregString(greg),
-          style: TextStyle(color: p.muted),
-        ),
+        subtitle: Text(_gregString(greg), style: TextStyle(color: p.muted)),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -277,16 +274,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final daysInMonth = HijriDate.daysInMonth(_year, _month);
     // Saturday-first offset: weekday Mon=1..Sun=7, Sat=6 -> 0.
     final offset = (firstGreg.weekday + 1) % 7;
-    final selectedGreg =
-        firstGreg.add(Duration(days: _selectedDay - 1));
+    final selectedGreg = firstGreg.add(Duration(days: _selectedDay - 1));
     final selectedHijri = HijriDate(_year, _month, _selectedDay);
     final selectedNotable = _notableDays['$_month-$_selectedDay'];
 
-    final monthNotables = _notableDays.entries
-        .where((e) => int.parse(e.key.split('-')[0]) == _month)
-        .map((e) => (int.parse(e.key.split('-')[1]), e.value))
-        .toList()
-      ..sort((a, b) => a.$1.compareTo(b.$1));
+    final monthNotables =
+        _notableDays.entries
+            .where((e) => int.parse(e.key.split('-')[0]) == _month)
+            .map((e) => (int.parse(e.key.split('-')[1]), e.value))
+            .toList()
+          ..sort((a, b) => a.$1.compareTo(b.$1));
 
     return Scaffold(
       body: QubaBackground(
@@ -308,8 +305,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       radius: 16,
                       padding: const EdgeInsets.all(8),
                       onTap: () => _shiftMonth(-1),
-                      child: Icon(Icons.chevron_left_rounded,
-                          size: 22, color: p.emerald),
+                      child: Icon(
+                        Icons.chevron_left_rounded,
+                        size: 22,
+                        color: p.emerald,
+                      ),
                     ),
                     Expanded(
                       child: Text(
@@ -329,8 +329,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       radius: 16,
                       padding: const EdgeInsets.all(8),
                       onTap: () => _shiftMonth(1),
-                      child: Icon(Icons.chevron_right_rounded,
-                          size: 22, color: p.emerald),
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 22,
+                        color: p.emerald,
+                      ),
                     ),
                   ],
                 ),
@@ -340,7 +343,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   child: GlassCard(
                     radius: 16,
                     padding: const EdgeInsets.symmetric(
-                        vertical: 8, horizontal: 16),
+                      vertical: 8,
+                      horizontal: 16,
+                    ),
                     onTap: _goToday,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -391,11 +396,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 7,
-                          mainAxisSpacing: 4,
-                          crossAxisSpacing: 4,
-                          childAspectRatio: 1,
-                        ),
+                              crossAxisCount: 7,
+                              mainAxisSpacing: 4,
+                              crossAxisSpacing: 4,
+                              childAspectRatio: 1,
+                            ),
                         itemCount: offset + daysInMonth,
                         itemBuilder: (context, i) {
                           if (i < offset) return const SizedBox.shrink();
@@ -403,7 +408,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           final isToday =
                               _isCurrentMonth && day == _todayHijri.day;
                           final isSelected = day == _selectedDay;
-                          final notable = _notableDays.containsKey('$_month-$day');
+                          final notable = _notableDays.containsKey(
+                            '$_month-$day',
+                          );
                           return GestureDetector(
                             onTap: () => setState(() => _selectedDay = day),
                             child: Container(
@@ -412,8 +419,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 color: isToday
                                     ? p.emerald
                                     : isSelected
-                                        ? p.activeFill
-                                        : Colors.transparent,
+                                    ? p.activeFill
+                                    : Colors.transparent,
                                 border: isSelected && !isToday
                                     ? Border.all(color: p.gold, width: 1.5)
                                     : null,
@@ -483,8 +490,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.star_rounded,
-                                size: 18, color: p.gold),
+                            Icon(Icons.star_rounded, size: 18, color: p.gold),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
@@ -545,12 +551,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               ),
                             ),
                             subtitle: Text(
-                              _gregString(firstGreg.add(Duration(
-                                  days: monthNotables[i].$1 - 1))),
+                              _gregString(
+                                firstGreg.add(
+                                  Duration(days: monthNotables[i].$1 - 1),
+                                ),
+                              ),
                               style: TextStyle(color: p.muted),
                             ),
                             onTap: () => setState(
-                                () => _selectedDay = monthNotables[i].$1),
+                              () => _selectedDay = monthNotables[i].$1,
+                            ),
                           ),
                         ],
                       ],

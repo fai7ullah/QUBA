@@ -61,9 +61,9 @@ void main() {
     });
 
     test('backup JSON has the format header', () {
-      final decoded =
-          jsonDecode(BackupService.buildBackupJson(fullState()))
-              as Map<String, dynamic>;
+      final decoded = jsonDecode(
+        BackupService.buildBackupJson(fullState()),
+      ) as Map<String, dynamic>;
       expect(decoded['format'], 'quba-backup');
       expect(decoded['version'], 1);
       expect(decoded['exported_at'], isA<String>());
@@ -72,13 +72,10 @@ void main() {
 
     test('backup payload matches the sync payload shape', () {
       final state = fullState();
-      final backup =
-          jsonDecode(BackupService.buildBackupJson(state))
-              as Map<String, dynamic>;
-      expect(
-        backup['data'],
-        BackupPayload.toJson(state),
-      );
+      final backup = jsonDecode(
+        BackupService.buildBackupJson(state),
+      ) as Map<String, dynamic>;
+      expect(backup['data'], BackupPayload.toJson(state));
     });
 
     test('empty state round-trips', () {
@@ -96,17 +93,13 @@ void main() {
   group('invalid input never throws, returns ok:false', () {
     test('malformed JSON', () {
       final target = fullState();
-      final result =
-          BackupService.restoreFromJson('{not json', target);
+      final result = BackupService.restoreFromJson('{not json', target);
       expect(result.ok, isFalse);
       expectMatchesFull(target); // untouched
     });
 
     test('empty string', () {
-      expect(
-        BackupService.restoreFromJson('', AppState()).ok,
-        isFalse,
-      );
+      expect(BackupService.restoreFromJson('', AppState()).ok, isFalse);
     });
 
     test('JSON array instead of object', () {
@@ -120,35 +113,27 @@ void main() {
       final json = jsonEncode({
         'format': 'other-app',
         'version': 1,
-        'data': {'bookmarks': ['1:1']},
+        'data': {
+          'bookmarks': ['1:1'],
+        },
       });
-      expect(
-        BackupService.restoreFromJson(json, AppState()).ok,
-        isFalse,
-      );
+      expect(BackupService.restoreFromJson(json, AppState()).ok, isFalse);
     });
 
     test('wrong version', () {
       final json = jsonEncode({
         'format': 'quba-backup',
         'version': 99,
-        'data': {'bookmarks': ['1:1']},
+        'data': {
+          'bookmarks': ['1:1'],
+        },
       });
-      expect(
-        BackupService.restoreFromJson(json, AppState()).ok,
-        isFalse,
-      );
+      expect(BackupService.restoreFromJson(json, AppState()).ok, isFalse);
     });
 
     test('missing data object', () {
-      final json = jsonEncode({
-        'format': 'quba-backup',
-        'version': 1,
-      });
-      expect(
-        BackupService.restoreFromJson(json, AppState()).ok,
-        isFalse,
-      );
+      final json = jsonEncode({'format': 'quba-backup', 'version': 1});
+      expect(BackupService.restoreFromJson(json, AppState()).ok, isFalse);
     });
 
     test('data with no usable field', () {
@@ -157,10 +142,7 @@ void main() {
         'version': 1,
         'data': {'unknown_field': 123},
       });
-      expect(
-        BackupService.restoreFromJson(json, AppState()).ok,
-        isFalse,
-      );
+      expect(BackupService.restoreFromJson(json, AppState()).ok, isFalse);
     });
   });
 
