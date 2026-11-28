@@ -264,13 +264,13 @@ class _GlassNavBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(34),
+          borderRadius: BorderRadius.circular(38),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Container(
-              height: 68,
+              height: 78,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: p.dark
@@ -282,7 +282,7 @@ class _GlassNavBar extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(34),
+                borderRadius: BorderRadius.circular(38),
                 border: Border.all(
                   color: p.dark
                       ? Colors.white.withValues(alpha: 0.28)
@@ -337,7 +337,7 @@ class _GlassNavBar extends StatelessWidget {
                         left: visualTab * itemW + 3,
                         top: 3,
                         width: itemW - 6,
-                        height: 62,
+                        height: 72,
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -352,7 +352,7 @@ class _GlassNavBar extends StatelessWidget {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
-                            borderRadius: BorderRadius.circular(31),
+                            borderRadius: BorderRadius.circular(36),
                             border: Border.all(
                               color: p.dark
                                   ? p.activeText.withValues(alpha: 0.25)
@@ -370,9 +370,9 @@ class _GlassNavBar extends StatelessWidget {
                           child: Align(
                             alignment: Alignment.bottomCenter,
                             child: Container(
-                              width: 46,
-                              height: 3,
-                              margin: const EdgeInsets.only(bottom: 3),
+                              width: 58,
+                              height: 4,
+                              margin: const EdgeInsets.only(bottom: 4),
                               decoration: BoxDecoration(
                                 color: p.dark ? p.activeText : p.emerald,
                                 borderRadius: BorderRadius.circular(2),
@@ -385,11 +385,11 @@ class _GlassNavBar extends StatelessWidget {
                       for (var i = 1; i < _items.length; i++)
                         Positioned(
                           left: itemW * i,
-                          top: 11,
-                          bottom: 11,
+                          top: 14,
+                          bottom: 14,
                           width: 1,
                           child: ColoredBox(
-                            color: Colors.black.withValues(alpha: 0.12),
+                            color: Colors.black.withValues(alpha: 0.07),
                           ),
                         ),
                       Row(
@@ -449,8 +449,8 @@ class _NavItem extends StatelessWidget {
             // Glass bubble icon holder on every tab (the reference's
             // floating pill nav); the active bubble glows mint.
             Container(
-              width: 34,
-              height: 34,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
@@ -478,7 +478,7 @@ class _NavItem extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(icon, size: 22, color: iconColor),
+              child: Icon(icon, size: 24, color: iconColor),
             ),
             const SizedBox(height: 2),
             Text(
@@ -486,7 +486,7 @@ class _NavItem extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 12.5,
+                fontSize: 13,
                 height: 1.1,
                 fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                 color: labelColor,

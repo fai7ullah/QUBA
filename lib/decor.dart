@@ -28,7 +28,7 @@ class QubaHeader extends StatelessWidget {
   const QubaHeader({super.key, required this.onSettings});
   final VoidCallback onSettings;
 
-  static const double _pill = 76;
+  static const double _pill = 80;
 
   static BoxDecoration _glass(
     QubaPalette p, {
@@ -71,7 +71,7 @@ class QubaHeader extends StatelessWidget {
     final p = QubaPalette.of(context);
     final ink = p.dark ? p.ink : p.emerald;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+      padding: const EdgeInsets.fromLTRB(18, 8, 18, 16),
       child: SizedBox(
         height: _pill,
         child: Row(
@@ -87,11 +87,11 @@ class QubaHeader extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          width: 54,
-                          height: 54,
-                          padding: const EdgeInsets.all(10),
+                          width: 58,
+                          height: 58,
+                          padding: const EdgeInsets.all(9),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(20),
                             gradient: LinearGradient(
                               colors: [
                                 Colors.white.withValues(alpha: 0.9),
@@ -114,7 +114,7 @@ class QubaHeader extends StatelessWidget {
                         const SizedBox(width: 12),
                         Container(
                           width: 1.5,
-                          height: 40,
+                          height: 46,
                           color: p.emerald.withValues(alpha: 0.6),
                         ),
                         const SizedBox(width: 14),
@@ -168,8 +168,8 @@ class QubaHeader extends StatelessWidget {
                     customBorder: const CircleBorder(),
                     onTap: onSettings,
                     child: Ink(
-                      width: 62,
-                      height: 62,
+                      width: 72,
+                      height: 72,
                       decoration: _glass(p, circle: true),
                       child: Icon(
                         Icons.settings_rounded,
@@ -205,75 +205,43 @@ class ArchLogoPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    final stroke = Paint()
-      ..color = outline
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.2
-      ..strokeJoin = StrokeJoin.round
-      ..strokeCap = StrokeCap.round;
-    final arch = Path()
-      ..moveTo(w * 0.06, h * 0.92)
-      ..lineTo(w * 0.06, h * 0.50)
-      ..cubicTo(w * 0.06, h * 0.26, w * 0.34, h * 0.30, w * 0.5, h * 0.03)
-      ..cubicTo(w * 0.66, h * 0.30, w * 0.94, h * 0.26, w * 0.94, h * 0.50)
-      ..lineTo(w * 0.94, h * 0.92);
-    canvas.drawPath(arch, stroke);
-
-    // Dome.
-    final domePath = Path()
-      ..moveTo(w * 0.26, h * 0.64)
-      ..cubicTo(w * 0.26, h * 0.34, w * 0.74, h * 0.34, w * 0.74, h * 0.64)
+    // Solid emerald dome silhouette with crescent and arched doorway,
+    // as in the reference logo tile.
+    final silhouette = Path()
+      ..moveTo(w * 0.14, h * 0.92)
+      ..lineTo(w * 0.14, h * 0.66)
+      ..cubicTo(w * 0.14, h * 0.44, w * 0.34, h * 0.40, w * 0.5, h * 0.16)
+      ..cubicTo(w * 0.66, h * 0.40, w * 0.86, h * 0.44, w * 0.86, h * 0.66)
+      ..lineTo(w * 0.86, h * 0.92)
       ..close();
-    canvas.drawPath(domePath, Paint()..color = dome);
-    // Crescent above the dome.
-    final crescentR = w * 0.085;
+    canvas.drawPath(silhouette, Paint()..color = dome);
+    // Crescent finial above the dome.
+    final crescentR = w * 0.09;
     final crescent = Path.combine(
       PathOperation.difference,
       Path()..addOval(
-        Rect.fromCircle(center: Offset(w * 0.5, h * 0.235), radius: crescentR),
+        Rect.fromCircle(center: Offset(w * 0.5, h * 0.10), radius: crescentR),
       ),
       Path()..addOval(
         Rect.fromCircle(
           center: Offset(
             w * 0.5 + crescentR * 0.45,
-            h * 0.235 - crescentR * 0.25,
+            h * 0.10 - crescentR * 0.25,
           ),
           radius: crescentR * 0.82,
         ),
       ),
     );
     canvas.drawPath(crescent, Paint()..color = outline);
-    canvas.drawLine(
-      Offset(w * 0.5, h * 0.42),
-      Offset(w * 0.5, h * 0.33),
-      Paint()
-        ..color = _gold
-        ..strokeWidth = 1.6
-        ..strokeCap = StrokeCap.round,
-    );
-    // Body with a gold door.
-    final body = RRect.fromRectAndRadius(
-      Rect.fromLTRB(w * 0.22, h * 0.64, w * 0.78, h * 0.90),
-      const Radius.circular(2),
-    );
-    canvas.drawRRect(body, Paint()..color = dome);
+    // Arched doorway cut into the silhouette.
     final door = Path()
-      ..moveTo(w * 0.42, h * 0.90)
-      ..lineTo(w * 0.42, h * 0.76)
-      ..quadraticBezierTo(w * 0.42, h * 0.68, w * 0.5, h * 0.68)
-      ..quadraticBezierTo(w * 0.58, h * 0.68, w * 0.58, h * 0.76)
-      ..lineTo(w * 0.58, h * 0.90)
+      ..moveTo(w * 0.41, h * 0.92)
+      ..lineTo(w * 0.41, h * 0.74)
+      ..quadraticBezierTo(w * 0.41, h * 0.64, w * 0.5, h * 0.64)
+      ..quadraticBezierTo(w * 0.59, h * 0.64, w * 0.59, h * 0.74)
+      ..lineTo(w * 0.59, h * 0.92)
       ..close();
-    canvas.drawPath(door, Paint()..color = _gold);
-    // Gold base line.
-    canvas.drawLine(
-      Offset(0, h * 0.95),
-      Offset(w, h * 0.95),
-      Paint()
-        ..color = _gold
-        ..strokeWidth = 2.6
-        ..strokeCap = StrokeCap.round,
-    );
+    canvas.drawPath(door, Paint()..color = Colors.white);
   }
 
   @override

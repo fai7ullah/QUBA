@@ -63,12 +63,12 @@ class QubaBackground extends StatelessWidget {
         ),
       );
     }
-    // Clean white/mint wash with extremely subtle green ambient
+    // Clean white background with only extremely subtle mint ambient
     // light: the glass surfaces are the attraction, not the backdrop.
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFFBFEFC), Color(0xFFF0F9F3), Color(0xFFFBFEFC)],
+          colors: [Color(0xFFFDFEFD), Color(0xFFF4FAF6), Color(0xFFFDFEFD)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -77,24 +77,19 @@ class QubaBackground extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Positioned(
-            top: -90,
-            right: -80,
-            child: _blob(const Color(0x336FCF97), 300),
+            top: -110,
+            right: -90,
+            child: _blob(const Color(0x146FCF97), 300),
           ),
           Positioned(
-            top: 330,
-            left: -140,
-            child: _blob(const Color(0x2EA8E6C1), 320),
+            top: 360,
+            left: -150,
+            child: _blob(const Color(0x12A8E6C1), 320),
           ),
           Positioned(
-            bottom: -110,
-            right: -60,
-            child: _blob(const Color(0x335CC48A), 320),
-          ),
-          Positioned(
-            top: 120,
-            left: -70,
-            child: _blob(const Color(0x22BFEED4), 220),
+            bottom: -120,
+            right: -70,
+            child: _blob(const Color(0x145CC48A), 320),
           ),
           child,
         ],
@@ -154,8 +149,45 @@ class GlassCard extends StatelessWidget {
               border: Border.all(
                 color: p.dark
                     ? Colors.white.withValues(alpha: 0.28)
-                    : Colors.white.withValues(alpha: 0.85),
-                width: 1.2,
+                    : Colors.white.withValues(alpha: 0.9),
+                width: 1.4,
+              ),
+            ),
+          ),
+        ),
+        // Inner rim highlight: the bright inner glass edge visible in
+        // the reference, inset just inside the outer border.
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Container(
+              margin: const EdgeInsets.all(1.4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(radius - 1.4),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: p.dark ? 0.10 : 0.38),
+                  width: 1,
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Diagonal sheen sweeping from the top-left corner.
+        Positioned(
+          top: 0,
+          left: 0,
+          width: 150,
+          height: 90,
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.topLeft,
+                  radius: 1.1,
+                  colors: [
+                    Colors.white.withValues(alpha: p.dark ? 0.10 : 0.34),
+                    Colors.white.withValues(alpha: 0),
+                  ],
+                ),
               ),
             ),
           ),
@@ -214,12 +246,12 @@ class GlassCard extends StatelessWidget {
             BoxShadow(
               color: p.dark
                   ? p.shadow
-                  : const Color(0xFF146441).withValues(alpha: 0.12),
+                  : const Color(0xFF0B5F3B).withValues(alpha: 0.10),
               // List cards (no backdrop blur) get a cheaper shadow
               // so long scrolling lists stay smooth; major blurred
               // surfaces keep the deeper liquid-glass shadow.
-              blurRadius: blur > 0 ? 35 : 16,
-              offset: Offset(0, blur > 0 ? 12 : 5),
+              blurRadius: blur > 0 ? 30 : 16,
+              offset: Offset(0, blur > 0 ? 10 : 5),
             ),
           ],
         ),
@@ -387,11 +419,16 @@ class PrayerMedallion extends StatelessWidget {
           color = _sun;
       }
     }
+    // Prayer rows use the reference's wide oval glass bubble; other
+    // uses (header, settings) keep the round medallion.
+    final oval = prayer != null;
+    final width = oval ? size * 1.5 : size;
+    final height = oval ? size * 0.95 : size;
     return Container(
-      width: size,
-      height: size,
+      width: width,
+      height: height,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
+        borderRadius: BorderRadius.circular(height / 2),
         gradient: RadialGradient(
           center: const Alignment(-0.45, -0.55),
           colors: p.dark
@@ -404,27 +441,27 @@ class PrayerMedallion extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E9E7B).withValues(alpha: 0.16),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: const Color(0xFF2E9E7B).withValues(alpha: 0.14),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Icon(glyph, size: size * 0.56, color: color),
+          Icon(glyph, size: height * 0.58, color: color),
           // Glass specular dot.
           Positioned(
-            top: size * 0.14,
-            left: size * 0.2,
+            top: height * 0.14,
+            left: width * 0.2,
             child: IgnorePointer(
               child: Container(
-                width: size * 0.22,
-                height: size * 0.13,
+                width: width * 0.2,
+                height: height * 0.13,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: p.dark ? 0.25 : 0.75),
-                  borderRadius: BorderRadius.circular(size),
+                  borderRadius: BorderRadius.circular(height),
                 ),
               ),
             ),
@@ -762,15 +799,15 @@ class PrayerScheduleCard extends StatelessWidget {
   /// When set, the card shows a "Prayer Times  View All →" header.
   final VoidCallback? onViewAll;
 
-  static const double _rowHeight = 52;
+  static const double _rowHeight = 58;
 
   Widget _header(BuildContext context, QubaPalette p) {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       child: Row(
         children: [
-          const PrayerMedallion(size: 40),
+          const PrayerMedallion(size: 44),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -861,68 +898,60 @@ class PrayerScheduleCard extends StatelessWidget {
     final p = QubaPalette.of(context);
     final notify = appState.prayerNotify[e.name] ?? false;
     final textColor = isNext ? (p.dark ? p.activeText : p.emerald) : p.ink;
+    // On Home (the reference layout) the panel shows only icon, name
+    // and time; the reminder bells live on the full Prayer screen
+    // (this same card without a View All header), so no reminder
+    // control is lost — View All leads straight to them.
+    final showBells = onViewAll == null;
     final row = Row(
       children: [
-        const SizedBox(width: 10),
-        // Dot slot (kept on every row so medallions line up).
-        SizedBox(
-          width: 10,
-          child: isNext
-              ? Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: p.dark ? p.activeText : p.emerald,
-                  ),
-                )
-              : null,
-        ),
-        const SizedBox(width: 6),
-        PrayerMedallion(prayer: e.name, size: 38),
-        const SizedBox(width: 14),
+        const SizedBox(width: 12),
+        PrayerMedallion(prayer: e.name, size: 44),
+        const SizedBox(width: 16),
         Expanded(
           child: Text(
             trPrayer(e.name),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 17.5,
-              fontWeight: isNext ? FontWeight.w800 : FontWeight.w500,
+              fontSize: 18,
+              fontWeight: isNext ? FontWeight.w700 : FontWeight.w500,
               color: textColor,
             ),
           ),
         ),
-        Container(
-          width: 1,
-          height: 26,
-          color: Colors.black.withValues(alpha: 0.08),
-        ),
-        SizedBox(
-          width: 58,
-          height: 40,
-          child: IconButton(
-            padding: EdgeInsets.zero,
-            icon: NotifyIcon(on: notify, size: 28),
-            tooltip: notify ? tr('reminder_on') : tr('reminder_off'),
-            onPressed: () => onToggle(e.name, !notify),
+        if (showBells) ...[
+          Container(
+            width: 1,
+            height: 26,
+            color: Colors.black.withValues(alpha: 0.08),
           ),
-        ),
+          SizedBox(
+            width: 58,
+            height: 40,
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              icon: NotifyIcon(on: notify, size: 28),
+              tooltip: notify ? tr('reminder_on') : tr('reminder_off'),
+              onPressed: () => onToggle(e.name, !notify),
+            ),
+          ),
+        ],
         SizedBox(
-          width: 84,
+          width: 92,
           child: Text(
             PrayerService.formatTime(e.time),
             textAlign: TextAlign.end,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 17,
-              fontWeight: isNext ? FontWeight.w800 : FontWeight.w500,
+              fontSize: 17.5,
+              fontWeight: isNext ? FontWeight.w700 : FontWeight.w500,
               color: textColor,
             ),
           ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 16),
       ],
     );
     return Container(
@@ -932,7 +961,7 @@ class PrayerScheduleCard extends StatelessWidget {
               gradient: LinearGradient(
                 colors: p.dark
                     ? [p.activeFill, p.activeFill]
-                    : const [Color(0xFFD3F0DE), Color(0xFFBFE8CF)],
+                    : const [Color(0xFFDDF4E5), Color(0xFFCDEED8)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -940,13 +969,13 @@ class PrayerScheduleCard extends StatelessWidget {
               border: Border.all(
                 color: p.dark
                     ? p.activeText.withValues(alpha: 0.4)
-                    : const Color(0xFFA7DDBE),
+                    : Colors.white.withValues(alpha: 0.55),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2E9E7B).withValues(alpha: 0.18),
-                  blurRadius: 10,
+                  color: const Color(0xFF2E9E7B).withValues(alpha: 0.12),
+                  blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
