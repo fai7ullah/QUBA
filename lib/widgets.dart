@@ -278,6 +278,109 @@ class GlassCard extends StatelessWidget {
   }
 }
 
+/// Emerald gradient stops for glossy icon painting: bright at the
+/// top, through the palette emerald, into the deep emerald — the
+/// same green ramp the Next Prayer pill uses, lifted in dark mode so
+/// icons stay luminous on the night surfaces.
+List<Color> glossyGreen(QubaPalette p) => [
+  p.dark ? const Color(0xFF8FE8B4) : const Color(0xFF3CCB76),
+  p.emerald,
+  p.dark ? QubaColors.emerald : p.emeraldDeep,
+];
+
+/// An icon painted with a vertical colour gradient (bright top,
+/// deep bottom) instead of a flat tint — the glossy look of the
+/// reference's glass bubbles. A single ShaderMask keeps the glyph
+/// crisp at small sizes.
+class GlossyIcon extends StatelessWidget {
+  const GlossyIcon(
+    this.icon, {
+    super.key,
+    this.size = 24,
+    required this.colors,
+  });
+  final IconData icon;
+  final double size;
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      shaderCallback: (bounds) => LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: colors,
+        stops: colors.length == 3 ? const [0.0, 0.45, 1.0] : null,
+      ).createShader(bounds),
+      blendMode: BlendMode.srcIn,
+      child: Icon(icon, size: size, color: Colors.white),
+    );
+  }
+}
+
+/// Small circular glass bubble for icon buttons: translucent fill,
+/// fine bright border and a soft shadow, matching [GlassCard]
+/// without any backdrop blur (cheap enough for rows of bubbles).
+/// With [glow] it also casts a soft emerald halo.
+class GlassBubble extends StatelessWidget {
+  const GlassBubble({
+    super.key,
+    required this.width,
+    required this.height,
+    this.glow = false,
+    required this.child,
+  });
+  final double width;
+  final double height;
+  final bool glow;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = QubaPalette.of(context);
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(height / 2),
+        gradient: LinearGradient(
+          colors: p.dark
+              ? [
+                  Colors.white.withValues(alpha: 0.16),
+                  Colors.white.withValues(alpha: 0.05),
+                ]
+              : [
+                  Colors.white.withValues(alpha: 0.62),
+                  Colors.white.withValues(alpha: 0.30),
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: p.dark
+              ? Colors.white.withValues(alpha: 0.28)
+              : Colors.white.withValues(alpha: 0.9),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: p.shadow,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+          if (glow)
+            BoxShadow(
+              color: p.emerald.withValues(alpha: p.dark ? 0.30 : 0.22),
+              blurRadius: 16,
+              spreadRadius: 1,
+            ),
+        ],
+      ),
+      child: Center(child: child),
+    );
+  }
+}
+
 /// Gold line — 8-point star — gold line, as between the Next Prayer card
 /// and the prayer schedule in the reference.
 class GoldDivider extends StatelessWidget {

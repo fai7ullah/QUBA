@@ -131,67 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 18),
                   _continueReadingCard(context),
-                  if (appState.readingStreak > 0) ...[
-                    const SizedBox(height: 12),
-                    _streakChip(context),
-                  ],
-                  if (appState.prayerStreak > 0) ...[
-                    const SizedBox(height: 12),
-                    _prayerStreakChip(context),
-                  ],
-                  // Below the fold: shortcuts and the daily card.
-                  const SizedBox(height: 120),
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        FeatureChip(
-                          icon: Icons.explore_rounded,
-                          label: tr('qibla'),
-                          onTap: () => widget.onOpenFeature('qibla'),
-                        ),
-                        FeatureChip(
-                          icon: Icons.blur_circular_rounded,
-                          label: tr('tasbih'),
-                          onTap: () => widget.onOpenFeature('tasbih'),
-                        ),
-                        FeatureChip(
-                          icon: Icons.volunteer_activism_rounded,
-                          label: tr('duas'),
-                          onTap: () => widget.onOpenFeature('duas'),
-                        ),
-                        FeatureChip(
-                          icon: Icons.auto_awesome_rounded,
-                          label: tr('names99'),
-                          onTap: () => widget.onOpenFeature('names'),
-                        ),
-                        FeatureChip(
-                          icon: Icons.flag_rounded,
-                          label: tr('khatma'),
-                          onTap: () => widget.onOpenFeature('khatma'),
-                        ),
-                        FeatureChip(
-                          icon: Icons.calendar_month_rounded,
-                          label: tr('calendar'),
-                          onTap: () => widget.onOpenFeature('calendar'),
-                        ),
-                        FeatureChip(
-                          icon: Icons.wb_twilight_rounded,
-                          label: tr('azkar'),
-                          onTap: () => widget.onOpenFeature('azkar'),
-                        ),
-                        FeatureChip(
-                          icon: Icons.emoji_events_rounded,
-                          label: tr('progress'),
-                          onTap: () => widget.onOpenFeature('progress'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _todayCard(context),
                 ],
               ),
             ),
@@ -223,16 +162,16 @@ class _HomeScreenState extends State<HomeScreen> {
         : (countdown.inSeconds / gap.inSeconds).clamp(0.0, 1.0).toDouble();
     final ink = p.dark ? p.ink : const Color(0xFF17211B);
     return GlassCard(
-      radius: 34,
+      radius: 40,
       blur: 24,
-      padding: const EdgeInsets.fromLTRB(24, 20, 18, 20),
+      padding: const EdgeInsets.fromLTRB(24, 20, 16, 20),
       onTap: widget.onOpenPrayer,
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Ring scales with the card (reference proportions), clamped
           // so narrow screens keep room for the prayer name.
           final ringSize = (constraints.maxWidth * 0.34)
-              .clamp(112.0, 148.0)
+              .clamp(112.0, 152.0)
               .toDouble();
           return Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -242,36 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF0E8A43), Color(0xFF0A6B34)],
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF0B7A3B)
-                                .withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        tr('next_prayer'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    const _GlossyPill(),
                     const SizedBox(height: 8),
                     FittedBox(
                       fit: BoxFit.scaleDown,
@@ -280,8 +190,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         trPrayer(next.name),
                         maxLines: 1,
                         style: TextStyle(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
                           height: 1.05,
                           color: ink,
                         ),
@@ -315,25 +225,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: CustomPaint(
                   painter: _RingPainter(
                     fraction: fraction,
-                    track: p.dark
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : const Color(0xFFCDEED8),
+                    dark: p.dark,
                     color: p.dark ? p.activeText : const Color(0xFF0B7A3B),
                   ),
                   child: Center(
                     child: Directionality(
                       textDirection: TextDirection.ltr,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
                             PrayerService.formatCountdown(countdown),
                             maxLines: 1,
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: 30,
                               fontWeight: FontWeight.w800,
                               color: ink,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
                             ),
                           ),
                         ),
@@ -371,135 +282,140 @@ class _HomeScreenState extends State<HomeScreen> {
           });
     final ink = p.dark ? p.ink : const Color(0xFF17211B);
     final soft = p.dark ? p.muted : const Color(0xFF2F3A33);
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     return GlassCard(
-      radius: 34,
+      radius: 38,
       blur: 24,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      padding: const EdgeInsets.fromLTRB(20, 16, 18, 16),
       onTap: () => widget.onOpenReader(
         hasPlace ? appState.lastReadSurah : 1,
         hasPlace ? appState.lastReadAyah : 1,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Minimal left glass area (reference): a soft sheen and a
-          // quiet book glyph — no large picture.
-          SizedBox(
-            width: 52,
-            height: 88,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: RadialGradient(
-                  center: const Alignment(-0.4, -0.5),
-                  colors: p.dark
-                      ? [const Color(0x2634D399), const Color(0x0D34D399)]
-                      : [
-                          Colors.white.withValues(alpha: 0.55),
-                          const Color(0xFFDDF4E5).withValues(alpha: 0.25),
-                        ],
-                ),
-              ),
-              child: Icon(
-                Icons.menu_book_rounded,
-                size: 30,
-                color: (p.dark ? p.activeText : p.emerald).withValues(
-                  alpha: 0.55,
-                ),
-              ),
+          Container(
+            width: 2.4,
+            height: 52,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(1.2),
+              color: p.emerald,
             ),
           ),
           const SizedBox(width: 14),
-          Container(
-            width: 1.5,
-            height: 88,
-            color: p.emerald.withValues(alpha: 0.55),
-          ),
-          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  tr('continue_reading'),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: p.emerald,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tr('continue_reading'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.w600,
+                              color: p.emerald,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            surahName ?? tr('start_fatihah'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: ink,
+                            ),
+                          ),
+                          if (verseLine != null)
+                            Text(
+                              verseLine,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15.5,
+                                color: soft,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GlassBubble(
+                      width: 50,
+                      height: 50,
+                      glow: true,
+                      child: GlossyIcon(
+                        rtl
+                            ? Icons.chevron_left_rounded
+                            : Icons.chevron_right_rounded,
+                        size: 32,
+                        colors: glossyGreen(p),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  surahName ?? tr('start_fatihah'),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: ink,
-                  ),
-                ),
-                if (verseLine != null)
-                  Text(
-                    verseLine,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 17, color: soft),
-                  ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 7,
-                          backgroundColor: p.dark
-                              ? Colors.white.withValues(alpha: 0.12)
-                              : const Color(0xFFDCE5DF),
-                          color: p.dark ? p.activeText : p.emerald,
-                        ),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              minHeight: 8,
+                              backgroundColor: p.dark
+                                  ? Colors.white.withValues(alpha: 0.12)
+                                  : const Color(0xFFE1E9E4),
+                              color: p.dark
+                                  ? p.activeText
+                                  : const Color(0xFF0B7A3B),
+                            ),
+                          ),
+                          Positioned(
+                            top: 1,
+                            left: 2,
+                            right: 2,
+                            height: 3,
+                            child: IgnorePointer(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(2),
+                                  color: Colors.white.withValues(alpha: 0.45),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Text(
-                      '$pct%',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: ink,
+                    const SizedBox(width: 14),
+                    SizedBox(
+                      width: 50,
+                      child: Text(
+                        '$pct%',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: ink,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: p.dark
-                  ? p.activeFill
-                  : Colors.white.withValues(alpha: 0.6),
-              border: Border.all(color: p.cardBorder),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.green.withValues(alpha: 0.12),
-                  blurRadius: 10,
-                ),
-              ],
-            ),
-            child: Icon(
-              Directionality.of(context) == TextDirection.rtl
-                  ? Icons.chevron_left_rounded
-                  : Icons.chevron_right_rounded,
-              size: 30,
-              color: p.dark ? p.activeText : p.emerald,
             ),
           ),
         ],
@@ -702,58 +618,213 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// Circular countdown ring: a pale track with a green arc for the share
-/// of the wait that is still left (drawn clockwise from the top).
+/// Glossy "Next Prayer" label pill: green gradient, bright rim, and a
+/// specular highlight behind the text.
+class _GlossyPill extends StatelessWidget {
+  const _GlossyPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.75), width: 1.4),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF3CCB76), Color(0xFF0E8A43), Color(0xFF09672F)],
+          stops: [0, 0.55, 1],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0B7A3B).withValues(alpha: 0.38),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(21),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 1,
+              left: 10,
+              right: 10,
+              height: 15,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.55),
+                        Colors.white.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 7),
+              child: Text(
+                tr('next_prayer'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(color: Color(0x40000000), offset: Offset(0, 1), blurRadius: 2),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Glossy countdown ring: a thick deep-green arc with a soft glow for
+/// the share of the wait still left (clockwise from the top), around a
+/// raised glass disc with a bright rim and a specular highlight.
 class _RingPainter extends CustomPainter {
   const _RingPainter({
     required this.fraction,
-    required this.track,
+    required this.dark,
     required this.color,
   });
   final double fraction;
-  final Color track;
+  final bool dark;
   final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
-    const stroke = 13.0;
+    const stroke = 14.0;
     final c = size.center(Offset.zero);
-    final r = size.width / 2 - stroke / 2;
-    // Frosted disc behind the numbers.
+    final r = size.width / 2 - stroke / 2 - 3;
+    final discR = r - stroke / 2 - 5;
+    final ringRect = Rect.fromCircle(center: c, radius: r);
+    final discRect = Rect.fromCircle(center: c, radius: discR);
+
+    // Faint glass track.
     canvas.drawCircle(
       c,
-      r - stroke / 2,
-      Paint()..color = Colors.white.withValues(alpha: 0.45),
+      r,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..color = dark
+            ? Colors.white.withValues(alpha: 0.10)
+            : const Color(0xFFDDF3E5).withValues(alpha: 0.9),
     );
-    final base = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = stroke
-      ..strokeCap = StrokeCap.round;
-    canvas.drawCircle(c, r, base..color = track);
-    if (fraction > 0) {
-      canvas.drawArc(
-        Rect.fromCircle(center: c, radius: r),
-        -math.pi / 2,
-        2 * math.pi * fraction,
-        false,
-        base..color = color,
-      );
-    }
-    // Glass specular arc on the disc's upper-left rim.
+
+    // Raised glass disc: drop glow, milky body, bright rim.
+    canvas.drawCircle(
+      c.translate(0, 4),
+      discR,
+      Paint()
+        ..color = const Color(0xFF2FB765).withValues(alpha: dark ? 0.15 : 0.22)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+    );
+    canvas.drawCircle(
+      c,
+      discR,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.3, -0.5),
+          radius: 1.0,
+          colors: dark
+              ? const [Color(0x6634D399), Color(0x330A3C2C)]
+              : const [Color(0xFFFFFFFF), Color(0xFFF1FAF4), Color(0xFFDCF1E4)],
+        ).createShader(discRect),
+    );
+    canvas.drawCircle(
+      c,
+      discR,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: dark
+              ? [Colors.white.withValues(alpha: 0.4), const Color(0x5534D399)]
+              : const [Colors.white, Color(0xFFA8E2C0), Colors.white],
+        ).createShader(discRect),
+    );
+    // Specular highlight across the disc's upper half.
+    final hl = Rect.fromCenter(
+      center: Offset(c.dx, c.dy - discR * 0.48),
+      width: discR * 1.5,
+      height: discR * 0.8,
+    );
+    canvas.drawOval(
+      hl,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withValues(alpha: dark ? 0.22 : 0.9),
+            Colors.white.withValues(alpha: 0),
+          ],
+        ).createShader(hl),
+    );
+
+    if (fraction <= 0) return;
+    final sweep = 2 * math.pi * fraction;
+    // Glow under the arc.
     canvas.drawArc(
-      Rect.fromCircle(center: c, radius: r - stroke / 2 - 2),
-      -math.pi * 0.85,
-      math.pi * 0.5,
+      ringRect,
+      -math.pi / 2,
+      sweep,
       false,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4
+        ..strokeWidth = stroke + 4
         ..strokeCap = StrokeCap.round
-        ..color = Colors.white.withValues(alpha: 0.75),
+        ..color = const Color(0xFF2FB765).withValues(alpha: 0.4)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    // Deep glossy green arc.
+    canvas.drawArc(
+      ringRect,
+      -math.pi / 2,
+      sweep,
+      false,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..strokeCap = StrokeCap.round
+        ..shader = SweepGradient(
+          transform: const GradientRotation(-math.pi / 2),
+          colors: dark
+              ? [color, color]
+              : const [Color(0xFF2FB765), Color(0xFF0B7A3B), Color(0xFF065A28)],
+        ).createShader(ringRect),
+    );
+    // Thin highlight line along the arc for the wet-glass shine.
+    canvas.drawArc(
+      Rect.fromCircle(center: c, radius: r - stroke * 0.18),
+      -math.pi / 2,
+      sweep,
+      false,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round
+        ..color = Colors.white.withValues(alpha: 0.35),
     );
   }
 
   @override
   bool shouldRepaint(covariant _RingPainter old) =>
-      old.fraction != fraction || old.track != track || old.color != color;
+      old.fraction != fraction || old.dark != dark || old.color != color;
 }
